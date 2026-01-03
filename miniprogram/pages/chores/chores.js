@@ -94,6 +94,9 @@ Page({
           isAdmin
         });
         
+        // 家庭信息加载完成后，加载家务类型
+        await this.loadChoreTypes();
+        
         // 加载待审核数量
         this.loadPendingCount();
       }
