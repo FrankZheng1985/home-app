@@ -3,6 +3,26 @@ const app = getApp();
 const { userApi } = require('../../utils/api');
 const { showLoading, hideLoading, showError, showSuccess } = require('../../utils/util');
 
+// 格式化日期为 yyyy-mm-dd 格式
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  
+  // 如果已经是 yyyy-mm-dd 格式，直接返回
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+  
+  // 处理 ISO 格式或其他格式
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
 Page({
   data: {
     userInfo: {
@@ -23,7 +43,7 @@ Page({
         nickname: userInfo.nickname || '',
         avatarUrl: userInfo.avatarUrl || userInfo.avatar_url || '',
         gender: userInfo.gender || 0,
-        birthday: userInfo.birthday || ''
+        birthday: formatDate(userInfo.birthday)
       }
     });
     
@@ -42,7 +62,7 @@ Page({
             nickname: serverData.nickname || '',
             avatarUrl: serverData.avatar_url || serverData.avatarUrl || '',
             gender: serverData.gender || 0,
-            birthday: serverData.birthday || ''
+            birthday: formatDate(serverData.birthday)
           },
           isLoading: false
         });
