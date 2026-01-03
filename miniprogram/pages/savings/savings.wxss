@@ -3,7 +3,7 @@
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  padding-bottom: calc(200rpx + env(safe-area-inset-bottom)); /* 增加底部内边距，避免内容被遮挡 */
+  padding-bottom: calc(300rpx + env(safe-area-inset-bottom)); /* 增加更多底部内边距 */
 }
 
 /* 头部背景 */
@@ -392,6 +392,7 @@
 /* 交易记录 */
 .transactions-section {
   margin-top: 40rpx;
+  padding-bottom: 60rpx; /* 确保底部有足够空间 */
 }
 
 .section-header {
