@@ -302,6 +302,33 @@ const pointsApi = {
       method: 'GET',
       data: { familyId }
     });
+  },
+  
+  // 获取月度统计
+  getMonthStats: (params) => {
+    return app.request({
+      url: '/points/month-stats',
+      method: 'GET',
+      data: params
+    });
+  },
+  
+  // 获取成员积分列表
+  getMembersPoints: (familyId) => {
+    return app.request({
+      url: '/points/members',
+      method: 'GET',
+      data: { familyId }
+    });
+  },
+  
+  // 积分兑现/结算
+  redeemPoints: (data) => {
+    return app.request({
+      url: '/points/redeem',
+      method: 'POST',
+      data
+    });
   }
 };
 
