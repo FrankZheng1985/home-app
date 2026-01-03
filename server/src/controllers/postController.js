@@ -61,7 +61,8 @@ const getList = async (req, res) => {
           images: row.images || [],
           isAnonymous: row.is_anonymous,
           createdAt: row.created_at,
-          author: row.is_anonymous ? {
+          userId: row.user_id, // 添加 userId 字段
+          user: row.is_anonymous ? {
             nickname: '匿名用户',
             avatarUrl: null
           } : {
@@ -70,8 +71,8 @@ const getList = async (req, res) => {
             avatarUrl: row.avatar_url
           },
           isOwner: row.user_id === req.user.id,
-          likeCount: parseInt(row.like_count),
-          commentCount: parseInt(row.comment_count),
+          likesCount: parseInt(row.like_count),
+          commentsCount: parseInt(row.comment_count),
           isLiked: row.is_liked
         }))
       });
@@ -529,6 +530,7 @@ const getDetail = async (req, res) => {
           images: row.images || [],
           isAnonymous: row.is_anonymous,
           createdAt: row.created_at,
+          userId: row.user_id, // 添加 userId 字段
           user: row.is_anonymous ? {
             nickname: '匿名用户',
             avatarUrl: null
@@ -561,6 +563,7 @@ const getDetail = async (req, res) => {
     
     return res.json({
       data: {
+        userId: post.userId, // 添加 userId 字段
         id: post.id,
         content: post.content,
         images: post.images || [],

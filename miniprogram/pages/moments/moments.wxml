@@ -51,10 +51,10 @@
             </view>
           </view>
           
-          <!-- 更多操作 -->
+          <!-- 更多操作（发布人可删除） -->
           <view 
             class="post-more" 
-            wx:if="{{item.userId === currentUserId}}"
+            wx:if="{{item.isOwner || item.userId === currentUserId || (item.user && item.user.id === currentUserId)}}"
             data-id="{{item.id}}"
             data-index="{{index}}"
             bindtap="showPostActions"
