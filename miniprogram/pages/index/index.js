@@ -114,9 +114,15 @@ Page({
     wx.navigateTo({ url: '/pages/profile/points' });
   },
 
-  // 查看动态详情
+  // 查看动态列表
   goToMoments() {
     wx.switchTab({ url: '/pages/moments/moments' });
+  },
+
+  // 查看动态详情
+  goToMomentDetail(e) {
+    const postId = e.currentTarget.dataset.id;
+    wx.navigateTo({ url: `/pages/moments/comments?postId=${postId}` });
   },
 
   // 查看家庭管理
