@@ -35,6 +35,10 @@
           <view class="action-icon">⚙️</view>
           <text class="action-text">奖励设置</text>
         </view>
+        <view class="quick-action" bindtap="showRoleManager" wx:if="{{isCreator}}">
+          <view class="action-icon">👥</view>
+          <text class="action-text">权限管理</text>
+        </view>
         <view class="quick-action" bindtap="showFamilyCode">
           <view class="action-icon">📋</view>
           <text class="action-text">邀请码</text>
@@ -132,10 +136,18 @@
     <view class="action-sheet-header">
       <text>管理成员：{{selectedMember.name}}</text>
     </view>
+    <!-- 根据当前角色显示不同操作 -->
     <view class="action-sheet-item" 
+          wx:if="{{selectedMember.role === 'member'}}"
           data-member-id="{{selectedMember.id}}"
           bindtap="setAsAdmin">
-      <text>⭐ 设为管理员</text>
+      <text>⭐ 设为子管理员</text>
+    </view>
+    <view class="action-sheet-item warning" 
+          wx:if="{{selectedMember.role === 'admin'}}"
+          data-member-id="{{selectedMember.id}}"
+          bindtap="removeAdmin">
+      <text>👤 取消管理员</text>
     </view>
     <view class="action-sheet-item danger"
           data-member-id="{{selectedMember.id}}"
@@ -145,6 +157,66 @@
     </view>
     <view class="action-sheet-cancel" bindtap="closeMemberModal">
       <text>取消</text>
+    </view>
+  </view>
+
+  <!-- 权限管理弹窗 -->
+  <view class="modal-mask" wx:if="{{showRoleModal}}" bindtap="closeRoleModal"></view>
+  <view class="role-manager-modal" wx:if="{{showRoleModal}}">
+    <view class="role-modal-header">
+      <text class="role-modal-title">👥 权限管理</text>
+      <view class="role-modal-close" bindtap="closeRoleModal">×</view>
+    </view>
+    
+    <!-- 角色说明 -->
+    <view class="role-tips">
+      <view class="role-tip-item">
+        <text class="tip-badge creator">👑 创建者</text>
+        <text class="tip-desc">拥有全部权限，不可更改</text>
+      </view>
+      <view class="role-tip-item">
+        <text class="tip-badge admin">⭐ 子管理员</text>
+        <text class="tip-desc">可审核家务、管理存款</text>
+      </view>
+      <view class="role-tip-item">
+        <text class="tip-badge member">👤 普通成员</text>
+        <text class="tip-desc">可做家务、发动态、存款</text>
+      </view>
+    </view>
+    
+    <!-- 成员角色列表 -->
+    <view class="role-members-list">
+      <view class="role-member-item" wx:for="{{members}}" wx:key="id">
+        <view class="role-member-left">
+          <image 
+            class="role-member-avatar" 
+            src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"
+          ></image>
+          <view class="role-member-info">
+            <text class="role-member-name">{{item.user.nickname}}</text>
+            <text class="role-member-role {{item.role}}">
+              {{item.role === 'creator' ? '👑 创建者' : (item.role === 'admin' ? '⭐ 子管理员' : '👤 普通成员')}}
+            </text>
+          </view>
+        </view>
+        
+        <!-- 角色切换开关（仅对非创建者显示） -->
+        <view class="role-switch-wrap" wx:if="{{item.role !== 'creator'}}">
+          <text class="role-switch-label">管理员</text>
+          <view 
+            class="role-switch {{item.role === 'admin' ? 'on' : ''}}"
+            data-member-id="{{item.id}}"
+            data-member-name="{{item.user.nickname}}"
+            data-current-role="{{item.role}}"
+            bindtap="toggleMemberRole"
+          >
+            <view class="role-switch-thumb"></view>
+          </view>
+        </view>
+        <view class="role-fixed" wx:else>
+          <text>固定权限</text>
+        </view>
+      </view>
     </view>
   </view>
 </view>

@@ -11,10 +11,12 @@ Page({
       gender: 0,
       birthday: ''
     },
-    isSubmitting: false
+    isSubmitting: false,
+    isLoading: true
   },
 
   onLoad() {
+    // 先从本地存储加载，快速显示
     const userInfo = wx.getStorageSync('userInfo') || {};
     this.setData({
       userInfo: {
@@ -24,6 +26,45 @@ Page({
         birthday: userInfo.birthday || ''
       }
     });
+    
+    // 然后从服务器获取最新数据
+    this.fetchLatestProfile();
+  },
+
+  // 从服务器获取最新用户信息
+  async fetchLatestProfile() {
+    try {
+      const res = await userApi.getProfile();
+      if (res.data) {
+        const serverData = res.data;
+        this.setData({
+          userInfo: {
+            nickname: serverData.nickname || '',
+            avatarUrl: serverData.avatar_url || serverData.avatarUrl || '',
+            gender: serverData.gender || 0,
+            birthday: serverData.birthday || ''
+          },
+          isLoading: false
+        });
+        
+        // 同步更新本地存储
+        const storedUserInfo = wx.getStorageSync('userInfo') || {};
+        const updatedUserInfo = {
+          ...storedUserInfo,
+          nickname: serverData.nickname,
+          avatarUrl: serverData.avatar_url || serverData.avatarUrl,
+          avatar_url: serverData.avatar_url || serverData.avatarUrl,
+          gender: serverData.gender,
+          birthday: serverData.birthday
+        };
+        wx.setStorageSync('userInfo', updatedUserInfo);
+        app.globalData.userInfo = updatedUserInfo;
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      this.setData({ isLoading: false });
+      // 获取失败时使用本地存储的数据，不影响用户体验
+    }
   },
 
   // 选择头像
