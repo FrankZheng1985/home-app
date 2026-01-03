@@ -220,36 +220,44 @@ Page({
   // 筛选家务类型
   filterChoreTypes(category) {
     const { allChoreTypes } = this.data;
-    if (!allChoreTypes || allChoreTypes.length === 0) return;
+    console.log('筛选分类:', category, '全部类型数量:', allChoreTypes?.length);
+    
+    if (!allChoreTypes || allChoreTypes.length === 0) {
+      console.log('没有家务类型数据');
+      return;
+    }
     
     if (category === 'all') {
       this.setData({ choreTypes: allChoreTypes });
     } else {
+      // 使用独立函数进行分类判断
+      const getCat = (item) => {
+        const name = item.name || '';
+        const itemCat = (item.category || '').toLowerCase();
+        
+        // 如果有明确的分类字段
+        if (itemCat) return itemCat;
+        
+        // 根据名称关键词判断分类
+        const cleanKeywords = ['扫', '扫地', '拖', '拖地', '擦', '洗碗', '清洁', '整理', '打扫', '吸尘', '倒垃圾', '擦桌'];
+        const cookKeywords = ['做饭', '煮', '炒', '烹饪', '做菜', '下厨', '烧', '饭'];
+        const laundryKeywords = ['洗衣', '晾衣', '叠衣', '熨', '晒', '衣服', '衣'];
+        
+        if (cleanKeywords.some(k => name.includes(k))) return 'clean';
+        if (cookKeywords.some(k => name.includes(k))) return 'cook';
+        if (laundryKeywords.some(k => name.includes(k))) return 'laundry';
+        return 'other';
+      };
+      
       const filtered = allChoreTypes.filter(item => {
-        const itemCategory = this.getCategoryByType(item);
+        const itemCategory = getCat(item);
+        console.log(`${item.name} -> ${itemCategory}`);
         return itemCategory === category;
       });
+      
+      console.log('筛选结果数量:', filtered.length);
       this.setData({ choreTypes: filtered });
     }
-  },
-
-  // 根据家务类型判断分类
-  getCategoryByType(item) {
-    const name = (item.name || '').toLowerCase();
-    const category = (item.category || '').toLowerCase();
-    
-    // 如果有明确的分类字段
-    if (category) return category;
-    
-    // 根据名称关键词判断分类
-    const cleanKeywords = ['扫', '拖', '擦', '洗碗', '清洁', '整理', '打扫', '吸尘', '倒垃圾', '擦桌'];
-    const cookKeywords = ['做饭', '煮', '炒', '烹饪', '做菜', '下厨', '烧'];
-    const laundryKeywords = ['洗衣', '晾衣', '叠衣', '熨', '晒'];
-    
-    if (cleanKeywords.some(k => name.includes(k))) return 'clean';
-    if (cookKeywords.some(k => name.includes(k))) return 'cook';
-    if (laundryKeywords.some(k => name.includes(k))) return 'laundry';
-    return 'other';
   },
 
   // 选择家务类型
