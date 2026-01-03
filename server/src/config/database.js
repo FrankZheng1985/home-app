@@ -2,6 +2,8 @@
 const { Pool } = require('pg');
 
 // 数据库连接配置
+const isProduction = process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   // 如果没有DATABASE_URL，使用单独的配置
@@ -10,6 +12,8 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'family_assistant',
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
+  // 生产环境需要 SSL
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
   // 连接池配置
   max: 20,
   idleTimeoutMillis: 30000,
