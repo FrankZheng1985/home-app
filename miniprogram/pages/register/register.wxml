@@ -1,111 +1,114 @@
-<!--pages/register/register.wxml-->
-<view class="container register-container">
-  <!-- 步骤指示器 -->
-  <view class="step-indicator">
-    <view class="step {{step >= 1 ? 'active' : ''}}">
-      <view class="step-dot">1</view>
-      <view class="step-label">基本信息</view>
-    </view>
-    <view class="step-line {{step >= 2 ? 'active' : ''}}"></view>
-    <view class="step {{step >= 2 ? 'active' : ''}}">
-      <view class="step-dot">2</view>
-      <view class="step-label">喜好设置</view>
-    </view>
-  </view>
-
-  <!-- 步骤1: 基本信息 -->
-  <view class="step-content" wx:if="{{step === 1}}">
-    <view class="step-title">完善您的信息</view>
-    <view class="step-desc">让家人更好地认识您</view>
-
-    <!-- 头像选择 -->
-    <view class="avatar-section">
-      <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="chooseAvatar">
-        <image class="avatar-img" 
-               src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}" 
-               mode="aspectFill"></image>
-        <view class="avatar-edit-icon">📷</view>
+<!--pages/register/register.wxml - 精美设计版-->
+<view class="register-page">
+  <!-- 渐变头部 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <!-- 头像上传 -->
+      <button class="avatar-upload" open-type="chooseAvatar" bindchooseavatar="chooseAvatar">
+        <view class="avatar-wrapper">
+          <image 
+            class="avatar-img" 
+            src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}" 
+            mode="aspectFill"
+          ></image>
+          <view class="avatar-ring"></view>
+          <view class="camera-badge">
+            <text>📷</text>
+          </view>
+        </view>
       </button>
-      <view class="avatar-tip">点击更换头像</view>
-    </view>
-
-    <!-- 昵称输入 -->
-    <view class="form-section">
-      <view class="form-group">
-        <view class="form-label">昵称 <text class="required">*</text></view>
-        <input 
-          type="nickname"
-          class="form-input" 
-          placeholder="请输入您的昵称"
-          value="{{userInfo.nickname}}"
-          bindinput="onNicknameInput"
-          maxlength="20"
-        />
-      </view>
-    </view>
-
-    <view class="form-actions">
-      <button class="btn-primary btn-block" bindtap="nextStep">下一步</button>
+      <text class="avatar-hint">点击更换头像</text>
     </view>
   </view>
 
-  <!-- 步骤2: 喜好设置 -->
-  <view class="step-content" wx:if="{{step === 2}}">
-    <view class="step-title">设置您的喜好</view>
-    <view class="step-desc">让家人了解您的偏好（可跳过）</view>
-
-    <view class="form-section card">
+  <!-- 表单区域 -->
+  <view class="form-section">
+    <!-- 昵称 -->
+    <view class="form-card">
       <view class="form-group">
-        <view class="form-label">🎂 生日</view>
-        <picker mode="date" bindchange="onDateChange" value="{{preferences.birthday}}">
-          <view class="picker-value {{preferences.birthday ? '' : 'placeholder'}}">
-            {{preferences.birthday || '选择您的生日'}}
+        <text class="form-label">昵称</text>
+        <view class="input-wrapper">
+          <text class="input-icon">😊</text>
+          <input 
+            type="nickname"
+            class="form-input" 
+            placeholder="给自己起个名字吧"
+            value="{{userInfo.nickname}}"
+            bindinput="onNicknameInput"
+            maxlength="12"
+          />
+        </view>
+      </view>
+
+      <!-- 性别选择 -->
+      <view class="form-group">
+        <text class="form-label">性别</text>
+        <view class="gender-options">
+          <view class="gender-option {{userInfo.gender === 1 ? 'active male' : ''}}" 
+                bindtap="selectGender" data-gender="1">
+            <text class="gender-emoji">👦</text>
+            <text class="gender-text">男生</text>
+          </view>
+          <view class="gender-option {{userInfo.gender === 2 ? 'active female' : ''}}" 
+                bindtap="selectGender" data-gender="2">
+            <text class="gender-emoji">👧</text>
+            <text class="gender-text">女生</text>
+          </view>
+          <view class="gender-option {{userInfo.gender === 0 ? 'active secret' : ''}}" 
+                bindtap="selectGender" data-gender="0">
+            <text class="gender-emoji">🤫</text>
+            <text class="gender-text">保密</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 生日 -->
+      <view class="form-group">
+        <text class="form-label">生日</text>
+        <picker mode="date" bindchange="onDateChange" value="{{userInfo.birthday}}" start="1950-01-01" end="2020-12-31">
+          <view class="date-picker">
+            <text class="date-icon">🎂</text>
+            <text class="date-value {{userInfo.birthday ? '' : 'placeholder'}}">
+              {{userInfo.birthday || '选择您的生日'}}
+            </text>
+            <text class="date-arrow">›</text>
           </view>
         </picker>
       </view>
-
-      <view class="form-group">
-        <view class="form-label">🍜 喜欢的食物</view>
-        <input 
-          class="form-input" 
-          placeholder="如：火锅、寿司、西餐..."
-          value="{{preferences.favoriteFood}}"
-          data-field="favoriteFood"
-          bindinput="onPreferenceInput"
-        />
-      </view>
-
-      <view class="form-group">
-        <view class="form-label">🎨 喜欢的颜色</view>
-        <input 
-          class="form-input" 
-          placeholder="如：蓝色、粉色..."
-          value="{{preferences.favoriteColor}}"
-          data-field="favoriteColor"
-          bindinput="onPreferenceInput"
-        />
-      </view>
-
-      <view class="form-group">
-        <view class="form-label">🎯 兴趣爱好</view>
-        <input 
-          class="form-input" 
-          placeholder="如：旅行、阅读、运动..."
-          value="{{preferences.hobbies}}"
-          data-field="hobbies"
-          bindinput="onPreferenceInput"
-        />
-      </view>
     </view>
 
-    <view class="form-actions">
-      <button 
-        class="btn-primary btn-block" 
-        bindtap="finishRegister"
-        loading="{{isSubmitting}}"
-        disabled="{{isSubmitting}}"
-      >完成</button>
-      <view class="skip-btn" bindtap="skipPreferences">跳过，以后再设置</view>
+    <!-- 喜好标签 -->
+    <view class="preferences-card">
+      <text class="card-title">💝 我的喜好（选填）</text>
+      <text class="card-desc">让家人更了解你，可以多选哦</text>
+      <view class="tags-container">
+        <view 
+          class="tag-item {{item.selected ? 'selected' : ''}}" 
+          wx:for="{{preferenceOptions}}" 
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="togglePreference"
+        >
+          <text class="tag-emoji">{{item.emoji}}</text>
+          <text class="tag-text">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="action-section">
+    <button 
+      class="submit-btn {{userInfo.nickname ? 'active' : ''}}" 
+      bindtap="saveAndContinue"
+      loading="{{isSubmitting}}"
+      disabled="{{isSubmitting || !userInfo.nickname}}"
+    >
+      <text class="btn-text">保存并继续</text>
+    </button>
+    <view class="skip-link" bindtap="skipRegister">
+      <text>稍后完善 ›</text>
     </view>
   </view>
 </view>

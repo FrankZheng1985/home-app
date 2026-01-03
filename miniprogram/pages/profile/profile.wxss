@@ -1,108 +1,283 @@
-/* pages/profile/profile.wxss */
+/* pages/profile/profile.wxss - Aurora 极光主题版 */
 
-.profile-container {
-  padding-top: 20rpx;
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #FFF5F8 0%, #FFF9F5 25%, #F5F7FA 100%);
 }
 
-/* 用户信息卡片 */
-.user-card {
-  padding: 40rpx 30rpx;
+/* ================================ */
+/*          极光渐变头部              */
+/* ================================ */
+
+.profile-header {
+  position: relative;
+  padding-bottom: 100rpx;
 }
 
-.user-info {
+.header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 420rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #C44EFF 50%, #4E8CFF 100%);
+  background-size: 200% 200%;
+  animation: aurora-profile 10s ease infinite;
+  border-radius: 0 0 60rpx 60rpx;
+  overflow: hidden;
+}
+
+@keyframes aurora-profile {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* 装饰光晕 */
+.header-glow {
+  position: absolute;
+  top: -100rpx;
+  right: -100rpx;
+  width: 400rpx;
+  height: 400rpx;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+.header-glow-2 {
+  position: absolute;
+  bottom: 40rpx;
+  left: -80rpx;
+  width: 280rpx;
+  height: 280rpx;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+  border-radius: 50%;
+  animation: glow-pulse 5s ease-in-out infinite 1s;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.3; 
+  }
+  50% { 
+    transform: scale(1.2); 
+    opacity: 0.5; 
+  }
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+  padding: 80rpx 30rpx 0;
+}
+
+/* ================================ */
+/*          用户信息区域              */
+/* ================================ */
+
+.user-section {
   display: flex;
   align-items: center;
+}
+
+.avatar-wrapper {
+  position: relative;
+  margin-right: 28rpx;
 }
 
 .user-avatar {
-  margin-right: 24rpx;
-  border: 4rpx solid var(--primary-light);
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 50%;
+  border: 6rpx solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
 }
 
-.user-detail {
-  flex: 1;
+.avatar-ring {
+  position: absolute;
+  top: -12rpx;
+  left: -12rpx;
+  width: 174rpx;
+  height: 174rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: ring-pulse 3s ease-in-out infinite;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.4; 
+  }
+  50% { 
+    transform: scale(1.08); 
+    opacity: 0.7; 
+  }
+}
+
+.edit-badge {
+  position: absolute;
+  bottom: 4rpx;
+  right: 4rpx;
+  width: 52rpx;
+  height: 52rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #C44EFF 100%);
+  border-radius: 50%;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 157, 0.4);
+  border: 3rpx solid #ffffff;
+}
+
+.user-info {
+  flex: 1;
 }
 
 .user-name {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 8rpx;
+  display: block;
+  font-size: 44rpx;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 14rpx;
+  text-shadow: 0 3rpx 12rpx rgba(0, 0, 0, 0.15);
+  letter-spacing: 2rpx;
 }
 
 .user-family {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10rpx);
+  -webkit-backdrop-filter: blur(10rpx);
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.family-icon {
   font-size: 26rpx;
+  margin-right: 10rpx;
 }
 
-.edit-arrow {
-  font-size: 32rpx;
-  color: var(--text-placeholder);
-}
-
-/* 积分卡片 */
-.points-card {
-  padding: 30rpx;
-}
-
-.points-header {
-  margin-bottom: 24rpx;
-}
-
-.points-title {
-  font-size: 30rpx;
+.family-name {
+  font-size: 26rpx;
+  color: #ffffff;
   font-weight: 600;
 }
 
-.points-content {
+/* ================================ */
+/*          统计卡片                 */
+/* ================================ */
+
+.stats-card {
   display: flex;
+  align-items: center;
   justify-content: space-around;
-  padding: 20rpx 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  -webkit-backdrop-filter: blur(20rpx);
+  border-radius: 32rpx;
+  padding: 40rpx 24rpx;
+  margin: -60rpx 30rpx 30rpx;
+  box-shadow: 
+    0 20rpx 60rpx rgba(255, 107, 157, 0.2),
+    inset 0 1rpx 0 rgba(255, 255, 255, 0.8);
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
 }
 
-.points-item {
+/* 卡片顶部彩条 */
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24rpx;
+  right: 24rpx;
+  height: 6rpx;
+  background: linear-gradient(90deg, #FF6B9D 0%, #C44EFF 50%, #4E8CFF 100%);
+  border-radius: 0 0 6rpx 6rpx;
+}
+
+.stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   flex: 1;
 }
 
-.points-value {
+.stat-value {
   font-size: 48rpx;
-  font-weight: 700;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF6B9D 0%, #C44EFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.points-label {
+.stat-value.stat-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-value.stat-warning {
+  background: linear-gradient(135deg, #FFB347 0%, #FF8C00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
   font-size: 24rpx;
-  color: var(--text-secondary);
-  margin-top: 8rpx;
+  color: #636E72;
+  margin-top: 10rpx;
+  font-weight: 500;
 }
 
-.points-divider {
-  width: 1rpx;
-  height: 80rpx;
-  background-color: var(--border-color);
+.stat-divider {
+  width: 2rpx;
+  height: 56rpx;
+  background: linear-gradient(180deg, transparent, #E8ECEF, transparent);
 }
 
-.points-footer {
-  text-align: center;
-  padding-top: 20rpx;
-  border-top: 1rpx solid var(--border-color);
-  font-size: 28rpx;
+/* ================================ */
+/*          主内容区域               */
+/* ================================ */
+
+.profile-content {
+  padding: 0 30rpx 80rpx;
 }
 
-/* 菜单卡片 */
+/* ================================ */
+/*          菜单区域                 */
+/* ================================ */
+
+.menu-section {
+  margin-bottom: 30rpx;
+}
+
 .menu-card {
-  padding: 0;
+  background: #ffffff;
+  border-radius: 28rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 32rpx 30rpx;
-  border-bottom: 1rpx solid var(--border-color);
+  padding: 30rpx 28rpx;
+  border-bottom: 1rpx solid #F8F8F8;
+  transition: all 0.3s;
+  position: relative;
 }
 
 .menu-item:last-child {
@@ -110,53 +285,132 @@
 }
 
 .menu-item:active {
-  background-color: var(--background-color);
+  background: linear-gradient(90deg, rgba(255, 107, 157, 0.05) 0%, transparent 100%);
 }
 
-.menu-left {
+/* 菜单图标容器 */
+.menu-icon-wrap {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
-}
-
-.menu-icon {
-  font-size: 40rpx;
+  justify-content: center;
   margin-right: 20rpx;
 }
 
+.icon-profile {
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.18) 0%, rgba(255, 142, 142, 0.18) 100%);
+}
+
+.icon-preference {
+  background: linear-gradient(135deg, rgba(196, 78, 255, 0.18) 0%, rgba(78, 140, 255, 0.18) 100%);
+}
+
+.icon-points {
+  background: linear-gradient(135deg, rgba(255, 179, 71, 0.22) 0%, rgba(255, 140, 0, 0.22) 100%);
+}
+
+.icon-reward {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.18) 0%, rgba(56, 239, 125, 0.18) 100%);
+}
+
+.icon-feedback {
+  background: linear-gradient(135deg, rgba(78, 140, 255, 0.18) 0%, rgba(196, 78, 255, 0.18) 100%);
+}
+
+.icon-about {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.18) 0%, rgba(0, 242, 254, 0.18) 100%);
+}
+
+.menu-emoji {
+  font-size: 36rpx;
+  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
+}
+
 .menu-title {
+  flex: 1;
   font-size: 30rpx;
-  color: var(--text-primary);
+  color: #2D3436;
+  font-weight: 600;
 }
 
 .menu-arrow {
-  font-size: 28rpx;
-  color: var(--text-placeholder);
+  font-size: 32rpx;
+  color: #B2BEC3;
+  font-weight: 300;
 }
 
-/* 退出登录 */
+/* ================================ */
+/*          退出登录                 */
+/* ================================ */
+
 .logout-section {
   margin-top: 40rpx;
-  padding: 0 30rpx;
 }
 
 .logout-btn {
-  width: 100%;
-  height: 88rpx;
-  line-height: 88rpx;
-  background-color: var(--card-background);
-  color: var(--error-color);
-  font-size: 32rpx;
-  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 108rpx;
+  background: #ffffff;
+  border-radius: 54rpx;
   border: none;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
 }
 
 .logout-btn::after {
   border: none;
 }
 
-/* 版本信息 */
-.version-info {
+.logout-btn:active {
+  transform: scale(0.98);
+  background: #FAFAFA;
+}
+
+.logout-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.logout-text {
+  font-size: 30rpx;
+  color: #636E72;
+  font-weight: 500;
+}
+
+/* ================================ */
+/*          版本信息                 */
+/* ================================ */
+
+.version-section {
+  padding: 60rpx 0;
   text-align: center;
-  padding: 40rpx;
+}
+
+.version-text {
+  display: block;
+  font-size: 26rpx;
+  color: #B2BEC3;
+  margin-bottom: 12rpx;
+}
+
+.copyright {
   font-size: 24rpx;
+  color: #DFE6E9;
+}
+
+/* ================================ */
+/*          动画辅助类               */
+/* ================================ */
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12rpx); }
 }

@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/index/index",
     "pages/login/login",
+    "pages/index/index",
     "pages/register/register",
     "pages/family/family",
     "pages/family/create",
@@ -14,7 +14,8 @@
     "pages/profile/preferences",
     "pages/profile/points",
     "pages/profile/feedback",
-    "pages/profile/about"
+    "pages/profile/about",
+    "pages/savings/savings"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -55,5 +56,6 @@
     ]
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
 }

@@ -22,15 +22,19 @@ Page({
   onLoad() {
     // 检查登录状态
     if (!isLoggedIn()) {
-      wx.redirectTo({ url: '/pages/login/login' });
+      wx.reLaunch({ url: '/pages/login/login' });
       return;
     }
     this.loadPageData();
   },
 
   onShow() {
-    // 页面显示时刷新数据
-    if (isLoggedIn() && !this.data.isLoading) {
+    // 页面显示时刷新数据，但需要先检查登录状态
+    if (!isLoggedIn()) {
+      wx.reLaunch({ url: '/pages/login/login' });
+      return;
+    }
+    if (!this.data.isLoading) {
       this.loadPageData();
     }
   },
@@ -118,6 +122,11 @@ Page({
   // 查看家庭管理
   goToFamily() {
     wx.navigateTo({ url: '/pages/family/family' });
+  },
+
+  // 查看我的存款
+  goToSavings() {
+    wx.navigateTo({ url: '/pages/savings/savings' });
   },
 
   // 查看奖励设置

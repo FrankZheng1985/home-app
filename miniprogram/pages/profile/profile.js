@@ -22,12 +22,16 @@ Page({
 
   onLoad() {
     if (!isLoggedIn()) {
-      wx.redirectTo({ url: '/pages/login/login' });
+      wx.reLaunch({ url: '/pages/login/login' });
       return;
     }
   },
 
   onShow() {
+    if (!isLoggedIn()) {
+      wx.reLaunch({ url: '/pages/login/login' });
+      return;
+    }
     this.loadUserInfo();
     this.loadFamilyInfo();
   },

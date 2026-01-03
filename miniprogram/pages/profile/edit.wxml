@@ -1,37 +1,85 @@
-<!--pages/profile/edit.wxml-->
-<view class="container edit-container">
+<!--pages/profile/edit.wxml - 精美设计版-->
+<view class="edit-page">
   <!-- 头像编辑 -->
   <view class="avatar-section">
+    <view class="avatar-bg"></view>
     <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="chooseAvatar">
-      <image class="avatar-img" 
-             src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}" 
-             mode="aspectFill"></image>
-      <view class="avatar-edit-icon">📷</view>
+      <view class="avatar-wrapper">
+        <image class="avatar-img" 
+               src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}" 
+               mode="aspectFill"></image>
+        <view class="avatar-ring"></view>
+        <view class="camera-badge">
+          <text>📷</text>
+        </view>
+      </view>
     </button>
-    <view class="avatar-tip text-muted">点击更换头像</view>
+    <text class="avatar-tip">点击更换头像</text>
   </view>
 
   <!-- 表单 -->
-  <view class="form-section card">
-    <view class="form-group">
-      <view class="form-label">昵称</view>
-      <input 
-        type="nickname"
-        class="form-input" 
-        placeholder="请输入您的昵称"
-        value="{{userInfo.nickname}}"
-        bindinput="onNicknameInput"
-        maxlength="20"
-      />
+  <view class="form-section">
+    <view class="form-card">
+      <view class="form-group">
+        <text class="form-label">昵称</text>
+        <view class="input-wrapper">
+          <text class="input-icon">😊</text>
+          <input 
+            type="nickname"
+            class="form-input" 
+            placeholder="请输入您的昵称"
+            value="{{userInfo.nickname}}"
+            bindinput="onNicknameInput"
+            maxlength="20"
+          />
+        </view>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">性别</text>
+        <view class="gender-options">
+          <view class="gender-option {{userInfo.gender === 1 ? 'active male' : ''}}" 
+                bindtap="selectGender" data-gender="1">
+            <text class="gender-emoji">👦</text>
+            <text class="gender-text">男</text>
+          </view>
+          <view class="gender-option {{userInfo.gender === 2 ? 'active female' : ''}}" 
+                bindtap="selectGender" data-gender="2">
+            <text class="gender-emoji">👧</text>
+            <text class="gender-text">女</text>
+          </view>
+          <view class="gender-option {{userInfo.gender === 0 ? 'active secret' : ''}}" 
+                bindtap="selectGender" data-gender="0">
+            <text class="gender-emoji">🤫</text>
+            <text class="gender-text">保密</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">生日</text>
+        <picker mode="date" bindchange="onDateChange" value="{{userInfo.birthday}}" start="1950-01-01" end="2020-12-31">
+          <view class="date-picker">
+            <text class="date-icon">🎂</text>
+            <text class="date-value {{userInfo.birthday ? '' : 'placeholder'}}">
+              {{userInfo.birthday || '选择您的生日'}}
+            </text>
+            <text class="date-arrow">›</text>
+          </view>
+        </picker>
+      </view>
     </view>
   </view>
 
+  <!-- 保存按钮 -->
   <view class="action-section">
     <button 
-      class="btn-primary btn-block" 
+      class="save-btn {{userInfo.nickname ? 'active' : ''}}" 
       bindtap="saveProfile"
       loading="{{isSubmitting}}"
-      disabled="{{isSubmitting || !userInfo.nickname.trim()}}"
-    >保存</button>
+      disabled="{{isSubmitting || !userInfo.nickname}}"
+    >
+      <text>保存修改</text>
+    </button>
   </view>
 </view>

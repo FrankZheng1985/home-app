@@ -18,7 +18,9 @@ Page({
       description: ''
     },
     iconOptions: ['🧹', '🧽', '🍳', '🧺', '🛒', '🗑️', '🚿', '🧼', '🛏️', '🪴', '🐕', '🚗', '🧸', '📦', '🪥', '🍽️'],
-    isSubmitting: false
+    isSubmitting: false,
+    showValueModal: false,
+    newPointsValue: ''
   },
 
   onLoad() {
@@ -40,11 +42,16 @@ Page({
         this.setData({ familyInfo });
 
         // 检查是否为管理员
-        const membersRes = await familyApi.getMembers(familyInfo.id);
-        const currentUserId = wx.getStorageSync('userInfo')?.id;
-        const currentMember = membersRes.data?.find(m => m.userId === currentUserId);
-        const isAdmin = currentMember && (currentMember.role === 'admin' || currentMember.role === 'owner');
-        this.setData({ isAdmin });
+        try {
+          const membersRes = await familyApi.getMembers(familyInfo.id);
+          const currentUserId = wx.getStorageSync('userInfo')?.id;
+          const currentMember = (membersRes.data || []).find(m => m.userId === currentUserId || m.user_id === currentUserId);
+          const isAdmin = !!(currentMember && (currentMember.role === 'admin' || currentMember.role === 'owner' || currentMember.role === 'creator'));
+          this.setData({ isAdmin: isAdmin });
+        } catch (e) {
+          console.log('获取成员信息失败:', e);
+          this.setData({ isAdmin: false });
+        }
 
         // 获取家务类型
         await this.loadChoreTypes();
@@ -89,7 +96,13 @@ Page({
     this.setData({
       showEditModal: true,
       editMode: 'edit',
-      editingType: { ...item }
+      editingType: { 
+        id: item.id,
+        name: item.name || '',
+        icon: item.icon || '🧹',
+        points: item.points || 10,
+        description: item.description || ''
+      }
     });
   },
 
@@ -133,7 +146,10 @@ Page({
   async saveChoreType() {
     const { editMode, editingType, familyInfo, isSubmitting } = this.data;
 
-    if (!editingType.name.trim()) {
+    const name = (editingType.name || '').trim();
+    const description = (editingType.description || '').trim();
+
+    if (!name) {
       showError('请输入家务名称');
       return;
     }
@@ -152,17 +168,17 @@ Page({
       if (editMode === 'add') {
         await choreApi.createType({
           familyId: familyInfo.id,
-          name: editingType.name.trim(),
+          name: name,
           icon: editingType.icon,
           points: editingType.points,
-          description: editingType.description.trim()
+          description: description
         });
       } else {
         await choreApi.updateType(editingType.id, {
-          name: editingType.name.trim(),
+          name: name,
           icon: editingType.icon,
           points: editingType.points,
-          description: editingType.description.trim()
+          description: description
         });
       }
 
@@ -199,6 +215,61 @@ Page({
     } catch (error) {
       hideLoading();
       showError(error.message || '删除失败');
+    }
+  },
+
+  // 编辑积分价值
+  editPointsValue() {
+    this.setData({
+      showValueModal: true,
+      newPointsValue: String(this.data.familyInfo?.pointsValue || 0.5)
+    });
+  },
+
+  // 关闭积分价值弹窗
+  closeValueModal() {
+    this.setData({
+      showValueModal: false,
+      newPointsValue: ''
+    });
+  },
+
+  // 输入积分价值
+  onValueInput(e) {
+    this.setData({ newPointsValue: e.detail.value });
+  },
+
+  // 保存积分价值
+  async savePointsValue() {
+    const { newPointsValue, familyInfo, isSubmitting } = this.data;
+    const value = parseFloat(newPointsValue);
+
+    if (isNaN(value) || value < 0) {
+      showError('请输入有效的积分价值');
+      return;
+    }
+
+    if (isSubmitting) return;
+
+    try {
+      this.setData({ isSubmitting: true });
+      showLoading('保存中...');
+
+      await familyApi.updatePointsValue(familyInfo.id, value);
+
+      // 更新本地数据
+      this.setData({
+        'familyInfo.pointsValue': value
+      });
+
+      hideLoading();
+      showSuccess('保存成功');
+      this.closeValueModal();
+    } catch (error) {
+      hideLoading();
+      showError(error.message || '保存失败');
+    } finally {
+      this.setData({ isSubmitting: false });
     }
   }
 });

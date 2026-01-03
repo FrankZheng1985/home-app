@@ -1,31 +1,54 @@
 // pages/register/register.js
 const app = getApp();
-const { userApi, familyApi } = require('../../utils/api');
+const { authApi } = require('../../utils/api');
 const { showLoading, hideLoading, showError, showSuccess } = require('../../utils/util');
 
 Page({
   data: {
-    step: 1, // 1: 基本信息, 2: 喜好设置
+    openId: '',
     userInfo: {
       nickname: '',
-      avatarUrl: ''
+      avatarUrl: '',
+      gender: 0, // 0: 保密, 1: 男, 2: 女
+      birthday: ''
     },
-    preferences: {
-      birthday: '',
-      favoriteFood: '',
-      favoriteColor: '',
-      hobbies: ''
-    },
-    isSubmitting: false
+    isSubmitting: false,
+    // 喜好选项
+    preferenceOptions: [
+      { id: 'reading', name: '阅读', emoji: '📚', selected: false },
+      { id: 'sports', name: '运动', emoji: '🏃', selected: false },
+      { id: 'music', name: '音乐', emoji: '🎵', selected: false },
+      { id: 'cooking', name: '烹饪', emoji: '🍳', selected: false },
+      { id: 'travel', name: '旅行', emoji: '✈️', selected: false },
+      { id: 'games', name: '游戏', emoji: '🎮', selected: false },
+      { id: 'movies', name: '电影', emoji: '🎬', selected: false },
+      { id: 'pets', name: '宠物', emoji: '🐱', selected: false },
+      { id: 'photography', name: '摄影', emoji: '📷', selected: false },
+      { id: 'gardening', name: '园艺', emoji: '🌱', selected: false },
+      { id: 'handcraft', name: '手工', emoji: '✂️', selected: false },
+      { id: 'shopping', name: '购物', emoji: '🛒', selected: false }
+    ]
   },
 
   onLoad() {
+    // 获取临时存储的openId
+    const tempOpenId = wx.getStorageSync('tempOpenId');
+    if (!tempOpenId) {
+      showError('登录信息已过期，请重新登录');
+      setTimeout(() => {
+        wx.redirectTo({ url: '/pages/login/login' });
+      }, 1500);
+      return;
+    }
+    
+    this.setData({ openId: tempOpenId });
+
     // 如果有微信用户信息，预填
     const wxUserInfo = app.globalData.wxUserInfo;
     if (wxUserInfo) {
       this.setData({
-        'userInfo.nickname': wxUserInfo.nickName,
-        'userInfo.avatarUrl': wxUserInfo.avatarUrl
+        'userInfo.nickname': wxUserInfo.nickName || '',
+        'userInfo.avatarUrl': wxUserInfo.avatarUrl || ''
       });
     }
   },
@@ -44,88 +67,106 @@ Page({
     });
   },
 
-  // 喜好输入
-  onPreferenceInput(e) {
-    const { field } = e.currentTarget.dataset;
+  // 选择性别
+  selectGender(e) {
+    const gender = parseInt(e.currentTarget.dataset.gender);
     this.setData({
-      [`preferences.${field}`]: e.detail.value
+      'userInfo.gender': gender
     });
   },
 
   // 日期选择
   onDateChange(e) {
     this.setData({
-      'preferences.birthday': e.detail.value
+      'userInfo.birthday': e.detail.value
     });
   },
 
-  // 下一步
-  nextStep() {
-    const { nickname } = this.data.userInfo;
+  // 切换喜好选择
+  togglePreference(e) {
+    const id = e.currentTarget.dataset.id;
+    const options = this.data.preferenceOptions;
+    const index = options.findIndex(item => item.id === id);
     
-    if (!nickname.trim()) {
-      showError('请输入昵称');
-      return;
+    if (index !== -1) {
+      const key = `preferenceOptions[${index}].selected`;
+      this.setData({
+        [key]: !options[index].selected
+      });
     }
-
-    this.setData({ step: 2 });
   },
 
-  // 上一步
-  prevStep() {
-    this.setData({ step: 1 });
+  // 获取选中的喜好
+  getSelectedPreferences() {
+    return this.data.preferenceOptions
+      .filter(item => item.selected)
+      .map(item => item.id);
   },
 
-  // 跳过喜好设置
-  skipPreferences() {
+  // 跳过注册
+  skipRegister() {
+    // 使用默认值完成注册
+    this.setData({
+      'userInfo.nickname': '微信用户'
+    });
     this.saveAndContinue();
-  },
-
-  // 完成注册
-  async finishRegister() {
-    await this.saveAndContinue();
   },
 
   // 保存并继续
   async saveAndContinue() {
-    const { userInfo, preferences, isSubmitting } = this.data;
+    const { openId, userInfo, isSubmitting } = this.data;
 
     if (isSubmitting) return;
+
+    // 验证昵称
+    if (!userInfo.nickname || !userInfo.nickname.trim()) {
+      showError('请输入昵称');
+      return;
+    }
 
     try {
       this.setData({ isSubmitting: true });
       showLoading('保存中...');
 
-      // 更新用户信息
-      await userApi.updateProfile({
-        nickname: userInfo.nickname,
-        avatarUrl: userInfo.avatarUrl
+      // 获取选中的喜好
+      const preferences = this.getSelectedPreferences();
+
+      // 调用注册接口
+      const result = await authApi.register({
+        openId: openId,
+        nickname: userInfo.nickname.trim(),
+        avatarUrl: userInfo.avatarUrl,
+        gender: userInfo.gender,
+        birthday: userInfo.birthday,
+        preferences: {
+          hobbies: preferences
+        }
       });
 
-      // 如果有喜好设置，保存喜好
-      const hasPreferences = Object.values(preferences).some(v => v);
-      if (hasPreferences) {
-        await userApi.updatePreferences(preferences);
+      if (result.data) {
+        const { token, user } = result.data;
+        
+        // 保存token和用户信息
+        wx.setStorageSync('token', token);
+        wx.setStorageSync('userInfo', user);
+        app.globalData.token = token;
+        app.globalData.userInfo = user;
+        
+        // 清除临时openId
+        wx.removeStorageSync('tempOpenId');
+
+        hideLoading();
+        showSuccess('注册成功');
+
+        // 检查是否有家庭，没有则跳转创建家庭
+        setTimeout(() => {
+          wx.redirectTo({ url: '/pages/family/create' });
+        }, 1500);
       }
-
-      // 更新本地存储
-      const updatedUserInfo = {
-        ...app.globalData.userInfo,
-        ...userInfo
-      };
-      wx.setStorageSync('userInfo', updatedUserInfo);
-      app.globalData.userInfo = updatedUserInfo;
-
-      hideLoading();
-      showSuccess('设置完成');
-
-      setTimeout(() => {
-        wx.switchTab({ url: '/pages/index/index' });
-      }, 1500);
     } catch (error) {
       hideLoading();
-      console.error('保存失败:', error);
-      showError(error.message || '保存失败');
+      console.error('注册失败:', error);
+      showError(error.message || '注册失败');
     } finally {
       this.setData({ isSubmitting: false });
     }

@@ -14,6 +14,9 @@ router.put('/profile', authenticate, [
   body('nickname').optional().isLength({ max: 12 }).withMessage('昵称不能超过12个字符')
 ], asyncHandler(userController.updateProfile));
 
+// 获取用户喜好
+router.get('/preferences', authenticate, asyncHandler(userController.getPreferences));
+
 // 更新用户喜好
 router.put('/preferences', authenticate, asyncHandler(userController.updatePreferences));
 

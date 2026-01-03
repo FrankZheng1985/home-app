@@ -16,9 +16,11 @@ Page({
 
   // 创建家庭
   async createFamily() {
+    console.log('创建家庭按钮被点击');
     const { familyName, isSubmitting } = this.data;
+    console.log('当前状态:', { familyName, isSubmitting });
 
-    if (!familyName.trim()) {
+    if (!familyName || !familyName.trim()) {
       showError('请输入家庭名称');
       return;
     }
@@ -28,16 +30,21 @@ Page({
       return;
     }
 
-    if (isSubmitting) return;
+    if (isSubmitting) {
+      console.log('正在提交中，跳过');
+      return;
+    }
 
     try {
       this.setData({ isSubmitting: true });
       showLoading('创建中...');
+      console.log('开始调用 API 创建家庭...');
 
       const res = await familyApi.create({
         name: familyName.trim()
       });
 
+      console.log('创建家庭响应:', res);
       hideLoading();
 
       if (res.data) {
@@ -52,6 +59,7 @@ Page({
         }, 1500);
       }
     } catch (error) {
+      console.error('创建家庭失败:', error);
       hideLoading();
       showError(error.message || '创建失败');
     } finally {

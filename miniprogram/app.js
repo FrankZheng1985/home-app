@@ -7,7 +7,12 @@ App({
       this.globalData.token = token;
       this.globalData.userInfo = wx.getStorageSync('userInfo');
       this.globalData.familyInfo = wx.getStorageSync('familyInfo');
+      // 已登录，跳转到首页
+      setTimeout(() => {
+        wx.switchTab({ url: '/pages/index/index' });
+      }, 100);
     }
+    // 未登录时，停留在登录页（登录页是首页）
 
     // 获取系统信息（使用新版 API 避免弃用警告）
     this.initSystemInfo();
@@ -42,7 +47,10 @@ App({
     userInfo: null,
     familyInfo: null,
     token: null,
-    backendUrl: 'http://localhost:3000', // 后端服务地址，部署时修改
+    // 后端服务地址配置
+    // 模拟器测试用 localhost，真机测试用局域网IP
+    backendUrl: 'http://localhost:3000',
+    // backendUrl: 'http://192.168.31.226:3000', // 真机测试时取消此行注释，注释上一行
     systemInfo: null,
     statusBarHeight: 0,
     safeAreaBottom: 0

@@ -1,0 +1,34 @@
+# Render 部署配置文件
+# 文档: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: family-assistant-api
+    env: node
+    region: singapore  # 新加坡节点，国内访问较快
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: WX_APPID
+        sync: false
+      - key: WX_SECRET
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: family-assistant-db
+          property: connectionString
+
+databases:
+  - name: family-assistant-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: 15
+

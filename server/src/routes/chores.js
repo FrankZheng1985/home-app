@@ -38,5 +38,17 @@ router.get('/records', authenticate, asyncHandler(choreController.getRecords));
 // 获取家务统计
 router.get('/statistics', authenticate, asyncHandler(choreController.getStatistics));
 
+// 获取待审核的家务记录（管理员）
+router.get('/pending', authenticate, asyncHandler(choreController.getPendingRecords));
+
+// 获取待审核数量
+router.get('/pending-count', authenticate, asyncHandler(choreController.getPendingCount));
+
+// 审核家务记录（管理员）
+router.post('/review', authenticate, [
+  body('recordId').notEmpty().withMessage('记录ID不能为空'),
+  body('action').isIn(['approve', 'reject']).withMessage('无效的操作')
+], asyncHandler(choreController.reviewRecord));
+
 module.exports = router;
 

@@ -10,7 +10,9 @@ Page({
     isAdmin: false,
     currentUserId: null,
     showInviteModal: false,
-    inviteCode: ''
+    inviteCode: '',
+    showMemberModal: false,
+    selectedMember: null
   },
 
   onLoad() {
@@ -39,7 +41,7 @@ Page({
         
         // 判断当前用户是否为管理员
         const currentMember = members.find(m => m.userId === this.data.currentUserId);
-        const isAdmin = currentMember && (currentMember.role === 'admin' || currentMember.role === 'owner');
+        const isAdmin = currentMember && (currentMember.role === 'admin' || currentMember.role === 'creator');
         
         this.setData({ members, isAdmin });
       }
@@ -57,8 +59,13 @@ Page({
     const { familyInfo } = this.data;
     this.setData({
       showInviteModal: true,
-      inviteCode: familyInfo.inviteCode || ''
+      inviteCode: familyInfo.invite_code || familyInfo.inviteCode || ''
     });
+  },
+
+  // 显示家庭邀请码（快捷方式）
+  showFamilyCode() {
+    this.showInvite();
   },
 
   // 关闭邀请弹窗
@@ -68,8 +75,13 @@ Page({
 
   // 复制邀请码
   copyInviteCode() {
+    const code = this.data.inviteCode || this.data.familyInfo?.invite_code;
+    if (!code) {
+      showError('邀请码获取失败');
+      return;
+    }
     wx.setClipboardData({
-      data: this.data.inviteCode,
+      data: code,
       success: () => {
         showSuccess('已复制邀请码');
       }
@@ -94,9 +106,27 @@ Page({
     }
   },
 
-  // 设置成员角色
-  async setMemberRole(e) {
-    const { memberId, role } = e.currentTarget.dataset;
+  // 显示成员操作菜单
+  showMemberActions(e) {
+    const memberId = e.currentTarget.dataset.memberId;
+    const memberName = e.currentTarget.dataset.memberName;
+    this.setData({
+      showMemberModal: true,
+      selectedMember: { id: memberId, name: memberName }
+    });
+  },
+
+  // 关闭成员操作菜单
+  closeMemberModal() {
+    this.setData({
+      showMemberModal: false,
+      selectedMember: null
+    });
+  },
+
+  // 设为管理员
+  async setAsAdmin(e) {
+    const memberId = e.currentTarget.dataset.memberId;
     
     if (!this.data.isAdmin) {
       showError('只有管理员可以操作');
@@ -105,9 +135,10 @@ Page({
 
     try {
       showLoading('设置中...');
-      await familyApi.updateMemberRole(this.data.familyInfo.id, memberId, role);
+      await familyApi.updateMemberRole(this.data.familyInfo.id, memberId, 'admin');
       hideLoading();
       showSuccess('设置成功');
+      this.closeMemberModal();
       this.loadFamilyData();
     } catch (error) {
       hideLoading();
@@ -117,12 +148,15 @@ Page({
 
   // 移除成员
   async removeMember(e) {
-    const { memberId, memberName } = e.currentTarget.dataset;
+    const memberId = e.currentTarget.dataset.memberId;
+    const memberName = e.currentTarget.dataset.memberName;
     
     if (!this.data.isAdmin) {
       showError('只有管理员可以操作');
       return;
     }
+
+    this.closeMemberModal();
 
     const confirmed = await showConfirm({
       title: '移除成员',
@@ -175,5 +209,16 @@ Page({
   // 去奖励设置
   goToRewards() {
     wx.navigateTo({ url: '/pages/rewards/rewards' });
+  },
+
+  // 分享
+  onShareAppMessage() {
+    const { familyInfo } = this.data;
+    const inviteCode = familyInfo?.invite_code || familyInfo?.inviteCode || '';
+    return {
+      title: `邀请你加入「${familyInfo?.name || '我的家庭'}」`,
+      path: `/pages/family/join?code=${inviteCode}`,
+      imageUrl: '/assets/images/share-bg.png'
+    };
   }
 });

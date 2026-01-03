@@ -14,7 +14,16 @@
     },
     "useCompilerPlugins": false,
     "minifyWXML": true,
-    "urlCheck": false
+    "urlCheck": false,
+    "compileWorklet": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "minifyWXSS": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},
@@ -22,10 +31,10 @@
     "ignore": [],
     "include": []
   },
-  "appid": "wx186d6198694eb0a3",
+  "appid": "wx17447a6fbe39bd4d",
   "projectname": "家庭小助手",
   "description": "家庭成员管理、家务记录与奖励、动态分享小程序",
-  "libVersion": "2.19.4",
+  "libVersion": "3.12.1",
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2

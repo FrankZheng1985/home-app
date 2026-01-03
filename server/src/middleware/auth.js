@@ -1,6 +1,17 @@
 // src/middleware/auth.js
 const jwt = require('jsonwebtoken');
-const { query } = require('../config/database');
+
+// 动态导入数据库模块
+let query;
+try {
+  query = require('../config/database').query;
+} catch (e) {
+  console.warn('数据库模块未加载');
+  query = null;
+}
+
+// 开发模式下的模拟用户数据存储（与 authController 共享）
+const mockUsers = global.mockUsers || (global.mockUsers = new Map());
 
 /**
  * JWT认证中间件
@@ -18,17 +29,50 @@ const authenticate = async (req, res, next) => {
     // 验证token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // 查询用户信息
-    const result = await query(
-      'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = $1',
-      [decoded.userId]
-    );
+    let user = null;
     
-    if (result.rows.length === 0) {
+    // 尝试从数据库查询用户信息
+    if (query) {
+      try {
+        const result = await query(
+          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = $1',
+          [decoded.userId]
+        );
+        if (result.rows.length > 0) {
+          user = result.rows[0];
+        }
+      } catch (dbError) {
+        console.warn('数据库查询失败，尝试使用模拟数据:', dbError.message);
+      }
+    }
+    
+    // 数据库不可用时，使用模拟数据
+    if (!user) {
+      // 在模拟用户中查找
+      for (const [openId, mockUser] of mockUsers) {
+        if (mockUser.id === decoded.userId) {
+          user = mockUser;
+          break;
+        }
+      }
+      
+      // 如果找不到，创建一个基于 JWT 的临时用户（开发模式）
+      if (!user && process.env.NODE_ENV === 'development') {
+        user = {
+          id: decoded.userId,
+          nickname: '开发用户',
+          avatar_url: '',
+          preferences: {}
+        };
+        console.log('🔧 开发模式：使用临时用户数据');
+      }
+    }
+    
+    if (!user) {
       return res.status(401).json({ error: '用户不存在' });
     }
     
-    req.user = result.rows[0];
+    req.user = user;
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {

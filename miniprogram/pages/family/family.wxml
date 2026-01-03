@@ -1,104 +1,150 @@
-<!--pages/family/family.wxml-->
-<view class="container family-container">
+<!--pages/family/family.wxml - 精美设计版-->
+<view class="family-page">
   <!-- 无家庭 -->
   <view class="empty-state" wx:if="{{!familyInfo}}">
-    <view class="empty-icon">🏠</view>
-    <view class="empty-text">还没有加入家庭</view>
-    <navigator url="/pages/family/create" class="btn-primary btn-small mt-20">创建家庭</navigator>
-    <navigator url="/pages/family/join" class="btn-secondary btn-small mt-20">加入家庭</navigator>
+    <view class="empty-icon animate-float">🏠</view>
+    <view class="empty-title">还没有加入家庭</view>
+    <view class="empty-desc">创建或加入一个家庭开始记录吧</view>
+    <view class="empty-actions">
+      <navigator url="/pages/family/create" class="action-btn-primary">创建家庭</navigator>
+      <navigator url="/pages/family/join" class="action-btn-secondary">加入家庭</navigator>
+    </view>
   </view>
 
   <block wx:else>
     <!-- 家庭信息卡片 -->
-    <view class="family-info-card card">
-      <view class="family-header">
-        <view class="family-icon">🏠</view>
-        <view class="family-detail">
+    <view class="family-card">
+      <view class="family-bg"></view>
+      <view class="family-content">
+        <view class="family-avatar">
+          <text class="family-emoji">🏠</text>
+        </view>
+        <view class="family-info">
           <text class="family-name">{{familyInfo.name}}</text>
-          <text class="family-members text-muted">{{members.length}}位家庭成员</text>
+          <text class="family-stats">{{members.length}} 位家庭成员</text>
         </view>
       </view>
       
+      <!-- 快捷操作 -->
       <view class="family-actions">
-        <view class="action-btn" bindtap="showInvite">
-          <text class="action-icon">📨</text>
+        <view class="quick-action" bindtap="showInvite">
+          <view class="action-icon">📨</view>
           <text class="action-text">邀请成员</text>
         </view>
-        <view class="action-btn" bindtap="goToRewards" wx:if="{{isAdmin}}">
-          <text class="action-icon">⚙️</text>
+        <view class="quick-action" bindtap="goToRewards" wx:if="{{isAdmin}}">
+          <view class="action-icon">⚙️</view>
           <text class="action-text">奖励设置</text>
+        </view>
+        <view class="quick-action" bindtap="showFamilyCode">
+          <view class="action-icon">📋</view>
+          <text class="action-text">邀请码</text>
         </view>
       </view>
     </view>
 
     <!-- 成员列表 -->
-    <view class="members-section card">
-      <view class="section-header">
-        <text class="section-title">家庭成员</text>
-      </view>
-      
-      <view class="members-list">
-        <view class="member-item" wx:for="{{members}}" wx:key="id">
+    <view class="section-header">
+      <text class="section-title">👨‍👩‍👧‍👦 家庭成员</text>
+    </view>
+    
+    <view class="members-list">
+      <view class="member-card" wx:for="{{members}}" wx:key="id">
+        <view class="member-main">
           <image 
-            class="member-avatar avatar-medium" 
+            class="member-avatar" 
             src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"
+            mode="aspectFill"
           ></image>
           <view class="member-info">
             <view class="member-name-row">
               <text class="member-name">{{item.user.nickname}}</text>
-              <view class="role-tag {{item.role === 'owner' ? 'owner' : item.role === 'admin' ? 'admin' : ''}}">
-                {{item.role === 'owner' ? '创建者' : item.role === 'admin' ? '管理员' : '成员'}}
+              <view class="role-badge {{item.role}}">
+                <text wx:if="{{item.role === 'creator'}}">👑 创建者</text>
+                <text wx:elif="{{item.role === 'admin'}}">⭐ 管理员</text>
+                <text wx:else>👤 成员</text>
               </view>
             </view>
-            <text class="member-points text-muted">累计积分：{{item.totalPoints || 0}}</text>
+            <view class="member-points">
+              <text class="points-icon">🏆</text>
+              <text class="points-value">{{item.totalPoints || 0}}</text>
+              <text class="points-label">积分</text>
+            </view>
           </view>
           
           <!-- 管理操作 -->
-          <view class="member-actions" wx:if="{{isAdmin && item.userId !== currentUserId && item.role !== 'owner'}}">
-            <view 
-              class="action-menu-btn" 
-              data-member-id="{{item.id}}"
-              data-member-name="{{item.user.nickname}}"
-              catchtap="removeMember"
-            >
-              <text class="text-error">移除</text>
-            </view>
+          <view class="member-action" 
+                wx:if="{{isAdmin && item.userId !== currentUserId && item.role !== 'creator'}}"
+                data-member-id="{{item.id}}"
+                data-member-name="{{item.user.nickname}}"
+                catchtap="showMemberActions">
+            <text class="action-dots">⋯</text>
           </view>
         </view>
       </view>
     </view>
 
-    <!-- 退出家庭 -->
-    <view class="leave-section">
-      <button class="leave-btn" bindtap="leaveFamily">退出家庭</button>
+    <!-- 危险区域 -->
+    <view class="danger-section">
+      <view class="section-title-small">危险操作</view>
+      <button class="leave-btn" bindtap="leaveFamily">
+        <text class="leave-icon">🚪</text>
+        <text class="leave-text">退出家庭</text>
+      </button>
     </view>
   </block>
 
   <!-- 邀请弹窗 -->
   <view class="modal-mask" wx:if="{{showInviteModal}}" bindtap="closeInviteModal"></view>
-  <view class="modal-content invite-modal" wx:if="{{showInviteModal}}">
+  <view class="modal-content" wx:if="{{showInviteModal}}">
     <view class="modal-header">
       <text class="modal-title">邀请家人加入</text>
-      <text class="modal-close" bindtap="closeInviteModal">×</text>
+      <view class="modal-close" bindtap="closeInviteModal">×</view>
     </view>
     <view class="modal-body">
-      <view class="invite-code-section">
+      <!-- 邀请码 -->
+      <view class="invite-section">
         <text class="invite-label">邀请码</text>
         <view class="invite-code-box">
-          <text class="invite-code">{{inviteCode}}</text>
-          <button class="copy-btn btn-small btn-primary" bindtap="copyInviteCode">复制</button>
+          <text class="invite-code">{{inviteCode || familyInfo.invite_code || '------'}}</text>
         </view>
+        <button class="copy-btn" bindtap="copyInviteCode">
+          <text>📋 复制邀请码</text>
+        </button>
       </view>
-      
-      <view class="divider-text">
-        <text class="divider-line"></text>
-        <text class="divider-text-content text-muted">或</text>
-        <text class="divider-line"></text>
+
+      <view class="divider">
+        <view class="divider-line"></view>
+        <text class="divider-text">或者</text>
+        <view class="divider-line"></view>
       </view>
-      
-      <button class="btn-outline btn-block" bindtap="generateQRCode">
-        生成邀请二维码
+
+      <!-- 分享 -->
+      <button class="share-btn" open-type="share">
+        <text class="share-icon">💌</text>
+        <text class="share-text">分享给微信好友</text>
       </button>
+    </view>
+  </view>
+
+  <!-- 成员操作弹窗 -->
+  <view class="modal-mask" wx:if="{{showMemberModal}}" bindtap="closeMemberModal"></view>
+  <view class="action-sheet" wx:if="{{showMemberModal}}">
+    <view class="action-sheet-header">
+      <text>管理成员：{{selectedMember.name}}</text>
+    </view>
+    <view class="action-sheet-item" 
+          data-member-id="{{selectedMember.id}}"
+          bindtap="setAsAdmin">
+      <text>⭐ 设为管理员</text>
+    </view>
+    <view class="action-sheet-item danger"
+          data-member-id="{{selectedMember.id}}"
+          data-member-name="{{selectedMember.name}}"
+          bindtap="removeMember">
+      <text>🗑️ 移出家庭</text>
+    </view>
+    <view class="action-sheet-cancel" bindtap="closeMemberModal">
+      <text>取消</text>
     </view>
   </view>
 </view>

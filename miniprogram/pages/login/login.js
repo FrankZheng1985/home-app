@@ -49,7 +49,19 @@ Page({
       const result = await authApi.wxLogin(loginRes.code);
 
       if (result.data) {
-        const { token, user, isNewUser } = result.data;
+        // 检查是否需要注册（新用户）
+        if (result.data.needRegister) {
+          hideLoading();
+          // 保存openId供注册页使用
+          wx.setStorageSync('tempOpenId', result.data.openId);
+          showSuccess('欢迎新用户');
+          setTimeout(() => {
+            wx.redirectTo({ url: '/pages/register/register' });
+          }, 1000);
+          return;
+        }
+
+        const { token, user } = result.data;
         
         // 保存token和用户信息
         wx.setStorageSync('token', token);
@@ -70,19 +82,10 @@ Page({
         }
 
         hideLoading();
-
-        if (isNewUser) {
-          // 新用户，跳转到注册完善信息页
-          showSuccess('登录成功');
-          setTimeout(() => {
-            wx.redirectTo({ url: '/pages/register/register' });
-          }, 1000);
-        } else {
-          showSuccess('登录成功');
-          setTimeout(() => {
-            wx.switchTab({ url: '/pages/index/index' });
-          }, 1000);
-        }
+        showSuccess('登录成功');
+        setTimeout(() => {
+          wx.switchTab({ url: '/pages/index/index' });
+        }, 1000);
       }
     } catch (error) {
       hideLoading();

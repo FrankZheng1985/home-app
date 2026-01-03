@@ -1,46 +1,74 @@
-<!--pages/family/create.wxml-->
-<view class="container create-family-container">
-  <view class="header-section">
-    <view class="header-icon">🏠</view>
-    <view class="header-title">创建新家庭</view>
-    <view class="header-desc text-muted">为您的家庭取一个温馨的名字</view>
+<!--pages/family/create.wxml - 精美设计版-->
+<view class="create-page">
+  <!-- 渐变头部 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="header-icon animate-float">
+        <text class="icon-emoji">🏠</text>
+        <view class="icon-glow"></view>
+      </view>
+      <text class="header-title">创建新家庭</text>
+      <text class="header-desc">为您的家庭取一个温馨的名字</text>
+    </view>
   </view>
 
-  <view class="form-section card">
+  <!-- 表单卡片 -->
+  <view class="form-card">
     <view class="form-group">
-      <view class="form-label">家庭名称</view>
-      <input 
-        class="form-input" 
-        placeholder="如：温馨小窝、幸福之家"
-        value="{{familyName}}"
-        bindinput="onNameInput"
-        maxlength="20"
-      />
-      <view class="input-tip text-muted">2-20个字符</view>
+      <text class="form-label">家庭名称</text>
+      <view class="input-wrapper">
+        <text class="input-icon">✨</text>
+        <input 
+          class="form-input" 
+          placeholder="如：温馨小窝、幸福之家"
+          value="{{familyName}}"
+          bindinput="onNameInput"
+          maxlength="20"
+        />
+      </view>
+      <text class="input-hint">2-20个字符，给家庭起个有爱的名字吧</text>
     </view>
   </view>
 
-  <view class="tips-section">
-    <view class="tip-item">
-      <text class="tip-icon">✓</text>
-      <text class="tip-text">创建后您将成为家庭管理员</text>
-    </view>
-    <view class="tip-item">
-      <text class="tip-icon">✓</text>
-      <text class="tip-text">可以邀请家人加入家庭</text>
-    </view>
-    <view class="tip-item">
-      <text class="tip-icon">✓</text>
-      <text class="tip-text">可以设置家务类型和积分奖励</text>
+  <!-- 特权说明 -->
+  <view class="benefits-section">
+    <text class="section-title">创建后您将获得</text>
+    <view class="benefit-list">
+      <view class="benefit-item">
+        <view class="benefit-icon icon-admin">👑</view>
+        <view class="benefit-content">
+          <text class="benefit-title">成为家庭管理员</text>
+          <text class="benefit-desc">管理家庭成员和设置</text>
+        </view>
+      </view>
+      <view class="benefit-item">
+        <view class="benefit-icon icon-invite">💌</view>
+        <view class="benefit-content">
+          <text class="benefit-title">邀请家人加入</text>
+          <text class="benefit-desc">生成邀请码邀请家人</text>
+        </view>
+      </view>
+      <view class="benefit-item">
+        <view class="benefit-icon icon-reward">🎁</view>
+        <view class="benefit-content">
+          <text class="benefit-title">设置家务奖励</text>
+          <text class="benefit-desc">自定义家务类型和积分</text>
+        </view>
+      </view>
     </view>
   </view>
 
+  <!-- 提交按钮 -->
   <view class="action-section">
     <button 
-      class="btn-primary btn-block" 
+      class="submit-btn {{familyName.length >= 2 ? 'active' : ''}}" 
       bindtap="createFamily"
       loading="{{isSubmitting}}"
-      disabled="{{isSubmitting || !familyName.trim()}}"
-    >创建家庭</button>
+      disabled="{{isSubmitting || familyName.length < 2}}"
+    >
+      <text class="btn-icon">🚀</text>
+      <text class="btn-text">创建家庭</text>
+    </button>
   </view>
 </view>

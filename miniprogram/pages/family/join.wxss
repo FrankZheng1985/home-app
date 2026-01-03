@@ -1,50 +1,178 @@
-/* pages/family/join.wxss */
+/* pages/family/join.wxss - 精美设计版 */
 
-.join-family-container {
-  padding-top: 60rpx;
+.join-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #F0F5FF 0%, #F8FAFC 30%);
 }
 
-.header-section {
+/* 渐变头部 */
+.page-header {
+  position: relative;
+  padding-bottom: 60rpx;
+}
+
+.header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 380rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 0 60rpx 60rpx;
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 60rpx;
+  padding: 80rpx 40rpx 0;
 }
 
 .header-icon {
-  font-size: 120rpx;
+  position: relative;
   margin-bottom: 24rpx;
 }
 
+.icon-emoji {
+  font-size: 100rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 160rpx;
+  height: 160rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15rpx); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
 .header-title {
-  font-size: 40rpx;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #ffffff;
   margin-bottom: 12rpx;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
 .header-desc {
   font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.form-section {
-  margin-bottom: 40rpx;
+/* 表单卡片 */
+.form-card {
+  margin: -30rpx 30rpx 30rpx;
+  background: #ffffff;
+  border-radius: 28rpx;
+  padding: 40rpx;
+  box-shadow: 0 16rpx 48rpx rgba(102, 126, 234, 0.15);
+  position: relative;
+  z-index: 2;
+}
+
+.form-label {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 20rpx;
+}
+
+.code-input-wrapper {
+  background: #F8FAFC;
+  border-radius: 20rpx;
+  border: 2rpx solid #E8ECEF;
+  transition: all 0.3s;
+}
+
+.code-input-wrapper:focus-within {
+  border-color: #667eea;
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.1);
 }
 
 .code-input {
-  font-size: 40rpx;
-  font-weight: 600;
-  letter-spacing: 8rpx;
+  width: 100%;
+  height: 120rpx;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #2D3436;
   text-align: center;
+  letter-spacing: 16rpx;
   text-transform: uppercase;
 }
 
-.action-section {
-  padding: 0 20rpx;
-  margin-bottom: 60rpx;
+.input-hint {
+  display: block;
+  font-size: 24rpx;
+  color: #B2BEC3;
+  margin-top: 16rpx;
+  text-align: center;
 }
 
-.divider-text {
+/* 操作按钮 */
+.action-section {
+  padding: 10rpx 30rpx 30rpx;
+}
+
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 108rpx;
+  background: #E8ECEF;
+  border-radius: 54rpx;
+  border: none;
+  transition: all 0.3s;
+}
+
+.submit-btn::after {
+  border: none;
+}
+
+.submit-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 12rpx 32rpx rgba(102, 126, 234, 0.4);
+}
+
+.btn-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.btn-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #B2BEC3;
+}
+
+.submit-btn.active .btn-text {
+  color: #ffffff;
+}
+
+/* 分割线 */
+.divider {
   display: flex;
   align-items: center;
   margin: 40rpx 0;
@@ -52,30 +180,87 @@
 
 .divider-line {
   flex: 1;
-  height: 1rpx;
-  background-color: var(--border-color);
+  height: 2rpx;
+  background: linear-gradient(90deg, transparent, #E8ECEF, transparent);
 }
 
-.divider-text-content {
-  padding: 0 20rpx;
+.divider-text {
+  padding: 0 24rpx;
   font-size: 26rpx;
+  color: #B2BEC3;
 }
 
-.tips-section {
-  background-color: var(--background-color);
-  border-radius: 16rpx;
+/* 扫码按钮 */
+.scan-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96rpx;
+  background: #ffffff;
+  border-radius: 48rpx;
+  border: 2rpx solid #E8ECEF;
+}
+
+.scan-btn::after {
+  border: none;
+}
+
+.scan-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.scan-text {
+  font-size: 30rpx;
+  color: #636E72;
+}
+
+/* 帮助说明 */
+.help-section {
+  padding: 20rpx 30rpx 60rpx;
+}
+
+.help-card {
+  background: #ffffff;
+  border-radius: 24rpx;
   padding: 30rpx;
-  margin: 0 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
-.tips-title {
+.help-title {
   display: block;
   font-size: 28rpx;
-  font-weight: 500;
-  margin-bottom: 12rpx;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 24rpx;
 }
 
-.tips-content {
+.help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+}
+
+.step-num {
+  width: 44rpx;
+  height: 44rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #ffffff;
+  margin-right: 16rpx;
+}
+
+.step-text {
   font-size: 26rpx;
-  line-height: 1.6;
+  color: #636E72;
 }

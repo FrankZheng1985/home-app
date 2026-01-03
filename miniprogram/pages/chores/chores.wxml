@@ -1,16 +1,31 @@
-<!--pages/chores/chores.wxml-->
-<view class="container chores-container">
-  <!-- 标签切换 -->
-  <view class="tabs">
-    <view class="tab-item {{activeTab === 'record' ? 'active' : ''}}" 
-          data-tab="record" 
-          bindtap="switchTab">
-      记录家务
-    </view>
-    <view class="tab-item {{activeTab === 'history' ? 'active' : ''}}" 
-          data-tab="history" 
-          bindtap="switchTab">
-      历史记录
+<!--pages/chores/chores.wxml - 精美设计版-->
+<view class="chores-page">
+  <!-- 顶部标签切换 -->
+  <view class="tabs-wrapper">
+    <view class="tabs-bg"></view>
+    <view class="tabs {{isAdmin ? 'tabs-3' : 'tabs-2'}}">
+      <view class="tab-item {{activeTab === 'record' ? 'active' : ''}}" 
+            data-tab="record" 
+            bindtap="switchTab">
+        <text class="tab-icon">✏️</text>
+        <text class="tab-text">记录家务</text>
+      </view>
+      <view class="tab-item {{activeTab === 'history' ? 'active' : ''}}" 
+            data-tab="history" 
+            bindtap="switchTab">
+        <text class="tab-icon">📋</text>
+        <text class="tab-text">历史记录</text>
+      </view>
+      <!-- 审核入口（管理员可见） -->
+      <view class="tab-item review-tab {{activeTab === 'review' ? 'active' : ''}}" 
+            data-tab="review" 
+            bindtap="switchTab"
+            wx:if="{{isAdmin}}">
+        <text class="tab-icon">✅</text>
+        <text class="tab-text">待审核</text>
+        <view class="badge" wx:if="{{pendingCount > 0}}">{{pendingCount > 99 ? '99+' : pendingCount}}</view>
+      </view>
+      <view class="tab-indicator {{activeTab === 'history' ? 'pos-2' : (activeTab === 'review' ? 'pos-3' : '')}}"></view>
     </view>
   </view>
 
@@ -18,109 +33,324 @@
   <view class="tab-content" wx:if="{{activeTab === 'record'}}">
     <!-- 无家庭提示 -->
     <view class="empty-state" wx:if="{{!familyInfo}}">
-      <view class="empty-icon">🏠</view>
-      <view class="empty-text">请先加入或创建家庭</view>
+      <view class="empty-icon animate-float">🏠</view>
+      <text class="empty-title">请先加入家庭</text>
+      <text class="empty-desc">加入或创建一个家庭后，才能记录家务哦</text>
     </view>
 
     <!-- 家务类型列表 -->
     <block wx:elif="{{choreTypes.length > 0}}">
-      <view class="section-title">选择家务类型</view>
-      <view class="chore-types-grid">
-        <view class="chore-type-item" 
+      <!-- 分类标签 -->
+      <scroll-view class="category-scroll" scroll-x enable-flex>
+        <view class="category-item {{currentCategory === 'all' ? 'active' : ''}}" 
+              data-category="all" bindtap="switchCategory">
+          <text>全部</text>
+        </view>
+        <view class="category-item {{currentCategory === 'clean' ? 'active' : ''}}" 
+              data-category="clean" bindtap="switchCategory">
+          <text>🧹 清洁</text>
+        </view>
+        <view class="category-item {{currentCategory === 'cook' ? 'active' : ''}}" 
+              data-category="cook" bindtap="switchCategory">
+          <text>🍳 烹饪</text>
+        </view>
+        <view class="category-item {{currentCategory === 'laundry' ? 'active' : ''}}" 
+              data-category="laundry" bindtap="switchCategory">
+          <text>👕 洗衣</text>
+        </view>
+        <view class="category-item {{currentCategory === 'other' ? 'active' : ''}}" 
+              data-category="other" bindtap="switchCategory">
+          <text>📦 其他</text>
+        </view>
+      </scroll-view>
+
+      <!-- 家务卡片网格 -->
+      <view class="chore-grid">
+        <view class="chore-card" 
               wx:for="{{choreTypes}}" 
               wx:key="id"
               data-item="{{item}}"
               bindtap="selectChoreType">
-          <view class="chore-icon">{{item.icon || '🧹'}}</view>
-          <view class="chore-name">{{item.name}}</view>
-          <view class="chore-points">+{{item.points}}分</view>
+          <view class="card-color-bar bar-{{index % 4}}"></view>
+          <view class="chore-content">
+            <view class="chore-icon-wrap">
+              <text class="chore-emoji">{{item.icon || '🧹'}}</text>
+            </view>
+            <text class="chore-name">{{item.name}}</text>
+            <view class="chore-points-badge">
+              <text class="points-text">+{{item.points}}</text>
+              <text class="points-unit">分</text>
+            </view>
+          </view>
         </view>
       </view>
 
-      <view class="add-type-tip" bindtap="goToRewards">
-        <text class="text-primary">+ 添加更多家务类型</text>
+      <view class="add-type-btn" bindtap="goToRewards">
+        <text class="add-icon">➕</text>
+        <text class="add-text">添加更多家务类型</text>
       </view>
     </block>
 
     <!-- 无家务类型 -->
     <view class="empty-state" wx:else>
-      <view class="empty-icon">📝</view>
-      <view class="empty-text">还没有设置家务类型</view>
-      <button class="btn-primary btn-small empty-action" bindtap="goToRewards">去设置</button>
+      <view class="empty-icon animate-float">📝</view>
+      <text class="empty-title">还没有设置家务类型</text>
+      <text class="empty-desc">去奖励设置页面添加家务类型吧</text>
+      <button class="empty-btn" bindtap="goToRewards">
+        <text>去设置</text>
+      </button>
     </view>
   </view>
 
   <!-- 历史记录 -->
   <view class="tab-content" wx:if="{{activeTab === 'history'}}">
     <view class="records-list" wx:if="{{choreRecords.length > 0}}">
-      <view class="record-item card" wx:for="{{choreRecords}}" wx:key="id">
-        <view class="record-header">
-          <view class="record-user">
-            <image class="record-avatar avatar-small" src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
-            <text class="record-username">{{item.user.nickname}}</text>
+      <view class="record-card" wx:for="{{choreRecords}}" wx:key="id">
+        <view class="record-color-bar bar-{{index % 4}}"></view>
+        <view class="record-main">
+          <view class="record-header">
+            <view class="record-user">
+              <image class="record-avatar" src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
+              <text class="record-username">{{item.user.nickname}}</text>
+            </view>
+            <view class="record-points-tag {{item.status === 'pending' ? 'pending' : (item.status === 'rejected' ? 'rejected' : '')}}">
+              <text wx:if="{{item.status === 'pending'}}">待审核</text>
+              <text wx:elif="{{item.status === 'rejected'}}">已拒绝</text>
+              <text wx:else>+{{item.finalPoints || item.points}}</text>
+            </view>
           </view>
-          <view class="record-points text-primary">+{{item.points}}分</view>
-        </view>
-        <view class="record-body">
-          <view class="record-chore">
-            <text class="chore-icon-small">{{item.choreType.icon || '🧹'}}</text>
-            <text class="chore-name">{{item.choreType.name}}</text>
+          <view class="record-body">
+            <view class="record-chore">
+              <text class="record-emoji">{{item.choreType.icon || '🧹'}}</text>
+              <text class="record-chore-name">{{item.choreType.name}}</text>
+            </view>
+            <text class="record-remark" wx:if="{{item.remark}}">{{item.remark}}</text>
+            <!-- 显示照片 -->
+            <view class="record-images" wx:if="{{item.images && item.images.length > 0}}">
+              <image 
+                wx:for="{{item.images}}" 
+                wx:for-item="img" 
+                wx:key="*this" 
+                class="record-img" 
+                src="{{img}}" 
+                mode="aspectFill"
+                bindtap="previewRecordImage"
+                data-urls="{{item.images}}"
+                data-current="{{img}}"
+              ></image>
+            </view>
+            <!-- 扣分说明 -->
+            <view class="deduction-info" wx:if="{{item.deduction > 0}}">
+              <text class="deduction-text">扣{{item.deduction}}分: {{item.deductionReason}}</text>
+            </view>
           </view>
-          <view class="record-remark text-muted" wx:if="{{item.remark}}">{{item.remark}}</view>
-        </view>
-        <view class="record-footer">
-          <text class="record-time text-muted">{{item.createdAtText}}</text>
+          <view class="record-footer">
+            <text class="record-time">{{item.createdAtText}}</text>
+          </view>
         </view>
       </view>
 
-      <view class="load-more" wx:if="{{hasMore}}">
-        <text class="text-muted">上拉加载更多</text>
-      </view>
-      <view class="no-more" wx:else>
-        <text class="text-muted">没有更多了</text>
+      <view class="list-footer">
+        <text class="footer-text" wx:if="{{hasMore}}">上拉加载更多</text>
+        <text class="footer-text" wx:else>— 没有更多了 —</text>
       </view>
     </view>
 
     <view class="empty-state" wx:else>
-      <view class="empty-icon">📋</view>
-      <view class="empty-text">还没有家务记录</view>
+      <view class="empty-icon animate-float">📋</view>
+      <text class="empty-title">还没有家务记录</text>
+      <text class="empty-desc">快去记录第一条家务吧</text>
     </view>
   </view>
 
-  <!-- 记录弹窗 -->
-  <view class="modal-mask" wx:if="{{showRecordModal}}" bindtap="closeRecordModal"></view>
-  <view class="modal-content" wx:if="{{showRecordModal}}">
-    <view class="modal-header">
-      <text class="modal-title">记录家务</text>
-      <text class="modal-close" bindtap="closeRecordModal">×</text>
-    </view>
-    <view class="modal-body">
-      <view class="selected-chore">
-        <view class="chore-icon-large">{{selectedChoreType.icon || '🧹'}}</view>
-        <view class="chore-info">
-          <text class="chore-name">{{selectedChoreType.name}}</text>
-          <text class="chore-points text-primary">+{{selectedChoreType.points}}积分</text>
+  <!-- 审核列表（管理员） -->
+  <view class="tab-content" wx:if="{{activeTab === 'review' && isAdmin}}">
+    <view class="records-list" wx:if="{{pendingRecords.length > 0}}">
+      <view class="record-card review-card" wx:for="{{pendingRecords}}" wx:key="id">
+        <view class="record-color-bar bar-pending"></view>
+        <view class="record-main">
+          <view class="record-header">
+            <view class="record-user">
+              <image class="record-avatar" src="{{item.userAvatar || '/assets/images/default-avatar.png'}}"></image>
+              <text class="record-username">{{item.userNickname}}</text>
+            </view>
+            <view class="record-points-tag pending">
+              <text>待审核 +{{item.points}}</text>
+            </view>
+          </view>
+          <view class="record-body">
+            <view class="record-chore">
+              <text class="record-emoji">{{item.choreIcon || '🧹'}}</text>
+              <text class="record-chore-name">{{item.choreName}}</text>
+            </view>
+            <text class="record-remark" wx:if="{{item.note}}">{{item.note}}</text>
+            <!-- 显示照片 -->
+            <view class="record-images" wx:if="{{item.images && item.images.length > 0}}">
+              <image 
+                wx:for="{{item.images}}" 
+                wx:for-item="img" 
+                wx:key="*this" 
+                class="record-img" 
+                src="{{img}}" 
+                mode="aspectFill"
+                bindtap="previewRecordImage"
+                data-urls="{{item.images}}"
+                data-current="{{img}}"
+              ></image>
+            </view>
+          </view>
+          <view class="record-footer">
+            <text class="record-time">{{item.completedAtText}}</text>
+          </view>
+          <!-- 审核操作 -->
+          <view class="review-actions">
+            <button class="review-btn reject" catchtap="rejectRecord" data-record="{{item}}">
+              <text>❌ 拒绝</text>
+            </button>
+            <button class="review-btn deduct" catchtap="showDeductModal" data-record="{{item}}">
+              <text>⚠️ 扣分通过</text>
+            </button>
+            <button class="review-btn approve" catchtap="approveRecord" data-record="{{item}}">
+              <text>✅ 通过</text>
+            </button>
+          </view>
         </view>
       </view>
+    </view>
 
-      <view class="form-group">
-        <view class="form-label">备注（选填）</view>
-        <textarea 
-          class="form-textarea" 
-          placeholder="添加备注..."
-          value="{{remark}}"
-          bindinput="onRemarkInput"
-          maxlength="200"
-        ></textarea>
+    <view class="empty-state" wx:else>
+      <view class="empty-icon animate-float">✅</view>
+      <text class="empty-title">暂无待审核记录</text>
+      <text class="empty-desc">所有家务都已审核完毕</text>
+    </view>
+  </view>
+
+  <!-- FAB 浮动按钮 -->
+  <view class="fab" bindtap="showQuickRecord" wx:if="{{familyInfo && choreTypes.length > 0}}">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <!-- 记录弹窗 -->
+  <view class="modal-overlay {{showRecordModal ? 'show' : ''}}" bindtap="closeRecordModal">
+    <view class="modal-container" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">记录家务</text>
+        <view class="modal-close" bindtap="closeRecordModal">
+          <text>✕</text>
+        </view>
+      </view>
+      
+      <view class="modal-body">
+        <view class="selected-chore-card">
+          <view class="selected-icon">
+            <text class="icon-emoji">{{selectedChoreType.icon || '🧹'}}</text>
+          </view>
+          <view class="selected-info">
+            <text class="selected-name">{{selectedChoreType.name}}</text>
+            <view class="selected-points">
+              <text class="points-value">+{{selectedChoreType.points}}</text>
+              <text class="points-label">积分</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 照片上传 -->
+        <view class="photo-section">
+          <text class="photo-label">上传照片（可选，最多3张）</text>
+          <view class="photo-grid">
+            <view class="photo-item" wx:for="{{selectedImages}}" wx:key="index">
+              <image class="photo-img" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}"></image>
+              <view class="photo-delete" catchtap="removeImage" data-index="{{index}}">×</view>
+            </view>
+            <view class="photo-add" bindtap="chooseImage" wx:if="{{selectedImages.length < 3}}">
+              <text class="add-icon">📷</text>
+              <text class="add-text">添加照片</text>
+            </view>
+          </view>
+          <text class="photo-hint" wx:if="{{!isAdmin}}">💡 提示：上传照片后需要家长审核哦</text>
+        </view>
+
+        <view class="remark-section">
+          <text class="remark-label">添加备注（选填）</text>
+          <textarea 
+            class="remark-input" 
+            placeholder="记录一下这次家务的心情..."
+            value="{{remark}}"
+            bindinput="onRemarkInput"
+            maxlength="200"
+          ></textarea>
+          <text class="remark-count">{{remark.length || 0}}/200</text>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button 
+          class="submit-btn" 
+          bindtap="submitRecord"
+          loading="{{isSubmitting}}"
+          disabled="{{isSubmitting}}"
+        >
+          <text wx:if="{{!isSubmitting}}">✅ 确认提交</text>
+          <text wx:else>提交中...</text>
+        </button>
       </view>
     </view>
-    <view class="modal-footer">
-      <button 
-        class="btn-primary btn-block" 
-        bindtap="submitRecord"
-        loading="{{isSubmitting}}"
-        disabled="{{isSubmitting}}"
-      >确认提交</button>
+  </view>
+
+  <!-- 扣分弹窗 -->
+  <view class="modal-overlay {{showDeductModal ? 'show' : ''}}" bindtap="closeDeductModal">
+    <view class="modal-container deduct-modal" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">扣分审核</text>
+        <view class="modal-close" bindtap="closeDeductModal">
+          <text>✕</text>
+        </view>
+      </view>
+      
+      <view class="modal-body">
+        <view class="deduct-info">
+          <text class="deduct-label">原始积分</text>
+          <text class="deduct-value">+{{deductingRecord.points}}分</text>
+        </view>
+
+        <view class="deduct-section">
+          <text class="deduct-label">扣除积分</text>
+          <view class="deduct-slider">
+            <slider 
+              min="0" 
+              max="{{deductingRecord.points}}" 
+              value="{{deductAmount}}"
+              activeColor="#FF6B6B"
+              backgroundColor="#e5e5e5"
+              block-size="20"
+              bindchange="onDeductChange"
+            />
+            <text class="deduct-amount">-{{deductAmount}}分</text>
+          </view>
+          <text class="final-points">最终获得: {{deductingRecord.points - deductAmount}}分</text>
+        </view>
+
+        <view class="deduct-section">
+          <text class="deduct-label">扣分原因</text>
+          <textarea 
+            class="deduct-input"
+            placeholder="请填写扣分原因，如：完成质量不佳、未清理干净等..."
+            value="{{deductReason}}"
+            bindinput="onDeductReasonInput"
+            maxlength="100"
+          ></textarea>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="cancel-btn" bindtap="closeDeductModal">取消</button>
+        <button 
+          class="confirm-btn" 
+          bindtap="confirmDeduct"
+          loading="{{isReviewing}}"
+          disabled="{{isReviewing}}"
+        >确认扣分通过</button>
+      </view>
     </view>
   </view>
 </view>

@@ -12,6 +12,8 @@ const familyRoutes = require('./routes/families');
 const choreRoutes = require('./routes/chores');
 const pointsRoutes = require('./routes/points');
 const postRoutes = require('./routes/posts');
+const uploadRoutes = require('./routes/upload');
+const savingsRoutes = require('./routes/savings');
 
 // 导入中间件
 const { errorHandler } = require('./middleware/errorHandler');
@@ -34,10 +36,22 @@ app.use('/api/families', familyRoutes);
 app.use('/api/chores', choreRoutes);
 app.use('/api/points', pointsRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/savings', savingsRoutes);
 
-// 健康检查
+// 健康检查（Render 使用）
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// API 健康检查
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    env: process.env.NODE_ENV || 'development'
+  });
 });
 
 // 404处理
@@ -48,9 +62,10 @@ app.use((req, res) => {
 // 错误处理中间件
 app.use(errorHandler);
 
-// 启动服务器
-app.listen(PORT, () => {
-  console.log(`服务器运行在 http://localhost:${PORT}`);
+// 启动服务器（绑定到 0.0.0.0 以支持局域网访问）
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`服务器运行在 http://0.0.0.0:${PORT}`);
+  console.log(`局域网访问: http://192.168.31.226:${PORT}`);
   console.log(`环境: ${process.env.NODE_ENV || 'development'}`);
 });
 

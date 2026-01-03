@@ -1,27 +1,43 @@
-// pages/moments/moments.js
+// pages/moments/moments.js - 支持图片上传
 const app = getApp();
 const { postApi, familyApi } = require('../../utils/api');
-const { showLoading, hideLoading, showError, showSuccess, showConfirm, formatRelativeTime, getCurrentFamily } = require('../../utils/util');
+const { showLoading, hideLoading, showError, showSuccess, showConfirm, formatRelativeTime, isLoggedIn } = require('../../utils/util');
 
 Page({
   data: {
     familyInfo: null,
+    userInfo: null,
     posts: [],
     showPublishModal: false,
     postContent: '',
+    hasContent: false, // 是否有文字内容
+    selectedImages: [], // 已选择的图片
     isAnonymous: false,
-    isSubmitting: false,
+    isPublishing: false,
+    isLoadingMore: false,
     hasMore: true,
     page: 1,
     pageSize: 10,
-    currentUserId: null
+    currentUserId: null,
+    showActionSheet: false,
+    showImageSourceSheet: false,
+    currentPostId: null,
+    currentPostIndex: null
   },
 
   onLoad() {
+    if (!isLoggedIn()) {
+      wx.reLaunch({ url: '/pages/login/login' });
+      return;
+    }
     this.loadFamilyInfo();
   },
 
   onShow() {
+    if (!isLoggedIn()) {
+      wx.reLaunch({ url: '/pages/login/login' });
+      return;
+    }
     this.loadPosts(true);
   },
 
@@ -32,7 +48,9 @@ Page({
   },
 
   onReachBottom() {
-    this.loadPosts();
+    if (!this.data.isLoadingMore && this.data.hasMore) {
+      this.loadPosts();
+    }
   },
 
   async loadFamilyInfo() {
@@ -42,10 +60,13 @@ Page({
         this.setData({ familyInfo: familiesRes.data[0] });
       }
       
-      // 获取当前用户ID
+      // 获取当前用户信息
       const userInfo = wx.getStorageSync('userInfo');
       if (userInfo) {
-        this.setData({ currentUserId: userInfo.id });
+        this.setData({ 
+          currentUserId: userInfo.id,
+          userInfo: userInfo
+        });
       }
     } catch (error) {
       console.error('加载家庭信息失败:', error);
@@ -62,6 +83,8 @@ Page({
     if (!this.data.hasMore) return;
 
     try {
+      this.setData({ isLoadingMore: true });
+      
       const res = await postApi.getList({
         familyId: this.data.familyInfo.id,
         page: this.data.page,
@@ -70,19 +93,23 @@ Page({
 
       let newPosts = res.data || [];
       
-      // 格式化时间
+      // 格式化时间和处理图片
       newPosts = newPosts.map(post => ({
         ...post,
-        createdAtText: formatRelativeTime(post.createdAt)
+        createdAtText: formatRelativeTime(post.createdAt || post.created_at),
+        images: post.images || [],
+        user: post.user || { nickname: '用户', avatarUrl: '' }
       }));
 
       this.setData({
         posts: reset ? newPosts : [...this.data.posts, ...newPosts],
         hasMore: newPosts.length === this.data.pageSize,
-        page: this.data.page + 1
+        page: this.data.page + 1,
+        isLoadingMore: false
       });
     } catch (error) {
       console.error('加载动态失败:', error);
+      this.setData({ isLoadingMore: false });
     }
   },
 
@@ -96,13 +123,24 @@ Page({
     this.setData({
       showPublishModal: false,
       postContent: '',
+      hasContent: false,
+      selectedImages: [],
       isAnonymous: false
     });
   },
 
+  // 阻止事件冒泡
+  preventClose() {
+    // 空函数，仅用于阻止事件冒泡
+  },
+
   // 输入内容
   onContentInput(e) {
-    this.setData({ postContent: e.detail.value });
+    const value = e.detail.value;
+    this.setData({ 
+      postContent: value,
+      hasContent: value.trim().length > 0
+    });
   },
 
   // 切换匿名
@@ -110,24 +148,179 @@ Page({
     this.setData({ isAnonymous: !this.data.isAnonymous });
   },
 
-  // 发布动态
-  async publishPost() {
-    const { postContent, isAnonymous, familyInfo, isSubmitting } = this.data;
+  // ================ 图片相关功能 ================
 
-    if (!postContent.trim()) {
-      showError('请输入内容');
+  // 显示图片来源菜单
+  showImageSourceMenu() {
+    this.setData({ showImageSourceSheet: true });
+  },
+
+  // 隐藏图片来源菜单
+  hideImageSourceMenu() {
+    this.setData({ showImageSourceSheet: false });
+  },
+
+  // 拍照
+  takePhoto() {
+    this.hideImageSourceMenu();
+    
+    const remainingCount = 9 - this.data.selectedImages.length;
+    if (remainingCount <= 0) {
+      showError('最多只能上传9张图片');
       return;
     }
 
-    if (isSubmitting) return;
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['camera'],
+      camera: 'back',
+      success: (res) => {
+        const tempFiles = res.tempFiles.map(file => file.tempFilePath);
+        this.setData({
+          selectedImages: [...this.data.selectedImages, ...tempFiles]
+        });
+      },
+      fail: (err) => {
+        if (err.errMsg.indexOf('cancel') === -1) {
+          showError('拍照失败');
+        }
+      }
+    });
+  },
+
+  // 从相册选择
+  chooseFromAlbum() {
+    this.hideImageSourceMenu();
+    
+    const remainingCount = 9 - this.data.selectedImages.length;
+    if (remainingCount <= 0) {
+      showError('最多只能上传9张图片');
+      return;
+    }
+
+    wx.chooseMedia({
+      count: remainingCount,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      success: (res) => {
+        const tempFiles = res.tempFiles.map(file => file.tempFilePath);
+        this.setData({
+          selectedImages: [...this.data.selectedImages, ...tempFiles]
+        });
+      },
+      fail: (err) => {
+        if (err.errMsg.indexOf('cancel') === -1) {
+          showError('选择图片失败');
+        }
+      }
+    });
+  },
+
+  // 移除图片
+  removeImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const images = [...this.data.selectedImages];
+    images.splice(index, 1);
+    this.setData({ selectedImages: images });
+  },
+
+  // 预览已选择的图片
+  previewSelectedImage(e) {
+    const index = e.currentTarget.dataset.index;
+    wx.previewImage({
+      current: this.data.selectedImages[index],
+      urls: this.data.selectedImages
+    });
+  },
+
+  // 预览动态中的图片
+  previewImage(e) {
+    const urls = e.currentTarget.dataset.urls;
+    const current = e.currentTarget.dataset.current;
+    wx.previewImage({
+      current: current,
+      urls: urls
+    });
+  },
+
+  // ================ 发布功能 ================
+
+  // 上传图片到服务器
+  async uploadImages(tempFilePaths) {
+    if (!tempFilePaths || tempFilePaths.length === 0) {
+      return [];
+    }
+
+    const uploadedUrls = [];
+    const baseUrl = app.globalData.baseUrl || 'http://localhost:3000/api';
+
+    for (const filePath of tempFilePaths) {
+      try {
+        const res = await new Promise((resolve, reject) => {
+          wx.uploadFile({
+            url: `${baseUrl}/upload/image`,
+            filePath: filePath,
+            name: 'file',
+            header: {
+              'Authorization': `Bearer ${wx.getStorageSync('token')}`
+            },
+            success: (res) => {
+              if (res.statusCode === 200) {
+                const data = JSON.parse(res.data);
+                resolve(data);
+              } else {
+                reject(new Error('上传失败'));
+              }
+            },
+            fail: reject
+          });
+        });
+
+        if (res.data && res.data.url) {
+          uploadedUrls.push(res.data.url);
+        }
+      } catch (error) {
+        console.error('上传图片失败:', error);
+        // 开发模式下，直接使用本地路径
+        if (app.globalData.isDev) {
+          uploadedUrls.push(filePath);
+        }
+      }
+    }
+
+    return uploadedUrls;
+  },
+
+  // 发布动态
+  async publishPost() {
+    const { postContent, selectedImages, isAnonymous, familyInfo, isPublishing } = this.data;
+
+    if (!postContent.trim() && selectedImages.length === 0) {
+      showError('请输入内容或添加图片');
+      return;
+    }
+
+    if (isPublishing) return;
 
     try {
-      this.setData({ isSubmitting: true });
+      this.setData({ isPublishing: true });
       showLoading('发布中...');
+
+      // 上传图片
+      let imageUrls = [];
+      if (selectedImages.length > 0) {
+        // 开发模式下直接使用本地路径（因为没有真正的上传服务）
+        imageUrls = selectedImages;
+        
+        // 如果有真实服务器，使用以下代码：
+        // imageUrls = await this.uploadImages(selectedImages);
+      }
 
       await postApi.create({
         familyId: familyInfo.id,
         content: postContent.trim(),
+        images: imageUrls,
         isAnonymous
       });
 
@@ -140,9 +333,11 @@ Page({
       hideLoading();
       showError(error.message || '发布失败');
     } finally {
-      this.setData({ isSubmitting: false });
+      this.setData({ isPublishing: false });
     }
   },
+
+  // ================ 动态操作 ================
 
   // 点赞/取消点赞
   async toggleLike(e) {
@@ -153,10 +348,10 @@ Page({
       await postApi.toggleLike(postId);
       
       // 更新本地状态
-      const posts = this.data.posts;
+      const posts = [...this.data.posts];
       const post = posts[index];
       post.isLiked = !post.isLiked;
-      post.likesCount = post.isLiked ? post.likesCount + 1 : post.likesCount - 1;
+      post.likesCount = post.isLiked ? (post.likesCount || 0) + 1 : Math.max(0, (post.likesCount || 1) - 1);
       
       this.setData({ posts });
     } catch (error) {
@@ -164,10 +359,31 @@ Page({
     }
   },
 
-  // 删除动态
-  async deletePost(e) {
+  // 显示动态操作菜单
+  showPostActions(e) {
     const postId = e.currentTarget.dataset.id;
     const index = e.currentTarget.dataset.index;
+    this.setData({
+      showActionSheet: true,
+      currentPostId: postId,
+      currentPostIndex: index
+    });
+  },
+
+  // 隐藏操作菜单
+  hideActionSheet() {
+    this.setData({
+      showActionSheet: false,
+      currentPostId: null,
+      currentPostIndex: null
+    });
+  },
+
+  // 删除当前动态
+  async deleteCurrentPost() {
+    const { currentPostId, currentPostIndex } = this.data;
+    
+    this.hideActionSheet();
 
     const confirmed = await showConfirm({
       title: '删除动态',
@@ -178,12 +394,12 @@ Page({
 
     try {
       showLoading('删除中...');
-      await postApi.delete(postId);
+      await postApi.delete(currentPostId);
       hideLoading();
 
       // 从列表中移除
-      const posts = this.data.posts;
-      posts.splice(index, 1);
+      const posts = [...this.data.posts];
+      posts.splice(currentPostIndex, 1);
       this.setData({ posts });
 
       showSuccess('已删除');
@@ -196,9 +412,14 @@ Page({
   // 查看评论
   viewComments(e) {
     const postId = e.currentTarget.dataset.id;
-    // 可以跳转到评论详情页或打开评论弹窗
     wx.navigateTo({
       url: `/pages/moments/comments?postId=${postId}`
     });
+  },
+
+  // 分享动态
+  sharePost(e) {
+    // 可以实现分享功能
+    showSuccess('分享功能开发中');
   }
 });

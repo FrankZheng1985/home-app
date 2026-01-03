@@ -7,7 +7,9 @@ Page({
   data: {
     userInfo: {
       nickname: '',
-      avatarUrl: ''
+      avatarUrl: '',
+      gender: 0,
+      birthday: ''
     },
     isSubmitting: false
   },
@@ -17,7 +19,9 @@ Page({
     this.setData({
       userInfo: {
         nickname: userInfo.nickname || '',
-        avatarUrl: userInfo.avatarUrl || ''
+        avatarUrl: userInfo.avatarUrl || userInfo.avatar_url || '',
+        gender: userInfo.gender || 0,
+        birthday: userInfo.birthday || ''
       }
     });
   },
@@ -33,6 +37,21 @@ Page({
   onNicknameInput(e) {
     this.setData({
       'userInfo.nickname': e.detail.value
+    });
+  },
+
+  // 选择性别
+  selectGender(e) {
+    const gender = parseInt(e.currentTarget.dataset.gender);
+    this.setData({
+      'userInfo.gender': gender
+    });
+  },
+
+  // 日期选择
+  onDateChange(e) {
+    this.setData({
+      'userInfo.birthday': e.detail.value
     });
   },
 
@@ -53,7 +72,9 @@ Page({
 
       await userApi.updateProfile({
         nickname: userInfo.nickname.trim(),
-        avatarUrl: userInfo.avatarUrl
+        avatarUrl: userInfo.avatarUrl,
+        gender: userInfo.gender,
+        birthday: userInfo.birthday
       });
 
       // 更新本地存储
@@ -61,7 +82,10 @@ Page({
       const updatedUserInfo = {
         ...storedUserInfo,
         nickname: userInfo.nickname.trim(),
-        avatarUrl: userInfo.avatarUrl
+        avatarUrl: userInfo.avatarUrl,
+        avatar_url: userInfo.avatarUrl,
+        gender: userInfo.gender,
+        birthday: userInfo.birthday
       };
       wx.setStorageSync('userInfo', updatedUserInfo);
       app.globalData.userInfo = updatedUserInfo;

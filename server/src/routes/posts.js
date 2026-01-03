@@ -9,11 +9,10 @@ const { asyncHandler } = require('../middleware/errorHandler');
 // 获取动态列表
 router.get('/', authenticate, asyncHandler(postController.getList));
 
-// 发布动态
+// 发布动态（文字或图片至少有一个）
 router.post('/', authenticate, [
   body('familyId').notEmpty().withMessage('家庭ID不能为空'),
-  body('content').notEmpty().withMessage('内容不能为空')
-    .isLength({ max: 1000 }).withMessage('内容不能超过1000个字符')
+  body('content').optional().isLength({ max: 1000 }).withMessage('内容不能超过1000个字符')
 ], asyncHandler(postController.create));
 
 // 删除动态

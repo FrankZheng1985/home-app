@@ -13,8 +13,8 @@ try {
   query = null;
 }
 
-// 开发模式下的模拟用户数据
-const mockUsers = new Map();
+// 开发模式下的模拟用户数据（全局共享，与 auth 中间件共享）
+const mockUsers = global.mockUsers || (global.mockUsers = new Map());
 
 /**
  * 微信登录

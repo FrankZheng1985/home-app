@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>家庭小助手 - 设计原型</title>
+  <title>家庭小助手 - 精美设计原型</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,41 +14,55 @@
     }
 
     :root {
-      /* 主色 */
+      /* 现代渐变主色 */
+      --gradient-primary: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      --gradient-secondary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      --gradient-warm: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-cool: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --gradient-sunset: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      --gradient-ocean: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-forest: linear-gradient(135deg, #134E5E 0%, #71B280 100%);
+      
+      /* 主色调 */
       --color-primary: #FF6B6B;
       --color-primary-light: #FFE5E5;
       --color-primary-dark: #E55050;
       
       /* 语义色 */
-      --color-success: #52C41A;
-      --color-warning: #FAAD14;
-      --color-error: #FF4D4F;
-      --color-info: #1890FF;
+      --color-success: #10B981;
+      --color-warning: #F59E0B;
+      --color-error: #EF4444;
+      --color-info: #3B82F6;
       --color-wechat: #07C160;
       
       /* 文字色 */
-      --color-text-title: #1A1A1A;
-      --color-text-body: #333333;
-      --color-text-secondary: #666666;
-      --color-text-tertiary: #999999;
-      --color-text-disabled: #CCCCCC;
+      --color-text-title: #1F2937;
+      --color-text-body: #374151;
+      --color-text-secondary: #6B7280;
+      --color-text-tertiary: #9CA3AF;
+      --color-text-disabled: #D1D5DB;
       
-      /* 背景边框 */
-      --color-border: #E8E8E8;
-      --color-bg-page: #F5F5F5;
+      /* 背景 */
+      --color-border: #E5E7EB;
+      --color-bg-page: #F9FAFB;
       --color-bg-card: #FFFFFF;
       
-      /* 家务分类 */
-      --color-clean: #4ECDC4;
-      --color-kitchen: #FF9F43;
-      --color-laundry: #54A0FF;
-      --color-organize: #5F27CD;
-      --color-care: #FF6B81;
+      /* 玻璃效果 */
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.3);
+      
+      /* 家务分类 - 更鲜艳 */
+      --color-clean: #06B6D4;
+      --color-kitchen: #F97316;
+      --color-laundry: #8B5CF6;
+      --color-organize: #EC4899;
+      --color-care: #F43F5E;
     }
 
     body {
-      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
-      background: #1A1A1A;
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       min-height: 100vh;
       padding: 40px 20px;
     }
@@ -60,8 +74,19 @@
 
     .page-selector h1 {
       color: #fff;
-      font-size: 24px;
-      margin-bottom: 20px;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #FF6B6B, #FF8E53, #FFBA6B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-selector .subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      margin-bottom: 24px;
     }
 
     .page-tabs {
@@ -72,22 +97,27 @@
     }
 
     .page-tab {
-      padding: 8px 16px;
-      background: #333;
-      color: #fff;
-      border: none;
-      border-radius: 20px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 25px;
       cursor: pointer;
       font-size: 14px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
     }
 
     .page-tab:hover {
-      background: #444;
+      background: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
     }
 
     .page-tab.active {
-      background: var(--color-primary);
+      background: var(--gradient-primary);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
     }
 
     .phones-container {
@@ -99,6 +129,12 @@
 
     .phone-wrapper {
       display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .phone-wrapper.active {
@@ -106,38 +142,54 @@
     }
 
     .phone-label {
-      color: #fff;
+      color: rgba(255,255,255,0.7);
       text-align: center;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       font-size: 14px;
+      font-weight: 500;
     }
 
     .phone {
       width: 375px;
       height: 812px;
-      background: #000;
-      border-radius: 50px;
-      padding: 15px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+      border-radius: 55px;
+      padding: 12px;
+      box-shadow: 
+        0 50px 100px rgba(0,0,0,0.5),
+        inset 0 1px 1px rgba(255,255,255,0.1);
+      position: relative;
+    }
+
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #1a1a1a;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
     }
 
     .phone-screen {
       width: 100%;
       height: 100%;
       background: var(--color-bg-page);
-      border-radius: 40px;
+      border-radius: 45px;
       overflow: hidden;
       position: relative;
     }
 
     /* 状态栏 */
     .status-bar {
-      height: 44px;
-      background: inherit;
+      height: 50px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
+      align-items: flex-end;
+      padding: 0 28px 8px;
       position: absolute;
       top: 0;
       left: 0;
@@ -145,70 +197,80 @@
       z-index: 100;
     }
 
-    .status-bar-white {
-      color: #fff;
-    }
-
-    .status-bar-black {
-      color: #000;
-    }
+    .status-bar-white { color: #fff; }
+    .status-bar-black { color: #000; }
 
     .status-time {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 600;
     }
 
     .status-icons {
       display: flex;
-      gap: 4px;
-      font-size: 12px;
+      gap: 5px;
+      font-size: 14px;
     }
 
     /* 页面内容 */
     .page-content {
       height: 100%;
-      padding-top: 44px;
-      padding-bottom: 83px;
+      padding-top: 50px;
+      padding-bottom: 90px;
       overflow-y: auto;
     }
 
     .page-content.no-tabbar {
-      padding-bottom: 34px;
+      padding-bottom: 40px;
     }
 
-    /* 登录页 */
+    .page-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ==================== 登录页 - 超级精美 ==================== */
     .login-page {
-      background: linear-gradient(180deg, #FF6B6B 0%, #FF8E8E 50%, var(--color-bg-page) 100%);
+      background: linear-gradient(180deg, #FF6B6B 0%, #FF8E53 30%, #FFB88C 60%, var(--color-bg-page) 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 60px 24px 40px;
+      min-height: 100%;
     }
 
     .login-logo {
-      width: 80px;
-      height: 80px;
-      background: #fff;
-      border-radius: 20px;
+      width: 100px;
+      height: 100px;
+      background: white;
+      border-radius: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 40px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      margin-bottom: 16px;
+      font-size: 50px;
+      box-shadow: 
+        0 20px 40px rgba(255, 107, 107, 0.3),
+        0 10px 20px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
 
     .login-title {
-      font-size: 24px;
-      font-weight: 600;
+      font-size: 32px;
+      font-weight: 700;
       color: #fff;
       margin-bottom: 8px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
 
     .login-subtitle {
-      font-size: 14px;
-      color: rgba(255,255,255,0.8);
-      margin-bottom: 40px;
+      font-size: 15px;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 50px;
+      letter-spacing: 2px;
     }
 
     .login-features {
@@ -218,120 +280,1000 @@
 
     .login-feature {
       background: rgba(255,255,255,0.95);
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 12px;
+      border-radius: 16px;
+      padding: 18px 24px;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
-      gap: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      gap: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+      backdrop-filter: blur(10px);
+      transform: translateX(0);
+      transition: all 0.3s ease;
+    }
+
+    .login-feature:hover {
+      transform: translateX(8px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
 
     .login-feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 24px;
     }
 
+    .login-feature:nth-child(1) .login-feature-icon {
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    }
+
+    .login-feature:nth-child(2) .login-feature-icon {
+      background: linear-gradient(135deg, #10B981, #34D399);
+    }
+
+    .login-feature:nth-child(3) .login-feature-icon {
+      background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+    }
+
     .login-feature-text {
-      font-size: 15px;
-      color: var(--color-text-body);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text-title);
     }
 
     .login-btn {
       width: 100%;
-      height: 48px;
-      background: var(--color-wechat);
-      border-radius: 24px;
+      height: 56px;
+      background: linear-gradient(135deg, #07C160 0%, #00D26A 100%);
+      border-radius: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 10px;
       color: #fff;
-      font-size: 16px;
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
-      margin-bottom: 20px;
+      font-size: 17px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(7, 193, 96, 0.4);
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(7, 193, 96, 0.5);
+    }
+
+    .login-btn svg {
+      width: 24px;
+      height: 24px;
     }
 
     .login-terms {
       font-size: 12px;
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
       text-align: center;
     }
 
     .login-terms a {
       color: var(--color-primary);
       text-decoration: none;
+      font-weight: 500;
     }
 
-    /* 注册页 */
+    /* ==================== 首页 - 现代风格 ==================== */
+    .home-page {
+      background: linear-gradient(180deg, #FFF5F5 0%, var(--color-bg-page) 30%);
+      padding: 0 16px 20px;
+      min-height: 100%;
+    }
+
+    .home-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+    }
+
+    .home-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-text-title);
+    }
+
+    .home-header-icon {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .family-card {
+      background: var(--gradient-primary);
+      border-radius: 24px;
+      padding: 24px;
+      color: #fff;
+      margin-bottom: 20px;
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .family-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    }
+
+    .family-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .family-members {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .family-member {
+      text-align: center;
+    }
+
+    .family-member-avatar {
+      width: 56px;
+      height: 56px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      font-size: 28px;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .family-member-avatar.add {
+      background: rgba(255,255,255,0.15);
+      border: 2px dashed rgba(255,255,255,0.5);
+      font-size: 24px;
+    }
+
+    .family-member-name {
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.95;
+    }
+
+    .family-id {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      opacity: 0.9;
+      position: relative;
+    }
+
+    .family-id-copy {
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-cards {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .stat-card:first-child::before {
+      background: var(--gradient-cool);
+    }
+
+    .stat-card:last-child::before {
+      background: var(--gradient-sunset);
+    }
+
+    .stat-card-title {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .stat-card-value {
+      font-size: 36px;
+      font-weight: 700;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-card-unit {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+      margin-top: 4px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-text-title);
+      margin-bottom: 16px;
+    }
+
+    .activity-list {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+
+    .activity-item {
+      padding: 18px 20px;
+      display: flex;
+      gap: 14px;
+      border-bottom: 1px solid var(--color-border);
+      transition: background 0.2s;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-item:hover {
+      background: #FAFAFA;
+    }
+
+    .activity-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .activity-avatar.mom {
+      background: linear-gradient(135deg, #FDF2F8, #FCE7F3);
+    }
+
+    .activity-avatar.dad {
+      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      font-size: 15px;
+      color: var(--color-text-body);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .activity-text strong {
+      color: var(--color-text-title);
+      font-weight: 600;
+    }
+
+    .activity-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+    }
+
+    .activity-points {
+      color: var(--color-warning);
+      font-weight: 600;
+    }
+
+    /* ==================== 家务页 ==================== */
+    .chores-page {
+      background: linear-gradient(180deg, #F0FDF4 0%, var(--color-bg-page) 30%);
+      padding: 0 16px 20px;
+      min-height: 100%;
+    }
+
+    .chores-tabs {
+      display: flex;
+      gap: 10px;
+      padding: 16px 0;
+      overflow-x: auto;
+    }
+
+    .chores-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chores-tab {
+      padding: 10px 20px;
+      background: white;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      white-space: nowrap;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+
+    .chores-tab.active {
+      background: var(--gradient-success);
+      color: #fff;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .chore-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .chore-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+
+    .chore-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+    }
+
+    .chore-card.clean::before { background: var(--gradient-cool); }
+    .chore-card.kitchen::before { background: var(--gradient-sunset); }
+    .chore-card.laundry::before { background: var(--gradient-secondary); }
+
+    .chore-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .chore-card.clean .chore-icon { background: linear-gradient(135deg, #E0F7FA, #B2EBF2); }
+    .chore-card.kitchen .chore-icon { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+    .chore-card.laundry .chore-icon { background: linear-gradient(135deg, #EDE7F6, #D1C4E9); }
+
+    .chore-info {
+      flex: 1;
+    }
+
+    .chore-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--color-text-title);
+      margin-bottom: 6px;
+    }
+
+    .chore-points {
+      font-size: 14px;
+      color: var(--color-warning);
+      font-weight: 600;
+    }
+
+    .chore-btn {
+      padding: 12px 24px;
+      background: var(--gradient-primary);
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+      transition: all 0.3s;
+    }
+
+    .chore-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .chore-btn.done {
+      background: var(--gradient-success);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .fab {
+      position: fixed;
+      right: 24px;
+      bottom: 110px;
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-primary);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .fab:hover {
+      transform: rotate(90deg) scale(1.1);
+    }
+
+    /* ==================== 动态页 ==================== */
+    .moments-page {
+      background: linear-gradient(180deg, #FDF4FF 0%, var(--color-bg-page) 30%);
+      padding: 0 16px 20px;
+      min-height: 100%;
+    }
+
+    .moment-card {
+      background: white;
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+
+    .moment-header {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .moment-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .moment-avatar.mom {
+      background: linear-gradient(135deg, #FDF2F8, #FCE7F3);
+    }
+
+    .moment-avatar.anonymous {
+      background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+    }
+
+    .moment-avatar.dad {
+      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    }
+
+    .moment-user-info {
+      flex: 1;
+    }
+
+    .moment-username {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-text-title);
+    }
+
+    .moment-time {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+      margin-top: 2px;
+    }
+
+    .moment-content {
+      font-size: 15px;
+      color: var(--color-text-body);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .moment-images {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .moment-image {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+    }
+
+    .moment-actions {
+      display: flex;
+      gap: 24px;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .moment-action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: var(--color-text-tertiary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .moment-action:hover {
+      color: var(--color-primary);
+    }
+
+    .moment-action.liked {
+      color: #EF4444;
+    }
+
+    /* ==================== 个人中心 ==================== */
+    .profile-page {
+      background: var(--color-bg-page);
+      min-height: 100%;
+    }
+
+    .profile-header {
+      background: var(--gradient-primary);
+      padding: 50px 16px 40px;
+      text-align: center;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 30px;
+      border: 4px solid rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 50px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+      position: relative;
+      backdrop-filter: blur(10px);
+    }
+
+    .profile-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .profile-tags {
+      font-size: 14px;
+      opacity: 0.9;
+      position: relative;
+    }
+
+    .profile-stats {
+      display: flex;
+      margin: -30px 16px 20px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 10;
+    }
+
+    .profile-stat {
+      flex: 1;
+      padding: 24px 16px;
+      text-align: center;
+    }
+
+    .profile-stat:first-child {
+      border-right: 1px solid var(--color-border);
+    }
+
+    .profile-stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .profile-stat-label {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+    }
+
+    .profile-menu {
+      margin: 0 16px 20px;
+      background: white;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--color-border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .profile-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .profile-menu-item:hover {
+      background: #FAFAFA;
+    }
+
+    .profile-menu-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-right: 14px;
+    }
+
+    .profile-menu-item:nth-child(1) .profile-menu-icon { background: linear-gradient(135deg, #FDF2F8, #FCE7F3); }
+    .profile-menu-item:nth-child(2) .profile-menu-icon { background: linear-gradient(135deg, #FEF3C7, #FDE68A); }
+    .profile-menu-item:nth-child(3) .profile-menu-icon { background: linear-gradient(135deg, #DBEAFE, #BFDBFE); }
+    .profile-menu-item:nth-child(4) .profile-menu-icon { background: linear-gradient(135deg, #D1FAE5, #A7F3D0); }
+    .profile-menu-item:nth-child(5) .profile-menu-icon { background: linear-gradient(135deg, #EDE9FE, #DDD6FE); }
+    .profile-menu-item:nth-child(6) .profile-menu-icon { background: linear-gradient(135deg, #FEE2E2, #FECACA); }
+    .profile-menu-item:nth-child(7) .profile-menu-icon { background: linear-gradient(135deg, #E0E7FF, #C7D2FE); }
+
+    .profile-menu-text {
+      flex: 1;
+      font-size: 16px;
+      color: var(--color-text-body);
+      font-weight: 500;
+    }
+
+    .profile-menu-arrow {
+      color: var(--color-text-disabled);
+      font-size: 18px;
+    }
+
+    .logout-btn {
+      margin: 0 16px 20px;
+      height: 56px;
+      background: white;
+      border: none;
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #FEE2E2;
+      color: #EF4444;
+    }
+
+    /* ==================== 奖励设置页 ==================== */
+    .rewards-page {
+      background: linear-gradient(180deg, #FFFBEB 0%, var(--color-bg-page) 30%);
+      padding: 0 16px 40px;
+      min-height: 100%;
+    }
+
+    .rewards-nav {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .nav-back {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      margin-right: 12px;
+    }
+
+    .nav-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-text-title);
+    }
+
+    .exchange-card {
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+
+    .exchange-title {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .exchange-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .exchange-text {
+      font-size: 18px;
+      color: var(--color-text-body);
+      font-weight: 500;
+    }
+
+    .exchange-input {
+      width: 80px;
+      height: 48px;
+      background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+      border: 2px solid #FED7AA;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #F97316;
+    }
+
+    .exchange-input:focus {
+      outline: none;
+      border-color: #F97316;
+    }
+
+    .reward-item {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s;
+    }
+
+    .reward-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+
+    .reward-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .reward-item:nth-child(1) .reward-icon { background: linear-gradient(135deg, #E0F7FA, #B2EBF2); }
+    .reward-item:nth-child(2) .reward-icon { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+    .reward-item:nth-child(3) .reward-icon { background: linear-gradient(135deg, #EDE7F6, #D1C4E9); }
+    .reward-item:nth-child(4) .reward-icon { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+
+    .reward-info {
+      flex: 1;
+    }
+
+    .reward-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--color-text-title);
+      margin-bottom: 4px;
+    }
+
+    .reward-points {
+      font-size: 14px;
+      color: var(--color-warning);
+      font-weight: 600;
+    }
+
+    .reward-edit {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #F97316;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .reward-edit:hover {
+      background: linear-gradient(135deg, #FFEDD5, #FED7AA);
+    }
+
+    .add-reward-btn {
+      width: 100%;
+      height: 60px;
+      background: white;
+      border: 3px dashed var(--color-border);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text-tertiary);
+      margin-top: 24px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .add-reward-btn:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    /* ==================== 注册页 ==================== */
     .register-page {
       background: var(--color-bg-page);
       padding: 0 16px 40px;
+      min-height: 100%;
     }
 
     .register-nav {
-      height: 44px;
+      height: 50px;
       display: flex;
       align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .register-nav-back {
-      font-size: 20px;
-      color: var(--color-text-body);
-    }
-
-    .register-nav-title {
-      flex: 1;
-      text-align: center;
-      font-size: 18px;
-      font-weight: 500;
-      margin-right: 20px;
+      margin-bottom: 24px;
     }
 
     .register-avatar {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 32px;
     }
 
     .register-avatar-img {
-      width: 80px;
-      height: 80px;
-      background: var(--color-border);
-      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+      border-radius: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 8px;
-      font-size: 36px;
+      margin: 0 auto 12px;
+      font-size: 48px;
       color: var(--color-text-tertiary);
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    .register-avatar-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
 
     .register-avatar-text {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--color-primary);
+      font-weight: 500;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .form-label {
       font-size: 14px;
       color: var(--color-text-secondary);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       display: block;
+      font-weight: 500;
     }
 
     .form-input {
       width: 100%;
-      height: 48px;
-      background: #fff;
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 0 16px;
-      font-size: 14px;
+      height: 56px;
+      background: white;
+      border: 2px solid var(--color-border);
+      border-radius: 16px;
+      padding: 0 20px;
+      font-size: 16px;
       color: var(--color-text-body);
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15);
     }
 
     .form-input::placeholder {
@@ -345,21 +1287,30 @@
 
     .gender-option {
       flex: 1;
-      height: 40px;
-      background: #fff;
-      border: 1px solid var(--color-border);
-      border-radius: 20px;
+      height: 50px;
+      background: white;
+      border: 2px solid var(--color-border);
+      border-radius: 25px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 15px;
+      font-weight: 500;
       color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .gender-option:hover {
+      border-color: var(--color-primary-light);
     }
 
     .gender-option.active {
-      background: var(--color-primary-light);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
+      background: var(--gradient-primary);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
     }
 
     .tags-container {
@@ -369,12 +1320,20 @@
     }
 
     .tag {
-      padding: 8px 16px;
-      background: #fff;
-      border: 1px solid var(--color-border);
-      border-radius: 20px;
+      padding: 12px 20px;
+      background: white;
+      border: 2px solid var(--color-border);
+      border-radius: 25px;
       font-size: 14px;
+      font-weight: 500;
       color: var(--color-text-secondary);
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .tag:hover {
+      border-color: var(--color-primary-light);
     }
 
     .tag.active {
@@ -385,508 +1344,36 @@
 
     .primary-btn {
       width: 100%;
-      height: 48px;
-      background: var(--color-primary);
-      border-radius: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 16px;
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
-      margin-top: 30px;
-    }
-
-    /* 首页 */
-    .home-page {
-      background: var(--color-bg-page);
-      padding: 0 16px 20px;
-    }
-
-    .home-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-    }
-
-    .home-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--color-text-title);
-    }
-
-    .home-header-icon {
-      font-size: 20px;
-    }
-
-    .family-card {
-      background: linear-gradient(135deg, var(--color-primary) 0%, #FF8E8E 100%);
-      border-radius: 16px;
-      padding: 20px;
-      color: #fff;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
-    }
-
-    .family-card-title {
-      font-size: 16px;
-      font-weight: 500;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .family-members {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .family-member {
-      text-align: center;
-    }
-
-    .family-member-avatar {
-      width: 48px;
-      height: 48px;
-      background: rgba(255,255,255,0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 4px;
-      font-size: 24px;
-    }
-
-    .family-member-avatar.add {
-      background: rgba(255,255,255,0.2);
-      border: 2px dashed rgba(255,255,255,0.5);
-      font-size: 20px;
-    }
-
-    .family-member-name {
-      font-size: 12px;
-      opacity: 0.9;
-    }
-
-    .family-id {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .family-id-copy {
-      padding: 2px 8px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
-      font-size: 10px;
-    }
-
-    .stat-cards {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      flex: 1;
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .stat-card-title {
-      font-size: 12px;
-      color: var(--color-text-secondary);
-      margin-bottom: 8px;
-    }
-
-    .stat-card-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--color-primary);
-      font-family: 'DIN Alternate', sans-serif;
-    }
-
-    .stat-card-unit {
-      font-size: 12px;
-      color: var(--color-text-tertiary);
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--color-text-title);
-      margin-bottom: 12px;
-    }
-
-    .activity-list {
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .activity-item {
-      padding: 16px;
-      display: flex;
-      gap: 12px;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .activity-item:last-child {
-      border-bottom: none;
-    }
-
-    .activity-avatar {
-      width: 40px;
-      height: 40px;
-      background: var(--color-primary-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    .activity-content {
-      flex: 1;
-    }
-
-    .activity-text {
-      font-size: 14px;
-      color: var(--color-text-body);
-      margin-bottom: 4px;
-    }
-
-    .activity-text strong {
-      color: var(--color-text-title);
-    }
-
-    .activity-meta {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
-      color: var(--color-text-tertiary);
-    }
-
-    .activity-points {
-      color: var(--color-warning);
-    }
-
-    /* 家务页 */
-    .chores-page {
-      background: var(--color-bg-page);
-      padding: 0 16px 20px;
-    }
-
-    .chores-tabs {
-      display: flex;
-      gap: 8px;
-      padding: 12px 0;
-      overflow-x: auto;
-    }
-
-    .chores-tab {
-      padding: 8px 16px;
-      background: #fff;
-      border-radius: 20px;
-      font-size: 14px;
-      color: var(--color-text-secondary);
-      white-space: nowrap;
-    }
-
-    .chores-tab.active {
-      background: var(--color-primary);
-      color: #fff;
-    }
-
-    .chore-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      border-left: 4px solid var(--color-clean);
-    }
-
-    .chore-card.kitchen {
-      border-left-color: var(--color-kitchen);
-    }
-
-    .chore-card.laundry {
-      border-left-color: var(--color-laundry);
-    }
-
-    .chore-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .chore-info {
-      display: flex;
-      gap: 12px;
-    }
-
-    .chore-icon {
-      font-size: 32px;
-    }
-
-    .chore-name {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--color-text-title);
-      margin-bottom: 4px;
-    }
-
-    .chore-points {
-      font-size: 14px;
-      color: var(--color-warning);
-    }
-
-    .chore-btn {
-      padding: 8px 20px;
-      background: var(--color-primary);
-      border-radius: 20px;
-      font-size: 14px;
-      color: #fff;
-    }
-
-    .chore-btn.done {
-      background: var(--color-success);
-    }
-
-    .add-chore-btn {
-      position: fixed;
-      right: 20px;
-      bottom: 100px;
-      width: 56px;
       height: 56px;
-      background: var(--color-primary);
-      border-radius: 50%;
+      background: var(--gradient-primary);
+      border-radius: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #fff;
-      font-size: 28px;
-      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
-    }
-
-    /* 动态页 */
-    .moments-page {
-      background: var(--color-bg-page);
-      padding: 0 16px 20px;
-    }
-
-    .moment-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .moment-header {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .moment-avatar {
-      width: 40px;
-      height: 40px;
-      background: var(--color-primary-light);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-
-    .moment-avatar.anonymous {
-      background: var(--color-border);
-    }
-
-    .moment-user-info {
-      flex: 1;
-    }
-
-    .moment-username {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--color-text-title);
-    }
-
-    .moment-time {
-      font-size: 12px;
-      color: var(--color-text-tertiary);
-    }
-
-    .moment-content {
-      font-size: 14px;
-      color: var(--color-text-body);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-
-    .moment-images {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 4px;
-      margin-bottom: 12px;
-    }
-
-    .moment-image {
-      aspect-ratio: 1;
-      background: var(--color-bg-page);
-      border-radius: 4px;
-    }
-
-    .moment-actions {
-      display: flex;
-      gap: 24px;
-    }
-
-    .moment-action {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 14px;
-      color: var(--color-text-tertiary);
-    }
-
-    /* 个人中心 */
-    .profile-page {
-      background: var(--color-bg-page);
-    }
-
-    .profile-header {
-      background: linear-gradient(180deg, var(--color-primary) 0%, #FF8E8E 100%);
-      padding: 40px 16px 30px;
-      text-align: center;
-      color: #fff;
-    }
-
-    .profile-avatar {
-      width: 80px;
-      height: 80px;
-      background: rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border: 4px solid #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 12px;
-      font-size: 40px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    }
-
-    .profile-name {
-      font-size: 20px;
+      font-size: 17px;
       font-weight: 600;
-      margin-bottom: 8px;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+      margin-top: 32px;
+      cursor: pointer;
+      transition: all 0.3s;
     }
 
-    .profile-tags {
-      font-size: 12px;
-      opacity: 0.8;
+    .primary-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
     }
 
-    .profile-stats {
-      display: flex;
-      margin: -20px 16px 16px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    }
-
-    .profile-stat {
-      flex: 1;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .profile-stat:first-child {
-      border-right: 1px solid var(--color-border);
-    }
-
-    .profile-stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--color-primary);
-      margin-bottom: 4px;
-    }
-
-    .profile-stat-label {
-      font-size: 12px;
-      color: var(--color-text-tertiary);
-    }
-
-    .profile-menu {
-      margin: 16px;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .profile-menu-item {
-      display: flex;
-      align-items: center;
-      padding: 16px;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .profile-menu-item:last-child {
-      border-bottom: none;
-    }
-
-    .profile-menu-icon {
-      font-size: 20px;
-      margin-right: 12px;
-    }
-
-    .profile-menu-text {
-      flex: 1;
-      font-size: 16px;
-      color: var(--color-text-body);
-    }
-
-    .profile-menu-arrow {
-      color: var(--color-text-disabled);
-    }
-
-    .logout-btn {
-      margin: 16px;
-      height: 48px;
-      background: #fff;
-      border: 1px solid var(--color-border);
-      border-radius: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      color: var(--color-text-secondary);
-    }
-
-    /* TabBar */
+    /* ==================== TabBar ==================== */
     .tabbar {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 83px;
-      background: #fff;
-      border-top: 0.5px solid var(--color-border);
+      height: 90px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,0,0,0.05);
       display: flex;
       padding-bottom: 34px;
     }
@@ -898,128 +1385,34 @@
       align-items: center;
       justify-content: center;
       color: var(--color-text-tertiary);
+      cursor: pointer;
+      transition: all 0.3s;
     }
 
     .tabbar-item.active {
       color: var(--color-primary);
     }
 
+    .tabbar-item.active .tabbar-icon {
+      transform: scale(1.2);
+    }
+
     .tabbar-icon {
-      font-size: 24px;
-      margin-bottom: 2px;
+      font-size: 26px;
+      margin-bottom: 4px;
+      transition: transform 0.3s;
     }
 
     .tabbar-text {
-      font-size: 10px;
-    }
-
-    /* 奖励设置页 */
-    .rewards-page {
-      background: var(--color-bg-page);
-      padding: 0 16px 20px;
-    }
-
-    .rewards-nav {
-      height: 44px;
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .exchange-card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    .exchange-title {
-      font-size: 14px;
-      color: var(--color-text-secondary);
-      margin-bottom: 12px;
-    }
-
-    .exchange-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .exchange-text {
-      font-size: 16px;
-      color: var(--color-text-body);
-    }
-
-    .exchange-input {
-      width: 80px;
-      height: 40px;
-      background: var(--color-bg-page);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      text-align: center;
-      font-size: 16px;
+      font-size: 11px;
       font-weight: 500;
-      color: var(--color-primary);
-    }
-
-    .reward-item {
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .reward-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .reward-icon {
-      font-size: 32px;
-    }
-
-    .reward-name {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--color-text-title);
-      margin-bottom: 4px;
-    }
-
-    .reward-points {
-      font-size: 14px;
-      color: var(--color-warning);
-    }
-
-    .reward-edit {
-      font-size: 14px;
-      color: var(--color-primary);
-    }
-
-    .add-reward-btn {
-      width: 100%;
-      height: 48px;
-      background: #fff;
-      border: 2px dashed var(--color-border);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 14px;
-      color: var(--color-text-tertiary);
-      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <div class="page-selector">
-    <h1>🏠 家庭小助手 - UI 设计原型</h1>
+    <h1>🏠 家庭小助手</h1>
+    <p class="subtitle">精美 UI 设计原型 · 可直接用于 Figma 参考</p>
     <div class="page-tabs">
       <button class="page-tab active" data-page="login">登录页</button>
       <button class="page-tab" data-page="register">注册页</button>
@@ -1034,36 +1427,40 @@
   <div class="phones-container">
     <!-- 登录页 -->
     <div class="phone-wrapper active" id="page-login">
-      <div class="phone-label">登录页 - pages/login/login</div>
+      <div class="phone-label">登录页 · pages/login/login</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-white">
             <span class="status-time">9:41</span>
-            <span class="status-icons">📶 📡 🔋</span>
+            <span class="status-icons">
+              <svg width="17" height="14" viewBox="0 0 17 14" fill="currentColor"><path d="M1 4.5C1 3.67 1.67 3 2.5 3H4L5 1h7l1 2h1.5C15.33 3 16 3.67 16 4.5v7c0 .83-.67 1.5-1.5 1.5h-12C1.67 13 1 12.33 1 11.5v-7z"/></svg>
+              <svg width="15" height="14" viewBox="0 0 15 14" fill="currentColor"><path d="M1 4h2v9H1V4zm4-2h2v11H5V2zm4 4h2v7H9V6zm4-4h2v11h-2V2z"/></svg>
+              <svg width="25" height="14" viewBox="0 0 25 14" fill="currentColor"><rect x="1" y="2" width="20" height="10" rx="2" stroke="currentColor" fill="none" stroke-width="1.5"/><rect x="22" y="5" width="2" height="4" rx="0.5"/><rect x="3" y="4" width="14" height="6" rx="1"/></svg>
+            </span>
           </div>
           <div class="page-content no-tabbar">
             <div class="login-page">
               <div class="login-logo">🏠</div>
               <div class="login-title">家庭小助手</div>
-              <div class="login-subtitle">记录家务，积累幸福</div>
+              <div class="login-subtitle">记录家务 · 积累幸福</div>
               
               <div class="login-features">
                 <div class="login-feature">
-                  <span class="login-feature-icon">👨‍👩‍👧‍👦</span>
+                  <div class="login-feature-icon">👨‍👩‍👧‍👦</div>
                   <span class="login-feature-text">家庭成员管理</span>
                 </div>
                 <div class="login-feature">
-                  <span class="login-feature-icon">✓</span>
-                  <span class="login-feature-text">家务记录积分</span>
+                  <div class="login-feature-icon">✨</div>
+                  <span class="login-feature-text">家务记录积分奖励</span>
                 </div>
                 <div class="login-feature">
-                  <span class="login-feature-icon">💕</span>
-                  <span class="login-feature-text">分享生活点滴</span>
+                  <div class="login-feature-icon">💕</div>
+                  <span class="login-feature-text">分享美好生活点滴</span>
                 </div>
               </div>
               
               <div class="login-btn">
-                <span>💬</span>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.87l-.035-.012h-.07zm-2.19 3.293c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982z"/></svg>
                 <span>微信一键登录</span>
               </div>
               
@@ -1078,7 +1475,7 @@
 
     <!-- 注册页 -->
     <div class="phone-wrapper" id="page-register">
-      <div class="phone-label">注册页 - pages/register/register</div>
+      <div class="phone-label">注册页 · pages/register/register</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-black">
@@ -1088,26 +1485,26 @@
           <div class="page-content no-tabbar">
             <div class="register-page">
               <div class="register-nav">
-                <span class="register-nav-back">←</span>
-                <span class="register-nav-title">完善资料</span>
+                <div class="nav-back">←</div>
+                <span class="nav-title">完善资料</span>
               </div>
               
               <div class="register-avatar">
-                <div class="register-avatar-img">👤</div>
-                <div class="register-avatar-text">点击更换头像</div>
+                <div class="register-avatar-img">📷</div>
+                <div class="register-avatar-text">点击上传头像</div>
               </div>
               
               <div class="form-group">
                 <label class="form-label">昵称</label>
-                <input class="form-input" placeholder="请输入昵称">
+                <input class="form-input" placeholder="请输入您的昵称">
               </div>
               
               <div class="form-group">
                 <label class="form-label">性别</label>
                 <div class="gender-options">
-                  <div class="gender-option active">男</div>
-                  <div class="gender-option">女</div>
-                  <div class="gender-option">保密</div>
+                  <div class="gender-option active">👨 男</div>
+                  <div class="gender-option">👩 女</div>
+                  <div class="gender-option">🤐 保密</div>
                 </div>
               </div>
               
@@ -1117,21 +1514,20 @@
               </div>
               
               <div class="form-group">
-                <label class="form-label">个人喜好</label>
+                <label class="form-label">个人喜好（可多选）</label>
                 <div class="tags-container">
-                  <div class="tag active">美食</div>
-                  <div class="tag">旅行</div>
-                  <div class="tag active">运动</div>
-                  <div class="tag">音乐</div>
-                  <div class="tag">电影</div>
-                  <div class="tag">游戏</div>
-                  <div class="tag">阅读</div>
-                  <div class="tag">摄影</div>
-                  <div class="tag">手工</div>
+                  <div class="tag active">🍔 美食</div>
+                  <div class="tag">✈️ 旅行</div>
+                  <div class="tag active">🏃 运动</div>
+                  <div class="tag">🎵 音乐</div>
+                  <div class="tag">🎬 电影</div>
+                  <div class="tag">🎮 游戏</div>
+                  <div class="tag">📚 阅读</div>
+                  <div class="tag">📸 摄影</div>
                 </div>
               </div>
               
-              <div class="primary-btn">完成注册</div>
+              <div class="primary-btn">完成注册 →</div>
             </div>
           </div>
         </div>
@@ -1140,7 +1536,7 @@
 
     <!-- 首页 -->
     <div class="phone-wrapper" id="page-home">
-      <div class="phone-label">首页 - pages/index/index</div>
+      <div class="phone-label">首页 · pages/index/index</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-black">
@@ -1151,11 +1547,11 @@
             <div class="home-page">
               <div class="home-header">
                 <span class="home-title">家庭小助手</span>
-                <span class="home-header-icon">📋</span>
+                <div class="home-header-icon">🔔</div>
               </div>
               
               <div class="family-card">
-                <div class="family-card-title">👨‍👩‍👧‍👦 我的家庭</div>
+                <div class="family-card-title">👨‍👩‍👧‍👦 温馨小窝</div>
                 <div class="family-members">
                   <div class="family-member">
                     <div class="family-member-avatar">👨</div>
@@ -1175,8 +1571,8 @@
                   </div>
                 </div>
                 <div class="family-id">
-                  家庭ID: ABC123
-                  <span class="family-id-copy">复制</span>
+                  🏠 家庭ID: ABC123
+                  <span class="family-id-copy">📋 复制</span>
                 </div>
               </div>
               
@@ -1193,20 +1589,20 @@
                 </div>
               </div>
               
-              <div class="section-title">最新动态</div>
+              <div class="section-title">📢 最新动态</div>
               <div class="activity-list">
                 <div class="activity-item">
-                  <div class="activity-avatar">👩</div>
+                  <div class="activity-avatar mom">👩</div>
                   <div class="activity-content">
                     <div class="activity-text"><strong>妈妈</strong> 完成了 <strong>拖地</strong></div>
                     <div class="activity-meta">
-                      <span class="activity-points">+15分</span>
+                      <span class="activity-points">+15分 🎉</span>
                       <span>刚刚</span>
                     </div>
                   </div>
                 </div>
                 <div class="activity-item">
-                  <div class="activity-avatar">👨</div>
+                  <div class="activity-avatar dad">👨</div>
                   <div class="activity-content">
                     <div class="activity-text"><strong>爸爸</strong> 发布了一条动态</div>
                     <div class="activity-meta">
@@ -1241,7 +1637,7 @@
 
     <!-- 家务页 -->
     <div class="phone-wrapper" id="page-chores">
-      <div class="phone-label">家务记录 - pages/chores/chores</div>
+      <div class="phone-label">家务记录 · pages/chores/chores</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-black">
@@ -1252,57 +1648,45 @@
             <div class="chores-page">
               <div class="home-header">
                 <span class="home-title">家务记录</span>
-                <span class="home-header-icon">📊</span>
+                <div class="home-header-icon">📊</div>
               </div>
               
               <div class="chores-tabs">
                 <div class="chores-tab active">全部</div>
-                <div class="chores-tab">清洁</div>
-                <div class="chores-tab">厨房</div>
-                <div class="chores-tab">洗涤</div>
-                <div class="chores-tab">整理</div>
+                <div class="chores-tab">🧹 清洁</div>
+                <div class="chores-tab">🍳 厨房</div>
+                <div class="chores-tab">🧺 洗涤</div>
+                <div class="chores-tab">📦 整理</div>
               </div>
               
-              <div class="chore-card">
-                <div class="chore-header">
-                  <div class="chore-info">
-                    <span class="chore-icon">🧹</span>
-                    <div>
-                      <div class="chore-name">扫地拖地</div>
-                      <div class="chore-points">+15 积分</div>
-                    </div>
-                  </div>
-                  <div class="chore-btn">记录完成</div>
+              <div class="chore-card clean">
+                <div class="chore-icon">🧹</div>
+                <div class="chore-info">
+                  <div class="chore-name">扫地拖地</div>
+                  <div class="chore-points">+15 积分</div>
                 </div>
+                <div class="chore-btn">记录完成</div>
               </div>
               
               <div class="chore-card kitchen">
-                <div class="chore-header">
-                  <div class="chore-info">
-                    <span class="chore-icon">🍳</span>
-                    <div>
-                      <div class="chore-name">做饭</div>
-                      <div class="chore-points">+20 积分</div>
-                    </div>
-                  </div>
-                  <div class="chore-btn done">已完成 ✓</div>
+                <div class="chore-icon">🍳</div>
+                <div class="chore-info">
+                  <div class="chore-name">做饭</div>
+                  <div class="chore-points">+20 积分</div>
                 </div>
+                <div class="chore-btn done">已完成 ✓</div>
               </div>
               
               <div class="chore-card laundry">
-                <div class="chore-header">
-                  <div class="chore-info">
-                    <span class="chore-icon">🧺</span>
-                    <div>
-                      <div class="chore-name">洗衣服</div>
-                      <div class="chore-points">+10 积分</div>
-                    </div>
-                  </div>
-                  <div class="chore-btn">记录完成</div>
+                <div class="chore-icon">🧺</div>
+                <div class="chore-info">
+                  <div class="chore-name">洗衣服</div>
+                  <div class="chore-points">+10 积分</div>
                 </div>
+                <div class="chore-btn">记录完成</div>
               </div>
               
-              <div class="add-chore-btn">+</div>
+              <div class="fab">+</div>
             </div>
           </div>
           <div class="tabbar">
@@ -1329,7 +1713,7 @@
 
     <!-- 动态页 -->
     <div class="phone-wrapper" id="page-moments">
-      <div class="phone-label">家庭动态 - pages/moments/moments</div>
+      <div class="phone-label">家庭动态 · pages/moments/moments</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-black">
@@ -1340,19 +1724,19 @@
             <div class="moments-page">
               <div class="home-header">
                 <span class="home-title">家庭动态</span>
-                <span class="home-header-icon">✏️</span>
+                <div class="home-header-icon">✏️</div>
               </div>
               
               <div class="moment-card">
                 <div class="moment-header">
-                  <div class="moment-avatar">👩</div>
+                  <div class="moment-avatar mom">👩</div>
                   <div class="moment-user-info">
                     <div class="moment-username">妈妈</div>
                     <div class="moment-time">2小时前</div>
                   </div>
                 </div>
                 <div class="moment-content">
-                  今天做了一顿美味的晚餐，全家人都很喜欢！😋
+                  今天做了一顿美味的晚餐，红烧排骨、清炒时蔬、番茄蛋汤，全家人都很喜欢！😋🍖
                 </div>
                 <div class="moment-images">
                   <div class="moment-image"></div>
@@ -1361,45 +1745,48 @@
                 </div>
                 <div class="moment-actions">
                   <div class="moment-action">💬 3</div>
-                  <div class="moment-action">❤️ 5</div>
+                  <div class="moment-action liked">❤️ 5</div>
+                  <div class="moment-action">↗️ 分享</div>
                 </div>
               </div>
               
               <div class="moment-card">
                 <div class="moment-header">
-                  <div class="moment-avatar anonymous">👤</div>
+                  <div class="moment-avatar anonymous">🎭</div>
                   <div class="moment-user-info">
                     <div class="moment-username">匿名</div>
                     <div class="moment-time">昨天</div>
                   </div>
                 </div>
                 <div class="moment-content">
-                  今天工作好累啊，需要休息一下... 💤
+                  今天工作好累啊，回家就想躺着不动... 💤 但看到家人的笑脸，感觉一切都值得 ❤️
                 </div>
                 <div class="moment-actions">
                   <div class="moment-action">💬 2</div>
                   <div class="moment-action">❤️ 8</div>
+                  <div class="moment-action">↗️ 分享</div>
                 </div>
               </div>
               
               <div class="moment-card">
                 <div class="moment-header">
-                  <div class="moment-avatar">👨</div>
+                  <div class="moment-avatar dad">👨</div>
                   <div class="moment-user-info">
                     <div class="moment-username">爸爸</div>
                     <div class="moment-time">3天前</div>
                   </div>
                 </div>
                 <div class="moment-content">
-                  分享一篇好文章：《如何经营幸福的家庭》📖
+                  分享一篇好文章：《如何经营幸福的家庭》📖 家是最温暖的港湾，让我们一起努力！
                 </div>
                 <div class="moment-actions">
                   <div class="moment-action">💬 1</div>
                   <div class="moment-action">❤️ 3</div>
+                  <div class="moment-action">↗️ 分享</div>
                 </div>
               </div>
               
-              <div class="add-chore-btn" style="bottom: 100px;">✏️</div>
+              <div class="fab">✏️</div>
             </div>
           </div>
           <div class="tabbar">
@@ -1426,7 +1813,7 @@
 
     <!-- 个人中心 -->
     <div class="phone-wrapper" id="page-profile">
-      <div class="phone-label">个人中心 - pages/profile/profile</div>
+      <div class="phone-label">个人中心 · pages/profile/profile</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-white">
@@ -1438,7 +1825,7 @@
               <div class="profile-header">
                 <div class="profile-avatar">👧</div>
                 <div class="profile-name">小明</div>
-                <div class="profile-tags">喜好: 美食 旅行 运动</div>
+                <div class="profile-tags">🍔 美食 · ✈️ 旅行 · 🏃 运动</div>
               </div>
               
               <div class="profile-stats">
@@ -1454,37 +1841,37 @@
               
               <div class="profile-menu">
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">👤</span>
+                  <div class="profile-menu-icon">👤</div>
                   <span class="profile-menu-text">编辑资料</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">❤️</span>
+                  <div class="profile-menu-icon">❤️</div>
                   <span class="profile-menu-text">我的喜好</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">📊</span>
+                  <div class="profile-menu-icon">📊</div>
                   <span class="profile-menu-text">积分明细</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">👨‍👩‍👧‍👦</span>
+                  <div class="profile-menu-icon">👨‍👩‍👧</div>
                   <span class="profile-menu-text">家庭管理</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">⚙️</span>
-                  <span class="profile-menu-text">奖励设置 (管理员)</span>
+                  <div class="profile-menu-icon">⚙️</div>
+                  <span class="profile-menu-text">奖励设置</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">💬</span>
+                  <div class="profile-menu-icon">💬</div>
                   <span class="profile-menu-text">意见反馈</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
                 <div class="profile-menu-item">
-                  <span class="profile-menu-icon">ℹ️</span>
+                  <div class="profile-menu-icon">ℹ️</div>
                   <span class="profile-menu-text">关于我们</span>
                   <span class="profile-menu-arrow">›</span>
                 </div>
@@ -1517,7 +1904,7 @@
 
     <!-- 奖励设置 -->
     <div class="phone-wrapper" id="page-rewards">
-      <div class="phone-label">奖励设置 - pages/rewards/rewards</div>
+      <div class="phone-label">奖励设置 · pages/rewards/rewards</div>
       <div class="phone">
         <div class="phone-screen">
           <div class="status-bar status-bar-black">
@@ -1527,12 +1914,12 @@
           <div class="page-content no-tabbar">
             <div class="rewards-page">
               <div class="rewards-nav">
-                <span class="register-nav-back">←</span>
-                <span class="register-nav-title">奖励设置</span>
+                <div class="nav-back">←</div>
+                <span class="nav-title">奖励设置</span>
               </div>
               
               <div class="exchange-card">
-                <div class="exchange-title">积分兑换比例</div>
+                <div class="exchange-title">💰 积分兑换比例</div>
                 <div class="exchange-row">
                   <span class="exchange-text">1 积分 = ¥</span>
                   <input class="exchange-input" value="0.1">
@@ -1540,54 +1927,46 @@
                 </div>
               </div>
               
-              <div class="section-title">家务奖励设置</div>
+              <div class="section-title">🏆 家务奖励设置</div>
               
               <div class="reward-item">
+                <div class="reward-icon">🧹</div>
                 <div class="reward-info">
-                  <span class="reward-icon">🧹</span>
-                  <div>
-                    <div class="reward-name">扫地拖地</div>
-                    <div class="reward-points">奖励: 15 积分</div>
-                  </div>
+                  <div class="reward-name">扫地拖地</div>
+                  <div class="reward-points">奖励: 15 积分</div>
                 </div>
                 <span class="reward-edit">编辑</span>
               </div>
               
               <div class="reward-item">
+                <div class="reward-icon">🍳</div>
                 <div class="reward-info">
-                  <span class="reward-icon">🍳</span>
-                  <div>
-                    <div class="reward-name">做饭</div>
-                    <div class="reward-points">奖励: 20 积分</div>
-                  </div>
+                  <div class="reward-name">做饭</div>
+                  <div class="reward-points">奖励: 20 积分</div>
                 </div>
                 <span class="reward-edit">编辑</span>
               </div>
               
               <div class="reward-item">
+                <div class="reward-icon">🧺</div>
                 <div class="reward-info">
-                  <span class="reward-icon">🧺</span>
-                  <div>
-                    <div class="reward-name">洗衣服</div>
-                    <div class="reward-points">奖励: 10 积分</div>
-                  </div>
+                  <div class="reward-name">洗衣服</div>
+                  <div class="reward-points">奖励: 10 积分</div>
                 </div>
                 <span class="reward-edit">编辑</span>
               </div>
               
               <div class="reward-item">
+                <div class="reward-icon">🧽</div>
                 <div class="reward-info">
-                  <span class="reward-icon">🧽</span>
-                  <div>
-                    <div class="reward-name">洗碗</div>
-                    <div class="reward-points">奖励: 8 积分</div>
-                  </div>
+                  <div class="reward-name">洗碗</div>
+                  <div class="reward-points">奖励: 8 积分</div>
                 </div>
                 <span class="reward-edit">编辑</span>
               </div>
               
               <div class="add-reward-btn">
-                <span>+</span>
+                <span>➕</span>
                 <span>添加家务类型</span>
               </div>
             </div>
@@ -1598,24 +1977,42 @@
   </div>
 
   <script>
-    // 页面切换功能
+    // 页面切换
     const tabs = document.querySelectorAll('.page-tab');
     const pages = document.querySelectorAll('.phone-wrapper');
 
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const pageId = tab.dataset.page;
-        
-        // 更新 Tab 状态
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        
-        // 更新页面显示
         pages.forEach(p => p.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active');
+      });
+    });
+
+    // 性别选择
+    document.querySelectorAll('.gender-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.gender-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+      });
+    });
+
+    // 标签选择
+    document.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        tag.classList.toggle('active');
+      });
+    });
+
+    // 家务 Tab
+    document.querySelectorAll('.chores-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.chores-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
       });
     });
   </script>
 </body>
 </html>
-
