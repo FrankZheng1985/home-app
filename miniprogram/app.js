@@ -48,9 +48,9 @@ App({
     familyInfo: null,
     token: null,
     // 后端服务地址配置
-    // 模拟器测试用 localhost，真机测试用局域网IP
-    backendUrl: 'http://localhost:3000',
-    // backendUrl: 'http://192.168.31.226:3000', // 真机测试时取消此行注释，注释上一行
+    // 开发环境用 localhost，生产环境用 Render
+    // backendUrl: 'http://localhost:3000', // 本地开发
+    backendUrl: 'https://family-assistant-api.onrender.com', // 生产环境 Render
     systemInfo: null,
     statusBarHeight: 0,
     safeAreaBottom: 0
