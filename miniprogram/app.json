@@ -1,0 +1,59 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/register/register",
+    "pages/family/family",
+    "pages/family/create",
+    "pages/family/join",
+    "pages/chores/chores",
+    "pages/rewards/rewards",
+    "pages/moments/moments",
+    "pages/profile/profile",
+    "pages/profile/edit",
+    "pages/profile/preferences",
+    "pages/profile/points",
+    "pages/profile/feedback",
+    "pages/profile/about"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4A90D9",
+    "navigationBarTitleText": "家庭小助手",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#4A90D9",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/chores/chores",
+        "text": "家务",
+        "iconPath": "assets/icons/chores.png",
+        "selectedIconPath": "assets/icons/chores-active.png"
+      },
+      {
+        "pagePath": "pages/moments/moments",
+        "text": "动态",
+        "iconPath": "assets/icons/moments.png",
+        "selectedIconPath": "assets/icons/moments-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

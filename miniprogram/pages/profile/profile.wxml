@@ -1,0 +1,67 @@
+<!--pages/profile/profile.wxml-->
+<view class="container profile-container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card card">
+    <view class="user-info" bindtap="goToEdit">
+      <image 
+        class="user-avatar avatar-large" 
+        src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}"
+        mode="aspectFill"
+      ></image>
+      <view class="user-detail">
+        <text class="user-name">{{userInfo.nickname || '未设置昵称'}}</text>
+        <text class="user-family text-muted" wx:if="{{familyInfo}}">🏠 {{familyInfo.name}}</text>
+        <text class="user-family text-muted" wx:else>暂未加入家庭</text>
+      </view>
+      <text class="edit-arrow">></text>
+    </view>
+  </view>
+
+  <!-- 积分概览 -->
+  <view class="points-card card" wx:if="{{familyInfo}}">
+    <view class="points-header">
+      <text class="points-title">我的积分</text>
+    </view>
+    <view class="points-content">
+      <view class="points-item">
+        <text class="points-value text-primary">{{pointsSummary.totalPoints || 0}}</text>
+        <text class="points-label">累计积分</text>
+      </view>
+      <view class="points-divider"></view>
+      <view class="points-item">
+        <text class="points-value text-success">{{pointsSummary.thisMonth || 0}}</text>
+        <text class="points-label">本月获得</text>
+      </view>
+    </view>
+    <view class="points-footer" bindtap="onMenuTap" data-url="/pages/profile/points">
+      <text class="text-primary">查看明细 ></text>
+    </view>
+  </view>
+
+  <!-- 菜单列表 -->
+  <view class="menu-card card">
+    <view 
+      class="menu-item" 
+      wx:for="{{menuItems}}" 
+      wx:key="id"
+      data-url="{{item.url}}"
+      bindtap="onMenuTap"
+    >
+      <view class="menu-left">
+        <text class="menu-icon">{{item.icon}}</text>
+        <text class="menu-title">{{item.title}}</text>
+      </view>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+
+  <!-- 版本信息 -->
+  <view class="version-info text-muted">
+    版本 1.0.0
+  </view>
+</view>

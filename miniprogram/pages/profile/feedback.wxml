@@ -1,0 +1,49 @@
+<!--pages/profile/feedback.wxml-->
+<view class="container feedback-container">
+  <view class="form-section card">
+    <view class="form-group">
+      <view class="form-label">反馈类型 <text class="required">*</text></view>
+      <picker mode="selector" range="{{typeOptions}}" bindchange="onTypeChange">
+        <view class="picker-value {{feedbackType ? '' : 'placeholder'}}">
+          {{feedbackType || '请选择反馈类型'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">反馈内容 <text class="required">*</text></view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="请详细描述您的问题或建议，至少10个字符..."
+        value="{{feedbackContent}}"
+        bindinput="onContentInput"
+        maxlength="500"
+      ></textarea>
+      <view class="char-count text-muted">{{feedbackContent.length}}/500</view>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">联系方式（选填）</view>
+      <input 
+        class="form-input" 
+        placeholder="方便我们与您联系"
+        value="{{contact}}"
+        bindinput="onContactInput"
+        maxlength="50"
+      />
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button 
+      class="btn-primary btn-block" 
+      bindtap="submitFeedback"
+      loading="{{isSubmitting}}"
+      disabled="{{isSubmitting || !feedbackType || !feedbackContent.trim()}}"
+    >提交反馈</button>
+  </view>
+
+  <view class="tips-section text-muted">
+    感谢您的反馈，我们会认真阅读每一条建议！
+  </view>
+</view>

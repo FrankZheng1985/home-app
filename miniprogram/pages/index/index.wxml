@@ -1,0 +1,124 @@
+<!--pages/index/index.wxml-->
+<view class="container index-container">
+  <!-- 加载状态 -->
+  <view wx:if="{{isLoading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+  </view>
+
+  <!-- 已有家庭 -->
+  <block wx:elif="{{hasFamily}}">
+    <!-- 欢迎头部 -->
+    <view class="header-section">
+      <view class="welcome-info">
+        <view class="welcome-text">
+          <text class="greeting">{{userInfo.nickname || '家人'}}，好~</text>
+          <text class="family-name">🏠 {{familyInfo.name}}</text>
+        </view>
+        <image 
+          class="user-avatar avatar-medium" 
+          src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}"
+          mode="aspectFill"
+          bindtap="goToFamily"
+        ></image>
+      </view>
+    </view>
+
+    <!-- 快捷操作 -->
+    <view class="quick-actions card">
+      <view class="quick-action-item" bindtap="goToRecordChore">
+        <view class="action-icon">🧹</view>
+        <text class="action-text">记录家务</text>
+      </view>
+      <view class="quick-action-item" bindtap="goToPointsDetail">
+        <view class="action-icon">💰</view>
+        <text class="action-text">我的积分</text>
+      </view>
+      <view class="quick-action-item" bindtap="goToRewards">
+        <view class="action-icon">🎁</view>
+        <text class="action-text">奖励设置</text>
+      </view>
+      <view class="quick-action-item" bindtap="goToFamily">
+        <view class="action-icon">👥</view>
+        <text class="action-text">家庭管理</text>
+      </view>
+    </view>
+
+    <!-- 积分概览 -->
+    <view class="points-overview card">
+      <view class="card-header flex-between">
+        <text class="card-title">积分概览</text>
+        <text class="view-more text-primary" bindtap="goToPointsDetail">查看详情 ></text>
+      </view>
+      <view class="points-stats">
+        <view class="points-item">
+          <text class="points-value text-primary">{{pointsSummary.totalPoints || 0}}</text>
+          <text class="points-label">累计积分</text>
+        </view>
+        <view class="points-divider"></view>
+        <view class="points-item">
+          <text class="points-value text-success">{{pointsSummary.weekPoints || 0}}</text>
+          <text class="points-label">本周获得</text>
+        </view>
+        <view class="points-divider"></view>
+        <view class="points-item">
+          <text class="points-value text-warning">{{pointsSummary.rank || '-'}}</text>
+          <text class="points-label">家庭排名</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 家庭排行榜 -->
+    <view class="ranking-section card" wx:if="{{familyRanking.length > 0}}">
+      <view class="card-header flex-between">
+        <text class="card-title">🏆 本周排行</text>
+      </view>
+      <view class="ranking-list">
+        <view class="ranking-item" wx:for="{{familyRanking}}" wx:key="userId">
+          <view class="ranking-position {{index < 3 ? 'top-three' : ''}}">
+            <text wx:if="{{index === 0}}">🥇</text>
+            <text wx:elif="{{index === 1}}">🥈</text>
+            <text wx:elif="{{index === 2}}">🥉</text>
+            <text wx:else>{{index + 1}}</text>
+          </view>
+          <image class="ranking-avatar avatar-small" src="{{item.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
+          <text class="ranking-name">{{item.nickname}}</text>
+          <text class="ranking-points">{{item.points}}分</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 最新动态 -->
+    <view class="moments-section card" wx:if="{{latestMoments.length > 0}}">
+      <view class="card-header flex-between">
+        <text class="card-title">📢 家庭动态</text>
+        <text class="view-more text-primary" bindtap="goToMoments">查看更多 ></text>
+      </view>
+      <view class="moments-list">
+        <view class="moment-item" wx:for="{{latestMoments}}" wx:key="id">
+          <view class="moment-header">
+            <image class="moment-avatar avatar-small" src="{{item.isAnonymous ? '/assets/images/default-avatar.png' : item.user.avatarUrl}}"></image>
+            <view class="moment-info">
+              <text class="moment-author">{{item.isAnonymous ? '匿名' : item.user.nickname}}</text>
+              <text class="moment-time text-muted">{{item.createdAtText}}</text>
+            </view>
+          </view>
+          <view class="moment-content">{{item.content}}</view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 未加入家庭 -->
+  <block wx:else>
+    <view class="no-family-container">
+      <view class="no-family-icon">🏠</view>
+      <view class="no-family-title">还没有加入家庭</view>
+      <view class="no-family-desc">创建或加入一个家庭，开始记录家务吧！</view>
+      
+      <view class="family-actions">
+        <button class="btn-primary btn-block" bindtap="goToCreateFamily">创建新家庭</button>
+        <button class="btn-secondary btn-block mt-20" bindtap="goToJoinFamily">加入已有家庭</button>
+      </view>
+    </view>
+  </block>
+</view>

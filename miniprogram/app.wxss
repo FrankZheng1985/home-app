@@ -1,0 +1,377 @@
+/**app.wxss**/
+
+/* CSS变量定义 */
+page {
+  --primary-color: #4A90D9;
+  --primary-light: #E8F4FD;
+  --primary-dark: #2E6CB5;
+  --success-color: #52C41A;
+  --warning-color: #FAAD14;
+  --error-color: #FF4D4F;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-placeholder: #999999;
+  --background-color: #F5F6F7;
+  --card-background: #FFFFFF;
+  --border-color: #EEEEEE;
+  --shadow-light: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+  
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 28rpx;
+  color: var(--text-primary);
+  background-color: var(--background-color);
+}
+
+/* 基础容器 */
+.container {
+  min-height: 100vh;
+  padding: 30rpx;
+  box-sizing: border-box;
+  background-color: var(--background-color);
+}
+
+/* Flex布局工具类 */
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-around {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: var(--card-background);
+  border-radius: 16rpx;
+  box-shadow: var(--shadow-light);
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20rpx;
+}
+
+.card-subtitle {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+}
+
+/* 按钮样式 */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #FFFFFF;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border: none;
+}
+
+.btn-primary::after {
+  border: none;
+}
+
+.btn-primary:active {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border: none;
+}
+
+.btn-secondary::after {
+  border: none;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2rpx solid var(--primary-color);
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  height: 88rpx;
+  line-height: 84rpx;
+  text-align: center;
+}
+
+.btn-outline::after {
+  border: none;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-small {
+  height: 64rpx;
+  line-height: 64rpx;
+  font-size: 28rpx;
+  padding: 0 30rpx;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 表单元素 */
+.form-group {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  background-color: var(--background-color);
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 200rpx;
+  background-color: var(--background-color);
+  border-radius: 12rpx;
+  padding: 24rpx;
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+/* 列表样式 */
+.list-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item-content {
+  flex: 1;
+}
+
+.list-item-title {
+  font-size: 30rpx;
+  color: var(--text-primary);
+}
+
+.list-item-desc {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  margin-top: 8rpx;
+}
+
+.list-item-arrow {
+  font-size: 28rpx;
+  color: var(--text-placeholder);
+}
+
+/* 标签样式 */
+.tag {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.tag-success {
+  background-color: #E8F5E9;
+  color: var(--success-color);
+}
+
+.tag-warning {
+  background-color: #FFF8E1;
+  color: var(--warning-color);
+}
+
+.tag-error {
+  background-color: #FFEBEE;
+  color: var(--error-color);
+}
+
+/* 文本颜色 */
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-warning {
+  color: var(--warning-color);
+}
+
+.text-error {
+  color: var(--error-color);
+}
+
+.text-muted {
+  color: var(--text-placeholder);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+/* 文本对齐 */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* 边距工具类 */
+.mt-10 { margin-top: 10rpx; }
+.mt-20 { margin-top: 20rpx; }
+.mt-30 { margin-top: 30rpx; }
+.mb-10 { margin-bottom: 10rpx; }
+.mb-20 { margin-bottom: 20rpx; }
+.mb-30 { margin-bottom: 30rpx; }
+.ml-10 { margin-left: 10rpx; }
+.ml-20 { margin-left: 20rpx; }
+.mr-10 { margin-right: 10rpx; }
+.mr-20 { margin-right: 20rpx; }
+.p-20 { padding: 20rpx; }
+.p-30 { padding: 30rpx; }
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--text-placeholder);
+  text-align: center;
+}
+
+.empty-action {
+  margin-top: 30rpx;
+}
+
+/* 分割线 */
+.divider {
+  height: 1rpx;
+  background-color: var(--border-color);
+  margin: 20rpx 0;
+}
+
+/* 头像 */
+.avatar {
+  border-radius: 50%;
+  background-color: var(--border-color);
+}
+
+.avatar-small {
+  width: 60rpx;
+  height: 60rpx;
+}
+
+.avatar-medium {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.avatar-large {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+/* 徽标 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  border-radius: 18rpx;
+  background-color: var(--error-color);
+  color: #FFFFFF;
+  font-size: 22rpx;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx;
+}
+
+/* 安全区域 */
+.safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}

@@ -1,0 +1,126 @@
+<!--pages/chores/chores.wxml-->
+<view class="container chores-container">
+  <!-- 标签切换 -->
+  <view class="tabs">
+    <view class="tab-item {{activeTab === 'record' ? 'active' : ''}}" 
+          data-tab="record" 
+          bindtap="switchTab">
+      记录家务
+    </view>
+    <view class="tab-item {{activeTab === 'history' ? 'active' : ''}}" 
+          data-tab="history" 
+          bindtap="switchTab">
+      历史记录
+    </view>
+  </view>
+
+  <!-- 记录家务 -->
+  <view class="tab-content" wx:if="{{activeTab === 'record'}}">
+    <!-- 无家庭提示 -->
+    <view class="empty-state" wx:if="{{!familyInfo}}">
+      <view class="empty-icon">🏠</view>
+      <view class="empty-text">请先加入或创建家庭</view>
+    </view>
+
+    <!-- 家务类型列表 -->
+    <block wx:elif="{{choreTypes.length > 0}}">
+      <view class="section-title">选择家务类型</view>
+      <view class="chore-types-grid">
+        <view class="chore-type-item" 
+              wx:for="{{choreTypes}}" 
+              wx:key="id"
+              data-item="{{item}}"
+              bindtap="selectChoreType">
+          <view class="chore-icon">{{item.icon || '🧹'}}</view>
+          <view class="chore-name">{{item.name}}</view>
+          <view class="chore-points">+{{item.points}}分</view>
+        </view>
+      </view>
+
+      <view class="add-type-tip" bindtap="goToRewards">
+        <text class="text-primary">+ 添加更多家务类型</text>
+      </view>
+    </block>
+
+    <!-- 无家务类型 -->
+    <view class="empty-state" wx:else>
+      <view class="empty-icon">📝</view>
+      <view class="empty-text">还没有设置家务类型</view>
+      <button class="btn-primary btn-small empty-action" bindtap="goToRewards">去设置</button>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="tab-content" wx:if="{{activeTab === 'history'}}">
+    <view class="records-list" wx:if="{{choreRecords.length > 0}}">
+      <view class="record-item card" wx:for="{{choreRecords}}" wx:key="id">
+        <view class="record-header">
+          <view class="record-user">
+            <image class="record-avatar avatar-small" src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
+            <text class="record-username">{{item.user.nickname}}</text>
+          </view>
+          <view class="record-points text-primary">+{{item.points}}分</view>
+        </view>
+        <view class="record-body">
+          <view class="record-chore">
+            <text class="chore-icon-small">{{item.choreType.icon || '🧹'}}</text>
+            <text class="chore-name">{{item.choreType.name}}</text>
+          </view>
+          <view class="record-remark text-muted" wx:if="{{item.remark}}">{{item.remark}}</view>
+        </view>
+        <view class="record-footer">
+          <text class="record-time text-muted">{{item.createdAtText}}</text>
+        </view>
+      </view>
+
+      <view class="load-more" wx:if="{{hasMore}}">
+        <text class="text-muted">上拉加载更多</text>
+      </view>
+      <view class="no-more" wx:else>
+        <text class="text-muted">没有更多了</text>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-icon">📋</view>
+      <view class="empty-text">还没有家务记录</view>
+    </view>
+  </view>
+
+  <!-- 记录弹窗 -->
+  <view class="modal-mask" wx:if="{{showRecordModal}}" bindtap="closeRecordModal"></view>
+  <view class="modal-content" wx:if="{{showRecordModal}}">
+    <view class="modal-header">
+      <text class="modal-title">记录家务</text>
+      <text class="modal-close" bindtap="closeRecordModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="selected-chore">
+        <view class="chore-icon-large">{{selectedChoreType.icon || '🧹'}}</view>
+        <view class="chore-info">
+          <text class="chore-name">{{selectedChoreType.name}}</text>
+          <text class="chore-points text-primary">+{{selectedChoreType.points}}积分</text>
+        </view>
+      </view>
+
+      <view class="form-group">
+        <view class="form-label">备注（选填）</view>
+        <textarea 
+          class="form-textarea" 
+          placeholder="添加备注..."
+          value="{{remark}}"
+          bindinput="onRemarkInput"
+          maxlength="200"
+        ></textarea>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button 
+        class="btn-primary btn-block" 
+        bindtap="submitRecord"
+        loading="{{isSubmitting}}"
+        disabled="{{isSubmitting}}"
+      >确认提交</button>
+    </view>
+  </view>
+</view>

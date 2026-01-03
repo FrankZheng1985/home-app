@@ -1,0 +1,131 @@
+/* pages/profile/points.wxss */
+
+.points-container {
+  padding-top: 20rpx;
+}
+
+/* 积分概览 */
+.summary-card {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  padding: 40rpx;
+}
+
+.summary-header {
+  margin-bottom: 30rpx;
+}
+
+.summary-title {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.summary-main {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.total-points {
+  font-size: 80rpx;
+  font-weight: 700;
+  display: block;
+}
+
+.total-label {
+  font-size: 26rpx;
+  opacity: 0.8;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: space-around;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 12rpx;
+  padding: 24rpx;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  opacity: 0.8;
+  margin-top: 8rpx;
+}
+
+.stat-divider {
+  width: 1rpx;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 积分明细 */
+.transactions-section {
+  padding: 0;
+}
+
+.section-header {
+  padding: 24rpx 30rpx;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.transactions-list {
+  padding: 0 30rpx;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-icon {
+  font-size: 40rpx;
+  margin-right: 20rpx;
+}
+
+.transaction-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-title {
+  font-size: 28rpx;
+  color: var(--text-primary);
+}
+
+.transaction-time {
+  font-size: 24rpx;
+  margin-top: 6rpx;
+}
+
+.transaction-points {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.load-more, .no-more {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 26rpx;
+}

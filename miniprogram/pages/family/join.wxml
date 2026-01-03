@@ -1,0 +1,45 @@
+<!--pages/family/join.wxml-->
+<view class="container join-family-container">
+  <view class="header-section">
+    <view class="header-icon">👋</view>
+    <view class="header-title">加入家庭</view>
+    <view class="header-desc text-muted">输入邀请码或扫描二维码加入</view>
+  </view>
+
+  <view class="form-section card">
+    <view class="form-group">
+      <view class="form-label">邀请码</view>
+      <input 
+        class="form-input code-input" 
+        placeholder="请输入6位邀请码"
+        value="{{inviteCode}}"
+        bindinput="onCodeInput"
+        maxlength="10"
+      />
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button 
+      class="btn-primary btn-block" 
+      bindtap="joinFamily"
+      loading="{{isSubmitting}}"
+      disabled="{{isSubmitting || !inviteCode.trim()}}"
+    >加入家庭</button>
+    
+    <view class="divider-text">
+      <text class="divider-line"></text>
+      <text class="divider-text-content text-muted">或</text>
+      <text class="divider-line"></text>
+    </view>
+
+    <button class="btn-outline btn-block" bindtap="scanQRCode">
+      📷 扫描邀请二维码
+    </button>
+  </view>
+
+  <view class="tips-section">
+    <text class="tips-title text-muted">如何获取邀请码？</text>
+    <text class="tips-content text-muted">请联系您的家人，让他们在"家庭管理"中生成邀请码或二维码分享给您。</text>
+  </view>
+</view>

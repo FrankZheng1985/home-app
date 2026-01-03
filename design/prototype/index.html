@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>家庭小助手 - 设计原型</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* 主色 */
+      --color-primary: #FF6B6B;
+      --color-primary-light: #FFE5E5;
+      --color-primary-dark: #E55050;
+      
+      /* 语义色 */
+      --color-success: #52C41A;
+      --color-warning: #FAAD14;
+      --color-error: #FF4D4F;
+      --color-info: #1890FF;
+      --color-wechat: #07C160;
+      
+      /* 文字色 */
+      --color-text-title: #1A1A1A;
+      --color-text-body: #333333;
+      --color-text-secondary: #666666;
+      --color-text-tertiary: #999999;
+      --color-text-disabled: #CCCCCC;
+      
+      /* 背景边框 */
+      --color-border: #E8E8E8;
+      --color-bg-page: #F5F5F5;
+      --color-bg-card: #FFFFFF;
+      
+      /* 家务分类 */
+      --color-clean: #4ECDC4;
+      --color-kitchen: #FF9F43;
+      --color-laundry: #54A0FF;
+      --color-organize: #5F27CD;
+      --color-care: #FF6B81;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+      background: #1A1A1A;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .page-selector {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .page-selector h1 {
+      color: #fff;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .page-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .page-tab {
+      padding: 8px 16px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .page-tab:hover {
+      background: #444;
+    }
+
+    .page-tab.active {
+      background: var(--color-primary);
+    }
+
+    .phones-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .phone-wrapper {
+      display: none;
+    }
+
+    .phone-wrapper.active {
+      display: block;
+    }
+
+    .phone-label {
+      color: #fff;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .phone {
+      width: 375px;
+      height: 812px;
+      background: #000;
+      border-radius: 50px;
+      padding: 15px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: var(--color-bg-page);
+      border-radius: 40px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 状态栏 */
+    .status-bar {
+      height: 44px;
+      background: inherit;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    .status-bar-white {
+      color: #fff;
+    }
+
+    .status-bar-black {
+      color: #000;
+    }
+
+    .status-time {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    /* 页面内容 */
+    .page-content {
+      height: 100%;
+      padding-top: 44px;
+      padding-bottom: 83px;
+      overflow-y: auto;
+    }
+
+    .page-content.no-tabbar {
+      padding-bottom: 34px;
+    }
+
+    /* 登录页 */
+    .login-page {
+      background: linear-gradient(180deg, #FF6B6B 0%, #FF8E8E 50%, var(--color-bg-page) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px 40px;
+    }
+
+    .login-logo {
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      margin-bottom: 16px;
+    }
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 40px;
+    }
+
+    .login-features {
+      width: 100%;
+      margin-bottom: 40px;
+    }
+
+    .login-feature {
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .login-feature-icon {
+      font-size: 24px;
+    }
+
+    .login-feature-text {
+      font-size: 15px;
+      color: var(--color-text-body);
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 48px;
+      background: var(--color-wechat);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .login-terms {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+      text-align: center;
+    }
+
+    .login-terms a {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    /* 注册页 */
+    .register-page {
+      background: var(--color-bg-page);
+      padding: 0 16px 40px;
+    }
+
+    .register-nav {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .register-nav-back {
+      font-size: 20px;
+      color: var(--color-text-body);
+    }
+
+    .register-nav-title {
+      flex: 1;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 500;
+      margin-right: 20px;
+    }
+
+    .register-avatar {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .register-avatar-img {
+      width: 80px;
+      height: 80px;
+      background: var(--color-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+      font-size: 36px;
+      color: var(--color-text-tertiary);
+    }
+
+    .register-avatar-text {
+      font-size: 12px;
+      color: var(--color-primary);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 0 16px;
+      font-size: 14px;
+      color: var(--color-text-body);
+    }
+
+    .form-input::placeholder {
+      color: var(--color-text-disabled);
+    }
+
+    .gender-options {
+      display: flex;
+      gap: 12px;
+    }
+
+    .gender-option {
+      flex: 1;
+      height: 40px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .gender-option.active {
+      background: var(--color-primary-light);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 8px 16px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    .tag.active {
+      background: var(--color-primary-light);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .primary-btn {
+      width: 100%;
+      height: 48px;
+      background: var(--color-primary);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+      margin-top: 30px;
+    }
+
+    /* 首页 */
+    .home-page {
+      background: var(--color-bg-page);
+      padding: 0 16px 20px;
+    }
+
+    .home-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    .home-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-text-title);
+    }
+
+    .home-header-icon {
+      font-size: 20px;
+    }
+
+    .family-card {
+      background: linear-gradient(135deg, var(--color-primary) 0%, #FF8E8E 100%);
+      border-radius: 16px;
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+    }
+
+    .family-card-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .family-members {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .family-member {
+      text-align: center;
+    }
+
+    .family-member-avatar {
+      width: 48px;
+      height: 48px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+      font-size: 24px;
+    }
+
+    .family-member-avatar.add {
+      background: rgba(255,255,255,0.2);
+      border: 2px dashed rgba(255,255,255,0.5);
+      font-size: 20px;
+    }
+
+    .family-member-name {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .family-id {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .family-id-copy {
+      padding: 2px 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      font-size: 10px;
+    }
+
+    .stat-cards {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      flex: 1;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .stat-card-title {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .stat-card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-primary);
+      font-family: 'DIN Alternate', sans-serif;
+    }
+
+    .stat-card-unit {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text-title);
+      margin-bottom: 12px;
+    }
+
+    .activity-list {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .activity-item {
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-avatar {
+      width: 40px;
+      height: 40px;
+      background: var(--color-primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      font-size: 14px;
+      color: var(--color-text-body);
+      margin-bottom: 4px;
+    }
+
+    .activity-text strong {
+      color: var(--color-text-title);
+    }
+
+    .activity-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+    }
+
+    .activity-points {
+      color: var(--color-warning);
+    }
+
+    /* 家务页 */
+    .chores-page {
+      background: var(--color-bg-page);
+      padding: 0 16px 20px;
+    }
+
+    .chores-tabs {
+      display: flex;
+      gap: 8px;
+      padding: 12px 0;
+      overflow-x: auto;
+    }
+
+    .chores-tab {
+      padding: 8px 16px;
+      background: #fff;
+      border-radius: 20px;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      white-space: nowrap;
+    }
+
+    .chores-tab.active {
+      background: var(--color-primary);
+      color: #fff;
+    }
+
+    .chore-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-left: 4px solid var(--color-clean);
+    }
+
+    .chore-card.kitchen {
+      border-left-color: var(--color-kitchen);
+    }
+
+    .chore-card.laundry {
+      border-left-color: var(--color-laundry);
+    }
+
+    .chore-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .chore-info {
+      display: flex;
+      gap: 12px;
+    }
+
+    .chore-icon {
+      font-size: 32px;
+    }
+
+    .chore-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text-title);
+      margin-bottom: 4px;
+    }
+
+    .chore-points {
+      font-size: 14px;
+      color: var(--color-warning);
+    }
+
+    .chore-btn {
+      padding: 8px 20px;
+      background: var(--color-primary);
+      border-radius: 20px;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .chore-btn.done {
+      background: var(--color-success);
+    }
+
+    .add-chore-btn {
+      position: fixed;
+      right: 20px;
+      bottom: 100px;
+      width: 56px;
+      height: 56px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+    }
+
+    /* 动态页 */
+    .moments-page {
+      background: var(--color-bg-page);
+      padding: 0 16px 20px;
+    }
+
+    .moment-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .moment-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .moment-avatar {
+      width: 40px;
+      height: 40px;
+      background: var(--color-primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .moment-avatar.anonymous {
+      background: var(--color-border);
+    }
+
+    .moment-user-info {
+      flex: 1;
+    }
+
+    .moment-username {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-title);
+    }
+
+    .moment-time {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+    }
+
+    .moment-content {
+      font-size: 14px;
+      color: var(--color-text-body);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .moment-images {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .moment-image {
+      aspect-ratio: 1;
+      background: var(--color-bg-page);
+      border-radius: 4px;
+    }
+
+    .moment-actions {
+      display: flex;
+      gap: 24px;
+    }
+
+    .moment-action {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--color-text-tertiary);
+    }
+
+    /* 个人中心 */
+    .profile-page {
+      background: var(--color-bg-page);
+    }
+
+    .profile-header {
+      background: linear-gradient(180deg, var(--color-primary) 0%, #FF8E8E 100%);
+      padding: 40px 16px 30px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border: 4px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 40px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .profile-tags {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .profile-stats {
+      display: flex;
+      margin: -20px 16px 16px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    .profile-stat {
+      flex: 1;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .profile-stat:first-child {
+      border-right: 1px solid var(--color-border);
+    }
+
+    .profile-stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .profile-stat-label {
+      font-size: 12px;
+      color: var(--color-text-tertiary);
+    }
+
+    .profile-menu {
+      margin: 16px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .profile-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .profile-menu-icon {
+      font-size: 20px;
+      margin-right: 12px;
+    }
+
+    .profile-menu-text {
+      flex: 1;
+      font-size: 16px;
+      color: var(--color-text-body);
+    }
+
+    .profile-menu-arrow {
+      color: var(--color-text-disabled);
+    }
+
+    .logout-btn {
+      margin: 16px;
+      height: 48px;
+      background: #fff;
+      border: 1px solid var(--color-border);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--color-text-secondary);
+    }
+
+    /* TabBar */
+    .tabbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 83px;
+      background: #fff;
+      border-top: 0.5px solid var(--color-border);
+      display: flex;
+      padding-bottom: 34px;
+    }
+
+    .tabbar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-tertiary);
+    }
+
+    .tabbar-item.active {
+      color: var(--color-primary);
+    }
+
+    .tabbar-icon {
+      font-size: 24px;
+      margin-bottom: 2px;
+    }
+
+    .tabbar-text {
+      font-size: 10px;
+    }
+
+    /* 奖励设置页 */
+    .rewards-page {
+      background: var(--color-bg-page);
+      padding: 0 16px 20px;
+    }
+
+    .rewards-nav {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .exchange-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .exchange-title {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .exchange-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .exchange-text {
+      font-size: 16px;
+      color: var(--color-text-body);
+    }
+
+    .exchange-input {
+      width: 80px;
+      height: 40px;
+      background: var(--color-bg-page);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-primary);
+    }
+
+    .reward-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reward-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .reward-icon {
+      font-size: 32px;
+    }
+
+    .reward-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text-title);
+      margin-bottom: 4px;
+    }
+
+    .reward-points {
+      font-size: 14px;
+      color: var(--color-warning);
+    }
+
+    .reward-edit {
+      font-size: 14px;
+      color: var(--color-primary);
+    }
+
+    .add-reward-btn {
+      width: 100%;
+      height: 48px;
+      background: #fff;
+      border: 2px dashed var(--color-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--color-text-tertiary);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-selector">
+    <h1>🏠 家庭小助手 - UI 设计原型</h1>
+    <div class="page-tabs">
+      <button class="page-tab active" data-page="login">登录页</button>
+      <button class="page-tab" data-page="register">注册页</button>
+      <button class="page-tab" data-page="home">首页</button>
+      <button class="page-tab" data-page="chores">家务</button>
+      <button class="page-tab" data-page="moments">动态</button>
+      <button class="page-tab" data-page="profile">我的</button>
+      <button class="page-tab" data-page="rewards">奖励设置</button>
+    </div>
+  </div>
+
+  <div class="phones-container">
+    <!-- 登录页 -->
+    <div class="phone-wrapper active" id="page-login">
+      <div class="phone-label">登录页 - pages/login/login</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-white">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content no-tabbar">
+            <div class="login-page">
+              <div class="login-logo">🏠</div>
+              <div class="login-title">家庭小助手</div>
+              <div class="login-subtitle">记录家务，积累幸福</div>
+              
+              <div class="login-features">
+                <div class="login-feature">
+                  <span class="login-feature-icon">👨‍👩‍👧‍👦</span>
+                  <span class="login-feature-text">家庭成员管理</span>
+                </div>
+                <div class="login-feature">
+                  <span class="login-feature-icon">✓</span>
+                  <span class="login-feature-text">家务记录积分</span>
+                </div>
+                <div class="login-feature">
+                  <span class="login-feature-icon">💕</span>
+                  <span class="login-feature-text">分享生活点滴</span>
+                </div>
+              </div>
+              
+              <div class="login-btn">
+                <span>💬</span>
+                <span>微信一键登录</span>
+              </div>
+              
+              <div class="login-terms">
+                登录即表示同意 <a href="#">《用户协议》</a> 和 <a href="#">《隐私政策》</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 注册页 -->
+    <div class="phone-wrapper" id="page-register">
+      <div class="phone-label">注册页 - pages/register/register</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content no-tabbar">
+            <div class="register-page">
+              <div class="register-nav">
+                <span class="register-nav-back">←</span>
+                <span class="register-nav-title">完善资料</span>
+              </div>
+              
+              <div class="register-avatar">
+                <div class="register-avatar-img">👤</div>
+                <div class="register-avatar-text">点击更换头像</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">昵称</label>
+                <input class="form-input" placeholder="请输入昵称">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">性别</label>
+                <div class="gender-options">
+                  <div class="gender-option active">男</div>
+                  <div class="gender-option">女</div>
+                  <div class="gender-option">保密</div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">生日</label>
+                <input class="form-input" placeholder="请选择生日" value="1990-01-01">
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">个人喜好</label>
+                <div class="tags-container">
+                  <div class="tag active">美食</div>
+                  <div class="tag">旅行</div>
+                  <div class="tag active">运动</div>
+                  <div class="tag">音乐</div>
+                  <div class="tag">电影</div>
+                  <div class="tag">游戏</div>
+                  <div class="tag">阅读</div>
+                  <div class="tag">摄影</div>
+                  <div class="tag">手工</div>
+                </div>
+              </div>
+              
+              <div class="primary-btn">完成注册</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 首页 -->
+    <div class="phone-wrapper" id="page-home">
+      <div class="phone-label">首页 - pages/index/index</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="home-page">
+              <div class="home-header">
+                <span class="home-title">家庭小助手</span>
+                <span class="home-header-icon">📋</span>
+              </div>
+              
+              <div class="family-card">
+                <div class="family-card-title">👨‍👩‍👧‍👦 我的家庭</div>
+                <div class="family-members">
+                  <div class="family-member">
+                    <div class="family-member-avatar">👨</div>
+                    <div class="family-member-name">爸爸</div>
+                  </div>
+                  <div class="family-member">
+                    <div class="family-member-avatar">👩</div>
+                    <div class="family-member-name">妈妈</div>
+                  </div>
+                  <div class="family-member">
+                    <div class="family-member-avatar">👧</div>
+                    <div class="family-member-name">我</div>
+                  </div>
+                  <div class="family-member">
+                    <div class="family-member-avatar add">+</div>
+                    <div class="family-member-name">邀请</div>
+                  </div>
+                </div>
+                <div class="family-id">
+                  家庭ID: ABC123
+                  <span class="family-id-copy">复制</span>
+                </div>
+              </div>
+              
+              <div class="stat-cards">
+                <div class="stat-card">
+                  <div class="stat-card-title">今日家务</div>
+                  <div class="stat-card-value">3/5</div>
+                  <div class="stat-card-unit">已完成</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-title">我的积分</div>
+                  <div class="stat-card-value">1,280</div>
+                  <div class="stat-card-unit">分</div>
+                </div>
+              </div>
+              
+              <div class="section-title">最新动态</div>
+              <div class="activity-list">
+                <div class="activity-item">
+                  <div class="activity-avatar">👩</div>
+                  <div class="activity-content">
+                    <div class="activity-text"><strong>妈妈</strong> 完成了 <strong>拖地</strong></div>
+                    <div class="activity-meta">
+                      <span class="activity-points">+15分</span>
+                      <span>刚刚</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-avatar">👨</div>
+                  <div class="activity-content">
+                    <div class="activity-text"><strong>爸爸</strong> 发布了一条动态</div>
+                    <div class="activity-meta">
+                      <span>5分钟前</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 家务页 -->
+    <div class="phone-wrapper" id="page-chores">
+      <div class="phone-label">家务记录 - pages/chores/chores</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="chores-page">
+              <div class="home-header">
+                <span class="home-title">家务记录</span>
+                <span class="home-header-icon">📊</span>
+              </div>
+              
+              <div class="chores-tabs">
+                <div class="chores-tab active">全部</div>
+                <div class="chores-tab">清洁</div>
+                <div class="chores-tab">厨房</div>
+                <div class="chores-tab">洗涤</div>
+                <div class="chores-tab">整理</div>
+              </div>
+              
+              <div class="chore-card">
+                <div class="chore-header">
+                  <div class="chore-info">
+                    <span class="chore-icon">🧹</span>
+                    <div>
+                      <div class="chore-name">扫地拖地</div>
+                      <div class="chore-points">+15 积分</div>
+                    </div>
+                  </div>
+                  <div class="chore-btn">记录完成</div>
+                </div>
+              </div>
+              
+              <div class="chore-card kitchen">
+                <div class="chore-header">
+                  <div class="chore-info">
+                    <span class="chore-icon">🍳</span>
+                    <div>
+                      <div class="chore-name">做饭</div>
+                      <div class="chore-points">+20 积分</div>
+                    </div>
+                  </div>
+                  <div class="chore-btn done">已完成 ✓</div>
+                </div>
+              </div>
+              
+              <div class="chore-card laundry">
+                <div class="chore-header">
+                  <div class="chore-info">
+                    <span class="chore-icon">🧺</span>
+                    <div>
+                      <div class="chore-name">洗衣服</div>
+                      <div class="chore-points">+10 积分</div>
+                    </div>
+                  </div>
+                  <div class="chore-btn">记录完成</div>
+                </div>
+              </div>
+              
+              <div class="add-chore-btn">+</div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态页 -->
+    <div class="phone-wrapper" id="page-moments">
+      <div class="phone-label">家庭动态 - pages/moments/moments</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="moments-page">
+              <div class="home-header">
+                <span class="home-title">家庭动态</span>
+                <span class="home-header-icon">✏️</span>
+              </div>
+              
+              <div class="moment-card">
+                <div class="moment-header">
+                  <div class="moment-avatar">👩</div>
+                  <div class="moment-user-info">
+                    <div class="moment-username">妈妈</div>
+                    <div class="moment-time">2小时前</div>
+                  </div>
+                </div>
+                <div class="moment-content">
+                  今天做了一顿美味的晚餐，全家人都很喜欢！😋
+                </div>
+                <div class="moment-images">
+                  <div class="moment-image"></div>
+                  <div class="moment-image"></div>
+                  <div class="moment-image"></div>
+                </div>
+                <div class="moment-actions">
+                  <div class="moment-action">💬 3</div>
+                  <div class="moment-action">❤️ 5</div>
+                </div>
+              </div>
+              
+              <div class="moment-card">
+                <div class="moment-header">
+                  <div class="moment-avatar anonymous">👤</div>
+                  <div class="moment-user-info">
+                    <div class="moment-username">匿名</div>
+                    <div class="moment-time">昨天</div>
+                  </div>
+                </div>
+                <div class="moment-content">
+                  今天工作好累啊，需要休息一下... 💤
+                </div>
+                <div class="moment-actions">
+                  <div class="moment-action">💬 2</div>
+                  <div class="moment-action">❤️ 8</div>
+                </div>
+              </div>
+              
+              <div class="moment-card">
+                <div class="moment-header">
+                  <div class="moment-avatar">👨</div>
+                  <div class="moment-user-info">
+                    <div class="moment-username">爸爸</div>
+                    <div class="moment-time">3天前</div>
+                  </div>
+                </div>
+                <div class="moment-content">
+                  分享一篇好文章：《如何经营幸福的家庭》📖
+                </div>
+                <div class="moment-actions">
+                  <div class="moment-action">💬 1</div>
+                  <div class="moment-action">❤️ 3</div>
+                </div>
+              </div>
+              
+              <div class="add-chore-btn" style="bottom: 100px;">✏️</div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 个人中心 -->
+    <div class="phone-wrapper" id="page-profile">
+      <div class="phone-label">个人中心 - pages/profile/profile</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-white">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="profile-page">
+              <div class="profile-header">
+                <div class="profile-avatar">👧</div>
+                <div class="profile-name">小明</div>
+                <div class="profile-tags">喜好: 美食 旅行 运动</div>
+              </div>
+              
+              <div class="profile-stats">
+                <div class="profile-stat">
+                  <div class="profile-stat-value">1,280</div>
+                  <div class="profile-stat-label">我的积分</div>
+                </div>
+                <div class="profile-stat">
+                  <div class="profile-stat-value">56</div>
+                  <div class="profile-stat-label">已完成家务</div>
+                </div>
+              </div>
+              
+              <div class="profile-menu">
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">👤</span>
+                  <span class="profile-menu-text">编辑资料</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">❤️</span>
+                  <span class="profile-menu-text">我的喜好</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">📊</span>
+                  <span class="profile-menu-text">积分明细</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">👨‍👩‍👧‍👦</span>
+                  <span class="profile-menu-text">家庭管理</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">⚙️</span>
+                  <span class="profile-menu-text">奖励设置 (管理员)</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">💬</span>
+                  <span class="profile-menu-text">意见反馈</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <span class="profile-menu-icon">ℹ️</span>
+                  <span class="profile-menu-text">关于我们</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+              </div>
+              
+              <div class="logout-btn">退出登录</div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 奖励设置 -->
+    <div class="phone-wrapper" id="page-rewards">
+      <div class="phone-label">奖励设置 - pages/rewards/rewards</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content no-tabbar">
+            <div class="rewards-page">
+              <div class="rewards-nav">
+                <span class="register-nav-back">←</span>
+                <span class="register-nav-title">奖励设置</span>
+              </div>
+              
+              <div class="exchange-card">
+                <div class="exchange-title">积分兑换比例</div>
+                <div class="exchange-row">
+                  <span class="exchange-text">1 积分 = ¥</span>
+                  <input class="exchange-input" value="0.1">
+                  <span class="exchange-text">元</span>
+                </div>
+              </div>
+              
+              <div class="section-title">家务奖励设置</div>
+              
+              <div class="reward-item">
+                <div class="reward-info">
+                  <span class="reward-icon">🧹</span>
+                  <div>
+                    <div class="reward-name">扫地拖地</div>
+                    <div class="reward-points">奖励: 15 积分</div>
+                  </div>
+                </div>
+                <span class="reward-edit">编辑</span>
+              </div>
+              
+              <div class="reward-item">
+                <div class="reward-info">
+                  <span class="reward-icon">🍳</span>
+                  <div>
+                    <div class="reward-name">做饭</div>
+                    <div class="reward-points">奖励: 20 积分</div>
+                  </div>
+                </div>
+                <span class="reward-edit">编辑</span>
+              </div>
+              
+              <div class="reward-item">
+                <div class="reward-info">
+                  <span class="reward-icon">🧺</span>
+                  <div>
+                    <div class="reward-name">洗衣服</div>
+                    <div class="reward-points">奖励: 10 积分</div>
+                  </div>
+                </div>
+                <span class="reward-edit">编辑</span>
+              </div>
+              
+              <div class="reward-item">
+                <div class="reward-info">
+                  <span class="reward-icon">🧽</span>
+                  <div>
+                    <div class="reward-name">洗碗</div>
+                    <div class="reward-points">奖励: 8 积分</div>
+                  </div>
+                </div>
+                <span class="reward-edit">编辑</span>
+              </div>
+              
+              <div class="add-reward-btn">
+                <span>+</span>
+                <span>添加家务类型</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 页面切换功能
+    const tabs = document.querySelectorAll('.page-tab');
+    const pages = document.querySelectorAll('.phone-wrapper');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const pageId = tab.dataset.page;
+        
+        // 更新 Tab 状态
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // 更新页面显示
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
+

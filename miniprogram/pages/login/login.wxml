@@ -1,0 +1,45 @@
+<!--pages/login/login.wxml-->
+<view class="container login-container">
+  <!-- Logo区域 -->
+  <view class="logo-section">
+    <image class="app-logo" src="/assets/images/logo.png" mode="aspectFit"></image>
+    <view class="app-name">家庭小助手</view>
+    <view class="app-slogan">记录家务，积累幸福</view>
+  </view>
+
+  <!-- 功能介绍 -->
+  <view class="features-section">
+    <view class="feature-item">
+      <text class="feature-icon">👨‍👩‍👧‍👦</text>
+      <text class="feature-text">家庭成员管理</text>
+    </view>
+    <view class="feature-item">
+      <text class="feature-icon">🧹</text>
+      <text class="feature-text">家务记录积分</text>
+    </view>
+    <view class="feature-item">
+      <text class="feature-icon">💝</text>
+      <text class="feature-text">分享生活点滴</text>
+    </view>
+  </view>
+
+  <!-- 登录按钮 -->
+  <view class="login-section">
+    <button 
+      class="wx-login-btn" 
+      bindtap="getUserProfile"
+      loading="{{isLogging}}"
+      disabled="{{isLogging}}"
+    >
+      <image class="wx-icon" src="/assets/images/wechat.png" mode="aspectFit"></image>
+      <text>微信一键登录</text>
+    </button>
+    
+    <view class="login-tip">
+      登录即表示您同意
+      <text class="link">《用户协议》</text>
+      和
+      <text class="link">《隐私政策》</text>
+    </view>
+  </view>
+</view>

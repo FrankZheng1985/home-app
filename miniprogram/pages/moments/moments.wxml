@@ -1,0 +1,131 @@
+<!--pages/moments/moments.wxml-->
+<view class="container moments-container">
+  <!-- 无家庭提示 -->
+  <view class="empty-state" wx:if="{{!familyInfo}}">
+    <view class="empty-icon">🏠</view>
+    <view class="empty-text">请先加入或创建家庭</view>
+  </view>
+
+  <block wx:else>
+    <!-- 发布按钮 -->
+    <view class="publish-btn" bindtap="openPublishModal">
+      <text class="publish-icon">✏️</text>
+      <text class="publish-text">分享一下...</text>
+    </view>
+
+    <!-- 动态列表 -->
+    <view class="posts-list" wx:if="{{posts.length > 0}}">
+      <view class="post-item card" wx:for="{{posts}}" wx:key="id">
+        <!-- 作者信息 -->
+        <view class="post-header">
+          <view class="post-author">
+            <image 
+              class="author-avatar avatar-medium" 
+              src="{{item.isAnonymous ? '/assets/images/default-avatar.png' : item.user.avatarUrl}}"
+            ></image>
+            <view class="author-info">
+              <text class="author-name">{{item.isAnonymous ? '匿名家人' : item.user.nickname}}</text>
+              <text class="post-time text-muted">{{item.createdAtText}}</text>
+            </view>
+          </view>
+          
+          <!-- 删除按钮（仅自己的动态可见） -->
+          <view 
+            class="post-delete" 
+            wx:if="{{item.userId === currentUserId}}"
+            data-id="{{item.id}}"
+            data-index="{{index}}"
+            bindtap="deletePost"
+          >
+            <text class="text-muted">删除</text>
+          </view>
+        </view>
+
+        <!-- 内容 -->
+        <view class="post-content">{{item.content}}</view>
+
+        <!-- 图片（如果有） -->
+        <view class="post-images" wx:if="{{item.images && item.images.length > 0}}">
+          <image 
+            wx:for="{{item.images}}" 
+            wx:for-item="img"
+            wx:key="*this"
+            class="post-image" 
+            src="{{img}}" 
+            mode="aspectFill"
+          ></image>
+        </view>
+
+        <!-- 互动区 -->
+        <view class="post-actions">
+          <view 
+            class="action-item {{item.isLiked ? 'liked' : ''}}" 
+            data-id="{{item.id}}"
+            data-index="{{index}}"
+            bindtap="toggleLike"
+          >
+            <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
+            <text class="action-count">{{item.likesCount || 0}}</text>
+          </view>
+          <view 
+            class="action-item"
+            data-id="{{item.id}}"
+            bindtap="viewComments"
+          >
+            <text class="action-icon">💬</text>
+            <text class="action-count">{{item.commentsCount || 0}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{hasMore}}">
+        <text class="text-muted">上拉加载更多</text>
+      </view>
+      <view class="no-more" wx:else>
+        <text class="text-muted">没有更多了</text>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:else>
+      <view class="empty-icon">📢</view>
+      <view class="empty-text">还没有动态，来发布第一条吧！</view>
+    </view>
+  </block>
+
+  <!-- 发布弹窗 -->
+  <view class="modal-mask" wx:if="{{showPublishModal}}" bindtap="closePublishModal"></view>
+  <view class="modal-content publish-modal" wx:if="{{showPublishModal}}">
+    <view class="modal-header">
+      <text class="modal-cancel" bindtap="closePublishModal">取消</text>
+      <text class="modal-title">发布动态</text>
+      <text 
+        class="modal-confirm {{postContent.trim() ? 'active' : ''}}" 
+        bindtap="publishPost"
+      >发布</text>
+    </view>
+    <view class="modal-body">
+      <textarea 
+        class="publish-textarea" 
+        placeholder="分享你的心情或想法..."
+        value="{{postContent}}"
+        bindinput="onContentInput"
+        maxlength="500"
+        auto-focus
+      ></textarea>
+      
+      <view class="publish-options">
+        <view class="option-item" bindtap="toggleAnonymous">
+          <text class="option-icon">{{isAnonymous ? '🙈' : '👤'}}</text>
+          <text class="option-text">{{isAnonymous ? '匿名发布' : '实名发布'}}</text>
+          <view class="option-switch {{isAnonymous ? 'on' : ''}}"></view>
+        </view>
+      </view>
+      
+      <view class="publish-tip text-muted" wx:if="{{isAnonymous}}">
+        匿名发布：家人只能看到内容，不会显示你的身份
+      </view>
+    </view>
+  </view>
+</view>

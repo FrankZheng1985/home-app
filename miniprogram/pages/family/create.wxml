@@ -1,0 +1,46 @@
+<!--pages/family/create.wxml-->
+<view class="container create-family-container">
+  <view class="header-section">
+    <view class="header-icon">🏠</view>
+    <view class="header-title">创建新家庭</view>
+    <view class="header-desc text-muted">为您的家庭取一个温馨的名字</view>
+  </view>
+
+  <view class="form-section card">
+    <view class="form-group">
+      <view class="form-label">家庭名称</view>
+      <input 
+        class="form-input" 
+        placeholder="如：温馨小窝、幸福之家"
+        value="{{familyName}}"
+        bindinput="onNameInput"
+        maxlength="20"
+      />
+      <view class="input-tip text-muted">2-20个字符</view>
+    </view>
+  </view>
+
+  <view class="tips-section">
+    <view class="tip-item">
+      <text class="tip-icon">✓</text>
+      <text class="tip-text">创建后您将成为家庭管理员</text>
+    </view>
+    <view class="tip-item">
+      <text class="tip-icon">✓</text>
+      <text class="tip-text">可以邀请家人加入家庭</text>
+    </view>
+    <view class="tip-item">
+      <text class="tip-icon">✓</text>
+      <text class="tip-text">可以设置家务类型和积分奖励</text>
+    </view>
+  </view>
+
+  <view class="action-section">
+    <button 
+      class="btn-primary btn-block" 
+      bindtap="createFamily"
+      loading="{{isSubmitting}}"
+      disabled="{{isSubmitting || !familyName.trim()}}"
+    >创建家庭</button>
+  </view>
+</view>

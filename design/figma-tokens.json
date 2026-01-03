@@ -1,0 +1,111 @@
+{
+  "colors": {
+    "primary": {
+      "default": "#FF6B6B",
+      "light": "#FFE5E5",
+      "dark": "#E55050"
+    },
+    "success": "#52C41A",
+    "warning": "#FAAD14",
+    "error": "#FF4D4F",
+    "info": "#1890FF",
+    "wechat": "#07C160",
+    "text": {
+      "title": "#1A1A1A",
+      "body": "#333333",
+      "secondary": "#666666",
+      "tertiary": "#999999",
+      "disabled": "#CCCCCC"
+    },
+    "border": "#E8E8E8",
+    "background": {
+      "page": "#F5F5F5",
+      "card": "#FFFFFF"
+    },
+    "chore": {
+      "clean": "#4ECDC4",
+      "kitchen": "#FF9F43",
+      "laundry": "#54A0FF",
+      "organize": "#5F27CD",
+      "care": "#FF6B81",
+      "other": "#A4B0BE"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "primary": "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif",
+      "number": "'DIN Alternate', 'Helvetica Neue', sans-serif"
+    },
+    "fontSize": {
+      "h1": "24px",
+      "h2": "20px",
+      "h3": "18px",
+      "h4": "16px",
+      "body": "14px",
+      "caption": "12px",
+      "small": "10px"
+    },
+    "lineHeight": {
+      "h1": "36px",
+      "h2": "30px",
+      "h3": "27px",
+      "h4": "24px",
+      "body": "22px",
+      "caption": "18px",
+      "small": "15px"
+    },
+    "fontWeight": {
+      "regular": 400,
+      "medium": 500,
+      "bold": 600
+    }
+  },
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "24px",
+    "xxl": "32px"
+  },
+  "borderRadius": {
+    "none": "0px",
+    "sm": "4px",
+    "md": "8px",
+    "lg": "12px",
+    "xl": "16px",
+    "full": "999px"
+  },
+  "shadow": {
+    "light": "0 2px 8px rgba(0, 0, 0, 0.06)",
+    "medium": "0 4px 16px rgba(0, 0, 0, 0.08)",
+    "heavy": "0 8px 24px rgba(0, 0, 0, 0.12)"
+  },
+  "size": {
+    "screen": {
+      "width": 375,
+      "height": 812
+    },
+    "statusBar": 44,
+    "tabBar": 83,
+    "safeAreaBottom": 34,
+    "navBar": 44,
+    "button": {
+      "default": 44,
+      "small": 32
+    },
+    "input": 48,
+    "avatar": {
+      "sm": 32,
+      "md": 48,
+      "lg": 64,
+      "xl": 96
+    },
+    "icon": {
+      "tabBar": 24,
+      "default": 20,
+      "category": 32
+    }
+  }
+}
+

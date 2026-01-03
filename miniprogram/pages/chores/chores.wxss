@@ -1,0 +1,243 @@
+/* pages/chores/chores.wxss */
+
+.chores-container {
+  padding-top: 0;
+}
+
+/* 标签切换 */
+.tabs {
+  display: flex;
+  background-color: var(--card-background);
+  padding: 0 30rpx;
+  margin: -30rpx -30rpx 30rpx -30rpx;
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 30rpx 0;
+  font-size: 30rpx;
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.tab-item.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 6rpx;
+  background-color: var(--primary-color);
+  border-radius: 3rpx;
+}
+
+/* 家务类型网格 */
+.section-title {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 20rpx;
+}
+
+.chore-types-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20rpx;
+}
+
+.chore-type-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 10rpx;
+  background-color: var(--card-background);
+  border-radius: 16rpx;
+  box-shadow: var(--shadow-light);
+}
+
+.chore-type-item:active {
+  transform: scale(0.98);
+}
+
+.chore-icon {
+  font-size: 56rpx;
+  margin-bottom: 12rpx;
+}
+
+.chore-name {
+  font-size: 26rpx;
+  color: var(--text-primary);
+  margin-bottom: 8rpx;
+}
+
+.chore-points {
+  font-size: 24rpx;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.add-type-tip {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 28rpx;
+}
+
+/* 历史记录 */
+.records-list {
+  padding-bottom: 30rpx;
+}
+
+.record-item {
+  margin-bottom: 20rpx;
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.record-user {
+  display: flex;
+  align-items: center;
+}
+
+.record-avatar {
+  margin-right: 12rpx;
+}
+
+.record-username {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.record-points {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.record-body {
+  margin-bottom: 16rpx;
+}
+
+.record-chore {
+  display: flex;
+  align-items: center;
+}
+
+.chore-icon-small {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.record-remark {
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  padding-left: 40rpx;
+}
+
+.record-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.record-time {
+  font-size: 24rpx;
+}
+
+.load-more, .no-more {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 26rpx;
+}
+
+/* 弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.modal-content {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--card-background);
+  border-radius: 32rpx 32rpx 0 0;
+  z-index: 101;
+  padding: 30rpx;
+  padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.modal-close {
+  font-size: 48rpx;
+  color: var(--text-placeholder);
+  line-height: 1;
+}
+
+.modal-body {
+  margin-bottom: 30rpx;
+}
+
+.selected-chore {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background-color: var(--primary-light);
+  border-radius: 16rpx;
+  margin-bottom: 30rpx;
+}
+
+.chore-icon-large {
+  font-size: 72rpx;
+  margin-right: 24rpx;
+}
+
+.chore-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.chore-info .chore-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.chore-info .chore-points {
+  font-size: 28rpx;
+}
+
+.modal-footer {
+  padding-top: 20rpx;
+}

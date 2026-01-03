@@ -1,0 +1,82 @@
+/* pages/profile/edit.wxss */
+
+.edit-container {
+  padding-top: 60rpx;
+}
+
+/* 头像编辑 */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60rpx;
+}
+
+.avatar-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
+.avatar-img {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  border: 6rpx solid var(--primary-light);
+}
+
+.avatar-edit-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 56rpx;
+  height: 56rpx;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  border: 4rpx solid #fff;
+}
+
+.avatar-tip {
+  font-size: 26rpx;
+  margin-top: 16rpx;
+}
+
+/* 表单 */
+.form-section {
+  padding: 0;
+}
+
+.form-group {
+  padding: 24rpx 30rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  background-color: var(--background-color);
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.action-section {
+  margin-top: 60rpx;
+  padding: 0 20rpx;
+}
