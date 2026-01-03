@@ -8,7 +8,8 @@ Page({
     familyInfo: null,
     currentUserId: '',
     isAdmin: false,
-    choreTypes: [],
+    choreTypes: [],        // 当前显示的家务类型（过滤后）
+    allChoreTypes: [],     // 所有家务类型（原始数据）
     choreRecords: [],
     pendingRecords: [], // 待审核记录
     pendingCount: 0, // 待审核数量
@@ -122,7 +123,16 @@ Page({
     
     try {
       const res = await choreApi.getTypes(this.data.familyInfo.id);
-      this.setData({ choreTypes: res.data || [] });
+      const types = res.data || [];
+      // 保存原始数据和显示数据
+      this.setData({ 
+        allChoreTypes: types,
+        choreTypes: types 
+      });
+      // 应用当前分类过滤
+      if (this.data.currentCategory !== 'all') {
+        this.filterChoreTypes(this.data.currentCategory);
+      }
     } catch (error) {
       console.error('加载家务类型失败:', error);
     }
@@ -202,6 +212,50 @@ Page({
   switchCategory(e) {
     const category = e.currentTarget.dataset.category;
     this.setData({ currentCategory: category });
+    this.filterChoreTypes(category);
+  },
+
+  // 过滤家务类型
+  filterChoreTypes(category) {
+    const { allChoreTypes } = this.data;
+    if (!allChoreTypes || allChoreTypes.length === 0) return;
+
+    if (category === 'all') {
+      this.setData({ choreTypes: allChoreTypes });
+    } else {
+      const filtered = allChoreTypes.filter(item => {
+        // 根据关键词匹配分类
+        const name = (item.name || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        const cat = (item.category || '').toLowerCase();
+        
+        switch (category) {
+          case 'clean':
+            return cat === 'clean' || name.includes('清洁') || name.includes('扫') || 
+                   name.includes('拖') || name.includes('擦') || name.includes('洗碗') ||
+                   name.includes('整理') || name.includes('倒垃圾');
+          case 'cook':
+            return cat === 'cook' || name.includes('做饭') || name.includes('烹饪') || 
+                   name.includes('煮') || name.includes('炒') || name.includes('厨');
+          case 'laundry':
+            return cat === 'laundry' || name.includes('洗衣') || name.includes('晾') || 
+                   name.includes('叠') || name.includes('衣服') || name.includes('熨');
+          case 'other':
+            // 其他类别：不属于以上任何类别的
+            const isClean = name.includes('清洁') || name.includes('扫') || 
+                           name.includes('拖') || name.includes('擦') || name.includes('洗碗') ||
+                           name.includes('整理') || name.includes('倒垃圾');
+            const isCook = name.includes('做饭') || name.includes('烹饪') || 
+                          name.includes('煮') || name.includes('炒') || name.includes('厨');
+            const isLaundry = name.includes('洗衣') || name.includes('晾') || 
+                             name.includes('叠') || name.includes('衣服') || name.includes('熨');
+            return cat === 'other' || (!isClean && !isCook && !isLaundry);
+          default:
+            return true;
+        }
+      });
+      this.setData({ choreTypes: filtered });
+    }
   },
 
   // 选择家务类型
