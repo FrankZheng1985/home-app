@@ -219,18 +219,26 @@ Page({
 
   // 筛选家务类型
   filterChoreTypes(category) {
-    const { allChoreTypes } = this.data;
-    console.log('筛选分类:', category, '全部类型数量:', allChoreTypes?.length);
+    // 如果 allChoreTypes 为空，先用当前的 choreTypes 初始化
+    let { allChoreTypes, choreTypes } = this.data;
     
     if (!allChoreTypes || allChoreTypes.length === 0) {
-      console.log('没有家务类型数据');
-      return;
+      if (choreTypes && choreTypes.length > 0) {
+        allChoreTypes = [...choreTypes];
+        this.setData({ allChoreTypes });
+        console.log('从 choreTypes 初始化 allChoreTypes, 数量:', allChoreTypes.length);
+      } else {
+        console.log('没有家务类型数据');
+        return;
+      }
     }
+    
+    console.log('筛选分类:', category, '全部类型数量:', allChoreTypes.length);
     
     if (category === 'all') {
       this.setData({ choreTypes: allChoreTypes });
     } else {
-      // 使用独立函数进行分类判断
+      // 分类判断函数
       const getCat = (item) => {
         const name = item.name || '';
         const itemCat = (item.category || '').toLowerCase();
