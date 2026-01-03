@@ -529,11 +529,45 @@ Page({
   // 阻止冒泡
   preventClose() {},
 
-  // 快速记录
+  // 快速记录 - 显示家务类型选择菜单
   showQuickRecord() {
-    if (this.data.choreTypes.length > 0) {
-      this.setData({ activeTab: 'record' });
+    const { choreTypes, allChoreTypes, isAdmin } = this.data;
+    const types = allChoreTypes && allChoreTypes.length > 0 ? allChoreTypes : choreTypes;
+    
+    if (types.length === 0) {
+      // 没有家务类型，引导去添加
+      if (isAdmin) {
+        wx.showModal({
+          title: '提示',
+          content: '还没有设置家务类型，是否去添加？',
+          confirmText: '去添加',
+          success: (res) => {
+            if (res.confirm) {
+              wx.navigateTo({ url: '/pages/rewards/rewards' });
+            }
+          }
+        });
+      } else {
+        wx.showToast({
+          title: '暂无家务类型',
+          icon: 'none'
+        });
+      }
+      return;
     }
+    
+    // 显示家务类型选择菜单（最多显示6个常用的）
+    const itemList = types.slice(0, 6).map(t => `${t.icon || '🧹'} ${t.name} (+${t.points}分)`);
+    
+    wx.showActionSheet({
+      itemList: itemList,
+      success: (res) => {
+        const selectedType = types[res.tapIndex];
+        if (selectedType) {
+          this.selectChoreType({ currentTarget: { dataset: { item: selectedType } } });
+        }
+      }
+    });
   },
 
   // 去设置家务类型
