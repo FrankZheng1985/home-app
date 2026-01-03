@@ -9,6 +9,7 @@
     "pages/chores/chores",
     "pages/rewards/rewards",
     "pages/moments/moments",
+    "pages/moments/comments",
     "pages/profile/profile",
     "pages/profile/edit",
     "pages/profile/preferences",

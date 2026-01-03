@@ -22,7 +22,9 @@ Page({
     showActionSheet: false,
     showImageSourceSheet: false,
     currentPostId: null,
-    currentPostIndex: null
+    currentPostIndex: null,
+    expandedCommentPostId: null, // 展开评论输入的帖子ID
+    quickCommentContent: '' // 快速评论内容
   },
 
   onLoad() {
@@ -73,6 +75,20 @@ Page({
     }
   },
 
+  // 加载评论预览
+  async loadCommentsPreview(posts) {
+    for (let i = 0; i < posts.length; i++) {
+      try {
+        const res = await postApi.getComments(posts[i].id);
+        const comments = res.data || [];
+        posts[i].comments = comments.slice(0, 2); // 只取前2条
+      } catch (error) {
+        console.warn('加载评论预览失败:', error);
+        posts[i].comments = [];
+      }
+    }
+  },
+
   async loadPosts(reset = false) {
     if (!this.data.familyInfo) return;
 
@@ -98,8 +114,12 @@ Page({
         ...post,
         createdAtText: formatRelativeTime(post.createdAt || post.created_at),
         images: post.images || [],
-        user: post.user || { nickname: '用户', avatarUrl: '' }
+        user: post.user || { nickname: '用户', avatarUrl: '' },
+        comments: post.comments || [] // 评论预览
       }));
+      
+      // 为每个帖子加载评论预览（最多2条）
+      await this.loadCommentsPreview(newPosts);
 
       this.setData({
         posts: reset ? newPosts : [...this.data.posts, ...newPosts],
@@ -409,17 +429,138 @@ Page({
     }
   },
 
-  // 查看评论
+  // 查看评论 - 显示快速评论输入或跳转
   viewComments(e) {
+    const postId = e.currentTarget.dataset.id;
+    const index = e.currentTarget.dataset.index;
+    
+    // 如果点击的是"查看全部评论"，跳转到评论页
+    if (this.data.posts[index] && this.data.posts[index].commentsCount > 2) {
+      wx.navigateTo({
+        url: `/pages/moments/comments?postId=${postId}`
+      });
+    } else {
+      // 展开/收起快速评论输入
+      this.setData({
+        expandedCommentPostId: this.data.expandedCommentPostId === postId ? null : postId,
+        quickCommentContent: ''
+      });
+    }
+  },
+
+  // 跳转到评论详情页
+  goToComments(e) {
     const postId = e.currentTarget.dataset.id;
     wx.navigateTo({
       url: `/pages/moments/comments?postId=${postId}`
     });
   },
 
+  // 快速评论输入
+  onQuickCommentInput(e) {
+    this.setData({ quickCommentContent: e.detail.value });
+  },
+
+  // 提交快速评论
+  async submitQuickComment(e) {
+    const postId = e.currentTarget.dataset.id;
+    const index = e.currentTarget.dataset.index;
+    const content = this.data.quickCommentContent.trim();
+    
+    if (!content) {
+      showError('请输入评论内容');
+      return;
+    }
+    
+    try {
+      await postApi.addComment(postId, content);
+      showSuccess('评论成功');
+      
+      // 更新本地评论数
+      const posts = [...this.data.posts];
+      posts[index].commentsCount = (posts[index].commentsCount || 0) + 1;
+      
+      // 添加评论到预览
+      if (!posts[index].comments) {
+        posts[index].comments = [];
+      }
+      posts[index].comments.unshift({
+        id: Date.now().toString(),
+        content: content,
+        author: {
+          nickname: this.data.userInfo?.nickname || '我'
+        }
+      });
+      
+      this.setData({ 
+        posts,
+        quickCommentContent: '',
+        expandedCommentPostId: null
+      });
+    } catch (error) {
+      showError(error.message || '评论失败');
+    }
+  },
+
   // 分享动态
   sharePost(e) {
-    // 可以实现分享功能
-    showSuccess('分享功能开发中');
+    const postId = e.currentTarget.dataset.id;
+    const content = e.currentTarget.dataset.content || '分享一条家庭动态';
+    
+    wx.showActionSheet({
+      itemList: ['分享给家人', '复制内容', '生成图片分享'],
+      success: (res) => {
+        switch (res.tapIndex) {
+          case 0:
+            // 分享给家人 - 使用小程序内置转发
+            this.shareToFamily(postId, content);
+            break;
+          case 1:
+            // 复制内容
+            this.copyContent(content);
+            break;
+          case 2:
+            // 生成图片分享（功能开发中）
+            showSuccess('海报功能开发中');
+            break;
+        }
+      }
+    });
+  },
+
+  // 分享给家人
+  shareToFamily(postId, content) {
+    // 触发小程序内置分享
+    showSuccess('请点击右上角菜单进行分享');
+  },
+
+  // 复制内容
+  copyContent(content) {
+    wx.setClipboardData({
+      data: content,
+      success: () => {
+        showSuccess('已复制到剪贴板');
+      }
+    });
+  },
+
+  // 页面分享配置
+  onShareAppMessage(res) {
+    // 如果是从分享按钮触发
+    if (res.from === 'button') {
+      const postId = res.target.dataset.id;
+      const content = res.target.dataset.content || '分享一条家庭动态';
+      return {
+        title: content.length > 30 ? content.substring(0, 30) + '...' : content,
+        path: `/pages/moments/moments?sharePostId=${postId}`,
+        imageUrl: '' // 可以添加动态的首张图片
+      };
+    }
+    
+    // 默认分享
+    return {
+      title: '家庭动态 - 分享生活点滴',
+      path: '/pages/moments/moments'
+    };
   }
 });

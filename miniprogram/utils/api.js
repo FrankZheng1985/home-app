@@ -366,6 +366,22 @@ const postApi = {
       method: 'POST',
       data: { content }
     });
+  },
+  
+  // 删除评论
+  deleteComment: (postId, commentId) => {
+    return app.request({
+      url: `/posts/${postId}/comments/${commentId}`,
+      method: 'DELETE'
+    });
+  },
+  
+  // 获取动态详情
+  getDetail: (postId) => {
+    return app.request({
+      url: `/posts/${postId}`,
+      method: 'GET'
+    });
   }
 };
 

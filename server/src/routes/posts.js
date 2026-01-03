@@ -15,6 +15,9 @@ router.post('/', authenticate, [
   body('content').optional().isLength({ max: 1000 }).withMessage('内容不能超过1000个字符')
 ], asyncHandler(postController.create));
 
+// 获取动态详情
+router.get('/:postId', authenticate, asyncHandler(postController.getDetail));
+
 // 删除动态
 router.delete('/:postId', authenticate, asyncHandler(postController.delete));
 
@@ -29,6 +32,9 @@ router.post('/:postId/comments', authenticate, [
   body('content').notEmpty().withMessage('评论内容不能为空')
     .isLength({ max: 200 }).withMessage('评论不能超过200个字符')
 ], asyncHandler(postController.addComment));
+
+// 删除评论
+router.delete('/:postId/comments/:commentId', authenticate, asyncHandler(postController.deleteComment));
 
 module.exports = router;
 

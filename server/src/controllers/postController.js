@@ -495,11 +495,156 @@ const addComment = async (req, res) => {
   }
 };
 
+/**
+ * 获取动态详情
+ */
+const getDetail = async (req, res) => {
+  const { postId } = req.params;
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      const result = await query(
+        `SELECT p.id, p.content, p.images, p.is_anonymous, p.created_at,
+                p.user_id,
+                u.nickname, u.avatar_url,
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count,
+                EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) as is_liked
+         FROM posts p
+         JOIN users u ON p.user_id = u.id
+         WHERE p.id = $1`,
+        [postId, req.user.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: '动态不存在' });
+      }
+
+      const row = result.rows[0];
+      return res.json({
+        data: {
+          id: row.id,
+          content: row.content,
+          images: row.images || [],
+          isAnonymous: row.is_anonymous,
+          createdAt: row.created_at,
+          user: row.is_anonymous ? {
+            nickname: '匿名用户',
+            avatarUrl: null
+          } : {
+            id: row.user_id,
+            nickname: row.nickname,
+            avatarUrl: row.avatar_url
+          },
+          isOwner: row.user_id === req.user.id,
+          likesCount: parseInt(row.like_count),
+          commentsCount: parseInt(row.comment_count),
+          isLiked: row.is_liked
+        }
+      });
+    } catch (dbError) {
+      console.warn('数据库查询失败，使用模拟数据:', dbError.message);
+    }
+  }
+
+  // 使用模拟数据
+  try {
+    const post = mockPosts.get(postId);
+    if (!post) {
+      return res.status(404).json({ error: '动态不存在' });
+    }
+    
+    const likeCount = Array.from(mockLikes.values()).filter(l => l.postId === postId).length;
+    const commentCount = Array.from(mockComments.values()).filter(c => c.postId === postId).length;
+    const isLiked = Array.from(mockLikes.values()).some(l => l.postId === postId && l.userId === req.user.id);
+    
+    return res.json({
+      data: {
+        id: post.id,
+        content: post.content,
+        images: post.images || [],
+        isAnonymous: post.isAnonymous,
+        createdAt: post.createdAt,
+        user: post.isAnonymous ? {
+          nickname: '匿名用户',
+          avatarUrl: null
+        } : {
+          id: post.userId,
+          nickname: post.userNickname || '用户',
+          avatarUrl: post.userAvatar || ''
+        },
+        isOwner: post.userId === req.user.id,
+        likesCount: likeCount,
+        commentsCount: commentCount,
+        isLiked
+      }
+    });
+  } catch (error) {
+    console.error('获取动态详情错误:', error);
+    return res.status(500).json({ error: '获取动态详情失败' });
+  }
+};
+
+/**
+ * 删除评论
+ */
+const deleteComment = async (req, res) => {
+  const { postId, commentId } = req.params;
+  const userId = req.user.id;
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 检查评论是否存在且属于当前用户
+      const commentResult = await query(
+        'SELECT user_id FROM post_comments WHERE id = $1 AND post_id = $2',
+        [commentId, postId]
+      );
+
+      if (commentResult.rows.length === 0) {
+        return res.status(404).json({ error: '评论不存在' });
+      }
+
+      if (commentResult.rows[0].user_id !== userId) {
+        return res.status(403).json({ error: '只能删除自己的评论' });
+      }
+
+      await query('DELETE FROM post_comments WHERE id = $1', [commentId]);
+
+      return res.json({ data: { message: '删除成功' } });
+    } catch (dbError) {
+      console.warn('数据库操作失败，使用模拟数据:', dbError.message);
+    }
+  }
+
+  // 使用模拟数据
+  try {
+    const comment = mockComments.get(commentId);
+    if (!comment || comment.postId !== postId) {
+      return res.status(404).json({ error: '评论不存在' });
+    }
+    
+    if (comment.userId !== userId) {
+      return res.status(403).json({ error: '只能删除自己的评论' });
+    }
+    
+    mockComments.delete(commentId);
+    
+    return res.json({ data: { message: '删除成功' } });
+  } catch (error) {
+    console.error('删除评论错误:', error);
+    return res.status(500).json({ error: '删除评论失败' });
+  }
+};
+
 module.exports = {
   getList,
   create,
   delete: deletePost,
   toggleLike,
   getComments,
-  addComment
+  addComment,
+  getDetail,
+  deleteComment
 };
