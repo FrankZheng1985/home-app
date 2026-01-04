@@ -3,6 +3,10 @@ const api = require('../../utils/api');
 
 Page({
   data: {
+    // 用户状态
+    hasFamily: false,
+    isLoading: true,
+    
     // 步数相关
     todaySteps: 0,
     stepsTarget: 8000,
@@ -45,17 +49,47 @@ Page({
 
   onLoad() {
     this.initWeekDays();
-    this.loadSportTypes();
-    this.loadTodayRecords();
-    this.loadHistoryRecords();
-    this.loadWeekStats();
+    this.checkUserStatus();
   },
 
   onShow() {
-    this.syncWechatSteps();
+    // 检查用户是否已加入家庭
+    const app = getApp();
+    if (app.globalData.userInfo && app.globalData.userInfo.familyId) {
+      this.setData({ hasFamily: true });
+      this.syncWechatSteps();
+    }
+  },
+  
+  // 检查用户状态
+  async checkUserStatus() {
+    try {
+      const app = getApp();
+      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+      
+      if (userInfo && userInfo.familyId) {
+        this.setData({ hasFamily: true, isLoading: false });
+        this.loadSportTypes();
+        this.loadTodayRecords();
+        this.loadHistoryRecords();
+        this.loadWeekStats();
+        this.syncWechatSteps();
+      } else {
+        this.setData({ hasFamily: false, isLoading: false });
+      }
+    } catch (error) {
+      console.error('检查用户状态失败:', error);
+      this.setData({ hasFamily: false, isLoading: false });
+    }
   },
 
   onPullDownRefresh() {
+    if (!this.data.hasFamily) {
+      this.checkUserStatus();
+      wx.stopPullDownRefresh();
+      return;
+    }
+    
     Promise.all([
       this.loadTodayRecords(),
       this.loadHistoryRecords(),
@@ -102,13 +136,24 @@ Page({
 
   // 同步微信运动步数
   async syncWechatSteps() {
+    // 如果没有加入家庭，不执行同步
+    if (!this.data.hasFamily) {
+      return;
+    }
+    
     try {
       // 获取微信运动数据权限
       const setting = await wx.getSetting();
       
       if (!setting.authSetting['scope.werun']) {
         // 请求授权
-        await wx.authorize({ scope: 'scope.werun' });
+        try {
+          await wx.authorize({ scope: 'scope.werun' });
+        } catch (authErr) {
+          console.log('用户拒绝微信运动授权');
+          // 用户拒绝授权，使用默认值
+          return;
+        }
       }
       
       // 获取微信运动数据
@@ -134,7 +179,7 @@ Page({
         }
       }
     } catch (error) {
-      console.error('同步步数失败:', error);
+      console.log('同步步数:', error.message || error);
       // 如果用户拒绝授权，给出提示
       if (error.errMsg && error.errMsg.includes('authorize')) {
         wx.showModal({
@@ -147,12 +192,8 @@ Page({
           }
         });
       } else {
-        // 使用模拟数据
-        const mockSteps = Math.floor(Math.random() * 5000) + 3000;
-        this.setData({
-          todaySteps: mockSteps,
-          stepsProgress: Math.round((mockSteps / this.data.stepsTarget) * 100)
-        });
+        // 静默处理，不显示错误
+        console.log('步数同步跳过');
       }
     }
   },
@@ -458,6 +499,11 @@ Page({
       console.error('添加类型失败:', error);
       wx.showToast({ title: '网络错误', icon: 'none' });
     }
+  },
+
+  // 跳转到家庭页面
+  goToFamily() {
+    wx.navigateTo({ url: '/pages/family/family' });
   },
 
   // 删除运动类型

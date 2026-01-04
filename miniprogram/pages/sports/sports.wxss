@@ -6,6 +6,68 @@
   padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
 
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 0;
+}
+
+.loading-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 未加入家庭提示 */
+.no-family-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 200rpx 40rpx;
+}
+
+.no-family-icon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+}
+
+.no-family-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.no-family-desc {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 48rpx;
+  text-align: center;
+}
+
+.join-family-btn {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  color: #fff;
+  font-size: 30rpx;
+  padding: 24rpx 60rpx;
+  border-radius: 44rpx;
+  border: none;
+}
+
 /* 头部统计卡片 */
 .header-card {
   position: relative;

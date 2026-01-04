@@ -1,5 +1,21 @@
 <!--pages/sports/sports.wxml - 运动打卡页面-->
 <view class="sports-page">
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <view class="loading-icon">⏳</view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 未加入家庭提示 -->
+  <view class="no-family-container" wx:elif="{{!hasFamily}}">
+    <view class="no-family-icon">🏠</view>
+    <text class="no-family-title">请先加入家庭</text>
+    <text class="no-family-desc">加入家庭后才能使用运动打卡功能</text>
+    <button class="join-family-btn" bindtap="goToFamily">去加入家庭</button>
+  </view>
+
+  <!-- 主内容（已加入家庭） -->
+  <block wx:else>
   <!-- 头部统计卡片 -->
   <view class="header-card">
     <view class="header-bg"></view>
@@ -293,5 +309,6 @@
       </view>
     </view>
   </view>
+  </block>
 </view>
 
