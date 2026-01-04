@@ -183,7 +183,23 @@
   font-size: 28rpx;
   font-weight: 600;
   color: #2D3436;
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.chore-desc {
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 10rpx;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  padding: 0 8rpx;
+}
+
+.chore-card.has-desc {
+  min-height: 240rpx;
 }
 
 .chore-points-badge {

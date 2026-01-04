@@ -66,7 +66,7 @@
 
       <!-- 家务卡片网格 -->
       <view class="chore-grid">
-        <view class="chore-card" 
+        <view class="chore-card {{item.description ? 'has-desc' : ''}}" 
               wx:for="{{choreTypes}}" 
               wx:key="id"
               data-item="{{item}}"
@@ -77,6 +77,7 @@
               <text class="chore-emoji">{{item.icon || '🧹'}}</text>
             </view>
             <text class="chore-name">{{item.name}}</text>
+            <text class="chore-desc" wx:if="{{item.description}}">{{item.description}}</text>
             <view class="chore-points-badge">
               <text class="points-text">+{{item.points}}</text>
               <text class="points-unit">分</text>
