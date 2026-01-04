@@ -49,37 +49,64 @@ Page({
 
   onLoad() {
     this.initWeekDays();
-    this.checkUserStatus();
   },
 
   onShow() {
-    // 检查用户是否已加入家庭
-    const app = getApp();
-    if (app.globalData.userInfo && app.globalData.userInfo.familyId) {
-      this.setData({ hasFamily: true });
-      this.syncWechatSteps();
-    }
+    // 每次显示页面时都重新检查用户状态
+    this.checkUserStatus();
   },
   
   // 检查用户状态
   async checkUserStatus() {
+    this.setData({ isLoading: true });
+    
     try {
-      const app = getApp();
-      const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+      // 优先从服务器获取最新用户信息
+      const res = await api.userApi.getProfile();
       
-      if (userInfo && userInfo.familyId) {
+      if (res.success && res.data) {
+        const userInfo = res.data;
+        // 更新全局和本地存储
+        const app = getApp();
+        app.globalData.userInfo = userInfo;
+        wx.setStorageSync('userInfo', userInfo);
+        
+        if (userInfo.familyId) {
+          this.setData({ hasFamily: true, isLoading: false });
+          this.loadSportTypes();
+          this.loadTodayRecords();
+          this.loadHistoryRecords();
+          this.loadWeekStats();
+          this.syncWechatSteps();
+        } else {
+          this.setData({ hasFamily: false, isLoading: false });
+        }
+      } else {
+        // 如果获取失败，尝试从本地存储读取
+        const localUserInfo = wx.getStorageSync('userInfo');
+        if (localUserInfo && localUserInfo.familyId) {
+          this.setData({ hasFamily: true, isLoading: false });
+          this.loadSportTypes();
+          this.loadTodayRecords();
+          this.loadHistoryRecords();
+          this.loadWeekStats();
+        } else {
+          this.setData({ hasFamily: false, isLoading: false });
+        }
+      }
+    } catch (error) {
+      console.log('检查用户状态:', error.message || error);
+      // 网络错误时尝试从本地存储读取
+      const localUserInfo = wx.getStorageSync('userInfo');
+      if (localUserInfo && localUserInfo.familyId) {
         this.setData({ hasFamily: true, isLoading: false });
         this.loadSportTypes();
         this.loadTodayRecords();
         this.loadHistoryRecords();
         this.loadWeekStats();
-        this.syncWechatSteps();
       } else {
         this.setData({ hasFamily: false, isLoading: false });
       }
-    } catch (error) {
-      console.error('检查用户状态失败:', error);
-      this.setData({ hasFamily: false, isLoading: false });
     }
   },
 
