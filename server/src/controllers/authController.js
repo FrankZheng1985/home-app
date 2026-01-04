@@ -19,14 +19,15 @@ const wxLogin = async (req, res) => {
   const { code } = req.body;
 
   try {
-    // 获取微信openid
-    const openid = await authService.getWxOpenId(code);
+    // 获取微信openid和session_key
+    const { openid, sessionKey } = await authService.getWxOpenId(code);
 
     // 查找用户
     const user = await authService.findUserByOpenId(openid);
 
     if (user) {
-      // 已注册用户，生成token
+      // 已注册用户，更新session_key并生成token
+      await authService.updateSessionKey(user.id, sessionKey);
       const token = authService.generateToken(user.id);
       logger.info('用户登录成功', { userId: user.id, nickname: user.nickname });
 
@@ -35,10 +36,11 @@ const wxLogin = async (req, res) => {
         user: authService.formatUserResponse(user)
       }));
     } else {
-      // 新用户，返回openId让前端跳转注册页
+      // 新用户，返回openId让前端跳转注册页（同时传递sessionKey供注册时使用）
       return res.json(createSuccess({
         needRegister: true,
-        openId: openid
+        openId: openid,
+        sessionKey: sessionKey
       }));
     }
   } catch (error) {

@@ -1,6 +1,7 @@
 // controllers/sportsController.js - 运动打卡控制器
 const pool = require('../config/database');
 const crypto = require('crypto');
+const authService = require('../services/authService');
 
 /**
  * 获取运动类型列表
@@ -248,6 +249,28 @@ const getWeekStats = async (req, res) => {
 };
 
 /**
+ * 解密微信数据
+ */
+const decryptWxData = (sessionKey, encryptedData, iv) => {
+  try {
+    const sessionKeyBuffer = Buffer.from(sessionKey, 'base64');
+    const encryptedDataBuffer = Buffer.from(encryptedData, 'base64');
+    const ivBuffer = Buffer.from(iv, 'base64');
+    
+    const decipher = crypto.createDecipheriv('aes-128-cbc', sessionKeyBuffer, ivBuffer);
+    decipher.setAutoPadding(true);
+    
+    let decoded = decipher.update(encryptedDataBuffer, 'binary', 'utf8');
+    decoded += decipher.final('utf8');
+    
+    return JSON.parse(decoded);
+  } catch (error) {
+    console.error('解密微信数据失败:', error);
+    return null;
+  }
+};
+
+/**
  * 同步微信运动步数
  */
 const syncSteps = async (req, res) => {
@@ -260,15 +283,31 @@ const syncSteps = async (req, res) => {
       return res.status(400).json({ success: false, message: '请先加入家庭' });
     }
     
-    // 注意：实际项目中需要使用微信服务端 API 解密数据
-    // 这里简化处理，返回模拟数据
-    // 真实实现需要：
-    // 1. 获取用户的 session_key
-    // 2. 使用 session_key + iv 解密 encryptedData
-    // 3. 解密后得到步数数据
+    if (!encryptedData || !iv) {
+      return res.status(400).json({ success: false, message: '缺少加密数据' });
+    }
     
-    // 模拟解密后的步数（实际应该从解密数据中获取）
-    const todaySteps = Math.floor(Math.random() * 5000) + 3000;
+    // 获取用户的 session_key
+    const sessionKey = await authService.getSessionKey(userId);
+    
+    let todaySteps = 0;
+    
+    if (sessionKey) {
+      // 解密微信运动数据
+      const wxData = decryptWxData(sessionKey, encryptedData, iv);
+      
+      if (wxData && wxData.stepInfoList && wxData.stepInfoList.length > 0) {
+        // 获取今日步数（stepInfoList 最后一条是今天的数据）
+        const todayData = wxData.stepInfoList[wxData.stepInfoList.length - 1];
+        todaySteps = todayData.step || 0;
+        console.log('微信运动数据解密成功，今日步数:', todaySteps);
+      } else {
+        console.log('解密数据格式不正确，使用0');
+      }
+    } else {
+      console.log('未找到session_key，请重新登录');
+      return res.status(400).json({ success: false, message: '请重新登录后再同步' });
+    }
     
     // 保存或更新今日步数
     await pool.query(
@@ -288,7 +327,7 @@ const syncSteps = async (req, res) => {
     });
   } catch (error) {
     console.error('同步步数失败:', error);
-    res.status(500).json({ success: false, message: '同步步数失败' });
+    res.status(500).json({ success: false, message: '同步步数失败: ' + error.message });
   }
 };
 

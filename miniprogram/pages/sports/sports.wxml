@@ -34,9 +34,9 @@
             <text class="steps-progress">{{stepsProgress}}%</text>
           </view>
         </view>
-        <view class="sync-btn" bindtap="inputSteps">
-          <text class="sync-icon">✏️</text>
-          <text class="sync-text">输入</text>
+        <view class="sync-btn" bindtap="doSyncSteps">
+          <text class="sync-icon">🔄</text>
+          <text class="sync-text">同步</text>
         </view>
       </view>
       

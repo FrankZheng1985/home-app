@@ -13,16 +13,19 @@ const mockUsers = global.mockUsers || (global.mockUsers = new Map());
 
 class AuthService extends BaseService {
   /**
-   * 微信登录获取openid
+   * 微信登录获取openid和session_key
    * @param {string} code - 微信登录code
-   * @returns {Promise<string>} openid
+   * @returns {Promise<{openid: string, sessionKey: string}>}
    */
   async getWxOpenId(code) {
     // 开发模式：使用模拟的openid
     if (process.env.NODE_ENV === 'development' && 
         (!process.env.WX_SECRET || process.env.WX_SECRET === 'your_wx_secret_here')) {
       logger.info('🔧 开发模式：使用模拟登录');
-      return 'dev_openid_' + (code || 'default');
+      return {
+        openid: 'dev_openid_' + (code || 'default'),
+        sessionKey: 'dev_session_key'
+      };
     }
 
     // 生产模式：调用微信接口
@@ -40,7 +43,44 @@ class AuthService extends BaseService {
       throw new Error(ERROR_CODES.AUTH_WX_LOGIN_FAILED.message);
     }
 
-    return wxRes.data.openid;
+    return {
+      openid: wxRes.data.openid,
+      sessionKey: wxRes.data.session_key
+    };
+  }
+  
+  /**
+   * 更新用户的session_key
+   */
+  async updateSessionKey(userId, sessionKey) {
+    if (this.isDatabaseAvailable()) {
+      try {
+        await this.query(
+          'UPDATE users SET session_key = $1 WHERE id = $2',
+          [sessionKey, userId]
+        );
+      } catch (error) {
+        logger.warn('更新session_key失败', { error: error.message });
+      }
+    }
+  }
+  
+  /**
+   * 获取用户的session_key
+   */
+  async getSessionKey(userId) {
+    if (this.isDatabaseAvailable()) {
+      try {
+        const result = await this.queryOne(
+          'SELECT session_key FROM users WHERE id = $1',
+          [userId]
+        );
+        return result?.session_key;
+      } catch (error) {
+        logger.warn('获取session_key失败', { error: error.message });
+      }
+    }
+    return null;
   }
 
   /**

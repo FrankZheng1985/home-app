@@ -169,7 +169,7 @@ Page({
     return `${year}-${month}-${day}`;
   },
 
-  // 同步微信运动步数（简化版 - 从本地存储读取或手动输入）
+  // 同步微信运动步数
   async syncWechatSteps() {
     // 如果没有加入家庭，不执行同步
     if (!this.data.hasFamily) {
@@ -177,47 +177,86 @@ Page({
     }
     
     try {
-      // 从本地存储读取今日步数
+      // 先从本地存储读取
       const today = this.formatDate(new Date());
       const savedSteps = wx.getStorageSync(`steps_${today}`) || 0;
-      
       if (savedSteps > 0) {
         const stepsProgress = Math.round((savedSteps / this.data.stepsTarget) * 100);
-        this.setData({
-          todaySteps: savedSteps,
-          stepsProgress
-        });
+        this.setData({ todaySteps: savedSteps, stepsProgress });
       }
     } catch (error) {
-      console.log('读取步数:', error.message || error);
+      console.log('读取本地步数:', error.message || error);
     }
   },
   
-  // 手动输入步数
-  inputSteps() {
-    wx.showModal({
-      title: '输入今日步数',
-      editable: true,
-      placeholderText: '请输入步数',
-      success: (res) => {
-        if (res.confirm && res.content) {
-          const steps = parseInt(res.content) || 0;
-          if (steps > 0 && steps < 100000) {
-            const today = this.formatDate(new Date());
-            wx.setStorageSync(`steps_${today}`, steps);
-            
-            const stepsProgress = Math.round((steps / this.data.stepsTarget) * 100);
-            this.setData({
-              todaySteps: steps,
-              stepsProgress
-            });
-            wx.showToast({ title: '步数已更新', icon: 'success' });
-          } else {
-            wx.showToast({ title: '请输入有效步数', icon: 'none' });
-          }
+  // 同步微信运动数据
+  async doSyncSteps() {
+    if (!this.data.hasFamily) {
+      wx.showToast({ title: '请先加入家庭', icon: 'none' });
+      return;
+    }
+    
+    wx.showLoading({ title: '同步中...' });
+    
+    try {
+      // 获取微信运动数据权限
+      const setting = await wx.getSetting();
+      
+      if (!setting.authSetting['scope.werun']) {
+        try {
+          await wx.authorize({ scope: 'scope.werun' });
+        } catch (authErr) {
+          wx.hideLoading();
+          wx.showModal({
+            title: '授权提示',
+            content: '需要授权微信运动才能同步步数，是否前往设置？',
+            success: (res) => {
+              if (res.confirm) {
+                wx.openSetting();
+              }
+            }
+          });
+          return;
         }
       }
-    });
+      
+      // 获取微信运动数据
+      const werunRes = await wx.getWeRunData();
+      console.log('获取微信运动数据成功');
+      
+      if (werunRes.encryptedData) {
+        // 发送到后端解密
+        const stepsRes = await api.sportsApi.syncSteps({
+          encryptedData: werunRes.encryptedData,
+          iv: werunRes.iv
+        });
+        
+        wx.hideLoading();
+        
+        if (stepsRes.success && stepsRes.data) {
+          const todaySteps = stepsRes.data.todaySteps || 0;
+          const stepsProgress = Math.round((todaySteps / this.data.stepsTarget) * 100);
+          
+          // 保存到本地
+          const today = this.formatDate(new Date());
+          wx.setStorageSync(`steps_${today}`, todaySteps);
+          
+          this.setData({ todaySteps, stepsProgress });
+          wx.showToast({ title: '同步成功', icon: 'success' });
+        } else {
+          // 如果后端解密失败，提示重新登录
+          wx.showModal({
+            title: '同步失败',
+            content: stepsRes.message || '请退出登录后重新登录，然后再试',
+            showCancel: false
+          });
+        }
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.log('同步步数失败:', error.message || error);
+      wx.showToast({ title: '同步失败', icon: 'none' });
+    }
   },
 
   // 加载运动类型
