@@ -591,6 +591,87 @@ const savingsApi = {
   }
 };
 
+/**
+ * 运动打卡相关接口
+ */
+const sportsApi = {
+  // 获取运动类型列表
+  getTypes: () => {
+    return app.request({
+      url: '/sports/types',
+      method: 'GET'
+    });
+  },
+  
+  // 创建运动类型
+  createType: (data) => {
+    return app.request({
+      url: '/sports/types',
+      method: 'POST',
+      data
+    });
+  },
+  
+  // 删除运动类型
+  deleteType: (typeId) => {
+    return app.request({
+      url: `/sports/types/${typeId}`,
+      method: 'DELETE'
+    });
+  },
+  
+  // 创建运动记录
+  createRecord: (data) => {
+    return app.request({
+      url: '/sports/records',
+      method: 'POST',
+      data
+    });
+  },
+  
+  // 获取运动记录
+  getRecords: (params) => {
+    return app.request({
+      url: '/sports/records',
+      method: 'GET',
+      data: params
+    });
+  },
+  
+  // 获取本周统计
+  getWeekStats: () => {
+    return app.request({
+      url: '/sports/week-stats',
+      method: 'GET'
+    });
+  },
+  
+  // 同步微信运动步数
+  syncSteps: (data) => {
+    return app.request({
+      url: '/sports/sync-steps',
+      method: 'POST',
+      data
+    });
+  },
+  
+  // 获取今日步数
+  getTodaySteps: () => {
+    return app.request({
+      url: '/sports/today-steps',
+      method: 'GET'
+    });
+  },
+  
+  // 初始化默认运动类型
+  initTypes: () => {
+    return app.request({
+      url: '/sports/init-types',
+      method: 'POST'
+    });
+  }
+};
+
 module.exports = {
   authApi,
   userApi,
@@ -599,5 +680,6 @@ module.exports = {
   pointsApi,
   postApi,
   uploadApi,
-  savingsApi
+  savingsApi,
+  sportsApi
 };

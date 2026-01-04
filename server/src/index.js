@@ -18,6 +18,7 @@ const pointsRoutes = require('./routes/points');
 const postRoutes = require('./routes/posts');
 const uploadRoutes = require('./routes/upload');
 const savingsRoutes = require('./routes/savings');
+const sportsRoutes = require('./routes/sports');
 
 // 导入中间件
 const { errorHandler, requestLogger, notFoundHandler } = require('./middleware/errorHandler');
@@ -47,6 +48,7 @@ app.use('/api/points', pointsRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/savings', savingsRoutes);
+app.use('/api/sports', sportsRoutes);
 
 // ============ 健康检查 ============
 // Render 健康检查

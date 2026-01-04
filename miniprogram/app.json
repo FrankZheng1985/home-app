@@ -10,6 +10,7 @@
     "pages/rewards/rewards",
     "pages/moments/moments",
     "pages/moments/comments",
+    "pages/sports/sports",
     "pages/profile/profile",
     "pages/profile/edit",
     "pages/profile/preferences",
@@ -41,6 +42,12 @@
         "text": "家务",
         "iconPath": "assets/icons/chores.png",
         "selectedIconPath": "assets/icons/chores-active.png"
+      },
+      {
+        "pagePath": "pages/sports/sports",
+        "text": "运动",
+        "iconPath": "assets/icons/sports.png",
+        "selectedIconPath": "assets/icons/sports-active.png"
       },
       {
         "pagePath": "pages/moments/moments",
