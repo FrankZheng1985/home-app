@@ -188,18 +188,16 @@
 
 .chore-desc {
   font-size: 22rpx;
-  color: #999;
+  color: #666;
   margin-bottom: 10rpx;
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
+  line-height: 1.4;
   padding: 0 8rpx;
+  word-break: break-all;
 }
 
 .chore-card.has-desc {
-  min-height: 240rpx;
+  min-height: 260rpx;
 }
 
 .chore-points-badge {
