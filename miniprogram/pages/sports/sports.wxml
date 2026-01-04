@@ -134,19 +134,25 @@
         <text>管理</text>
       </view>
     </view>
-    <view class="types-grid">
+    <view class="types-list">
       <view 
-        class="type-item" 
+        class="type-card" 
         wx:for="{{sportTypes}}" 
         wx:key="id"
         data-type="{{item}}"
         bindtap="selectSportType"
       >
-        <view class="type-icon-small" style="background: {{item.color}}">
+        <view class="type-icon-medium" style="background: {{item.color}}">
           <text>{{item.icon}}</text>
         </view>
-        <text class="type-label">{{item.name}}</text>
-        <text class="type-calories">{{item.caloriesPerMin}}千卡/分</text>
+        <view class="type-info">
+          <view class="type-header">
+            <text class="type-name-large">{{item.name}}</text>
+            <text class="type-cal-badge">{{item.caloriesPerMin}}千卡/分</text>
+          </view>
+          <text class="type-desc">{{item.description || '点击开始打卡'}}</text>
+        </view>
+        <view class="type-arrow">›</view>
       </view>
     </view>
   </view>

@@ -418,6 +418,78 @@
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
+.types-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.type-card {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: #f8faf8;
+  border-radius: 16rpx;
+}
+
+.type-card:active {
+  background: #e8f5e9;
+}
+
+.type-icon-medium {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.type-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.type-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.type-name-large {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-right: 12rpx;
+}
+
+.type-cal-badge {
+  font-size: 22rpx;
+  color: #43a047;
+  background: #e8f5e9;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.type-desc {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.type-arrow {
+  font-size: 36rpx;
+  color: #ccc;
+  margin-left: 16rpx;
+}
+
+/* 保留旧样式用于其他地方 */
 .types-grid {
   display: flex;
   flex-wrap: wrap;

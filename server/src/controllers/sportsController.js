@@ -16,7 +16,8 @@ const getTypes = async (req, res) => {
     }
     
     const result = await pool.query(
-      `SELECT id, name, icon, color, calories_per_min as "caloriesPerMin", is_preset as "isPreset"
+      `SELECT id, name, icon, color, calories_per_min as "caloriesPerMin", 
+              description, is_preset as "isPreset"
        FROM sport_types 
        WHERE family_id = $1 
        ORDER BY is_preset DESC, created_at ASC`,
