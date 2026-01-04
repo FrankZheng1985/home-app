@@ -22,15 +22,21 @@ const getProfile = async (req, res) => {
   // 尝试使用数据库
   if (query) {
     try {
+      // 查询用户信息和家庭成员关系
       const result = await query(
-        `SELECT id, openid, nickname, avatar_url, gender, birthday, preferences, created_at
-         FROM users WHERE id = $1`,
+        `SELECT u.id, u.openid, u.nickname, u.avatar_url, u.gender, u.birthday, u.preferences, u.created_at,
+                fm.family_id, fm.role as family_role
+         FROM users u
+         LEFT JOIN family_members fm ON u.id = fm.user_id
+         WHERE u.id = $1
+         LIMIT 1`,
         [userId]
       );
 
       if (result.rows.length > 0) {
         const user = result.rows[0];
         return res.json({
+          success: true,
           data: {
             id: user.id,
             nickname: user.nickname,
@@ -38,7 +44,9 @@ const getProfile = async (req, res) => {
             gender: user.gender,
             birthday: user.birthday,
             preferences: user.preferences,
-            createdAt: user.created_at
+            createdAt: user.created_at,
+            familyId: user.family_id,
+            familyRole: user.family_role
           }
         });
       }
@@ -64,6 +72,7 @@ const getProfile = async (req, res) => {
     }
 
     return res.json({
+      success: true,
       data: {
         id: user.id,
         nickname: user.nickname || '开发用户',
@@ -71,12 +80,14 @@ const getProfile = async (req, res) => {
         gender: user.gender || 0,
         birthday: user.birthday || null,
         preferences: user.preferences || {},
-        createdAt: user.created_at || new Date()
+        createdAt: user.created_at || new Date(),
+        familyId: user.familyId || user.family_id || null,
+        familyRole: user.familyRole || user.family_role || null
       }
     });
   } catch (error) {
     console.error('获取用户信息错误:', error);
-    return res.status(500).json({ error: '获取用户信息失败' });
+    return res.status(500).json({ success: false, error: '获取用户信息失败' });
   }
 };
 
