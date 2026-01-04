@@ -1,16 +1,13 @@
 // src/middleware/auth.js
-const jwt = require('jsonwebtoken');
+// 认证中间件 - 处理JWT认证和权限检查
 
-// 动态导入数据库模块
-let query;
-try {
-  query = require('../config/database').query;
-} catch (e) {
-  console.warn('数据库模块未加载');
-  query = null;
-}
+const authService = require('../services/authService');
+const familyService = require('../services/familyService');
+const logger = require('../utils/logger');
+const { ERROR_CODES, createError } = require('../constants/errorCodes');
+const { HTTP_STATUS } = require('../constants/statusCodes');
 
-// 开发模式下的模拟用户数据存储（与 authController 共享）
+// 开发模式下的模拟用户数据存储（与 authService 共享）
 const mockUsers = global.mockUsers || (global.mockUsers = new Map());
 
 /**
@@ -21,42 +18,44 @@ const authenticate = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: '未提供认证令牌' });
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        createError(ERROR_CODES.AUTH_TOKEN_MISSING)
+      );
     }
     
     const token = authHeader.split(' ')[1];
     
     // 验证token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    let user = null;
-    
-    // 尝试从数据库查询用户信息
-    if (query) {
-      try {
-        const result = await query(
-          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = $1',
-          [decoded.userId]
+    let decoded;
+    try {
+      decoded = authService.verifyToken(token);
+    } catch (error) {
+      if (error.name === 'JsonWebTokenError') {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+          createError(ERROR_CODES.AUTH_TOKEN_INVALID)
         );
-        if (result.rows.length > 0) {
-          user = result.rows[0];
-        }
-      } catch (dbError) {
-        console.warn('数据库查询失败，尝试使用模拟数据:', dbError.message);
       }
+      if (error.name === 'TokenExpiredError') {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+          createError(ERROR_CODES.AUTH_TOKEN_EXPIRED)
+        );
+      }
+      throw error;
     }
     
-    // 数据库不可用时，使用模拟数据
+    // 查找用户
+    let user = await authService.findUserById(decoded.userId);
+    
+    // 数据库不可用时，尝试模拟数据
     if (!user) {
-      // 在模拟用户中查找
-      for (const [openId, mockUser] of mockUsers) {
+      for (const [, mockUser] of mockUsers) {
         if (mockUser.id === decoded.userId) {
           user = mockUser;
           break;
         }
       }
       
-      // 如果找不到，创建一个基于 JWT 的临时用户（开发模式）
+      // 开发模式下创建临时用户
       if (!user && process.env.NODE_ENV === 'development') {
         user = {
           id: decoded.userId,
@@ -64,25 +63,23 @@ const authenticate = async (req, res, next) => {
           avatar_url: '',
           preferences: {}
         };
-        console.log('🔧 开发模式：使用临时用户数据');
+        logger.debug('🔧 开发模式：使用临时用户数据');
       }
     }
     
     if (!user) {
-      return res.status(401).json({ error: '用户不存在' });
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        createError(ERROR_CODES.AUTH_USER_NOT_FOUND)
+      );
     }
     
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: '无效的认证令牌' });
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: '认证令牌已过期' });
-    }
-    console.error('认证错误:', error);
-    return res.status(500).json({ error: '认证失败' });
+    logger.error('认证错误', error);
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
+      createError(ERROR_CODES.SYSTEM_ERROR, '认证失败')
+    );
   }
 };
 
@@ -94,24 +91,27 @@ const isAdmin = async (req, res, next) => {
     const { familyId } = req.params;
     const userId = req.user.id;
     
-    const result = await query(
-      'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
-      [familyId, userId]
-    );
+    const { isMember, isAdmin: admin } = await familyService.checkMemberRole(userId, familyId);
     
-    if (result.rows.length === 0) {
-      return res.status(403).json({ error: '您不是该家庭成员' });
+    if (!isMember) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createError(ERROR_CODES.FAMILY_NOT_MEMBER)
+      );
     }
     
-    if (result.rows[0].role !== 'admin' && result.rows[0].role !== 'creator') {
-      return res.status(403).json({ error: '需要管理员权限' });
+    if (!admin) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createError(ERROR_CODES.FAMILY_ADMIN_REQUIRED)
+      );
     }
     
-    req.memberRole = result.rows[0].role;
+    req.memberRole = admin ? 'admin' : 'member';
     next();
   } catch (error) {
-    console.error('权限检查错误:', error);
-    return res.status(500).json({ error: '权限检查失败' });
+    logger.error('权限检查错误', error);
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
+      createError(ERROR_CODES.SYSTEM_ERROR, '权限检查失败')
+    );
   }
 };
 
@@ -124,24 +124,27 @@ const isFamilyMember = async (req, res, next) => {
     const userId = req.user.id;
     
     if (!familyId) {
-      return res.status(400).json({ error: '缺少家庭ID' });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createError(ERROR_CODES.FAMILY_ID_REQUIRED)
+      );
     }
     
-    const result = await query(
-      'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
-      [familyId, userId]
-    );
+    const { isMember, role } = await familyService.checkMemberRole(userId, familyId);
     
-    if (result.rows.length === 0) {
-      return res.status(403).json({ error: '您不是该家庭成员' });
+    if (!isMember) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createError(ERROR_CODES.FAMILY_NOT_MEMBER)
+      );
     }
     
-    req.memberRole = result.rows[0].role;
+    req.memberRole = role;
     req.familyId = familyId;
     next();
   } catch (error) {
-    console.error('成员检查错误:', error);
-    return res.status(500).json({ error: '成员检查失败' });
+    logger.error('成员检查错误', error);
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
+      createError(ERROR_CODES.SYSTEM_ERROR, '成员检查失败')
+    );
   }
 };
 
@@ -150,4 +153,3 @@ module.exports = {
   isAdmin,
   isFamilyMember
 };
-
