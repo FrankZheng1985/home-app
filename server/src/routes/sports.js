@@ -23,6 +23,9 @@ router.get('/week-stats', sportsController.getWeekStats);
 router.post('/sync-steps', sportsController.syncSteps);
 router.get('/today-steps', sportsController.getTodaySteps);
 
+// 步数兑换积分
+router.post('/redeem-points', sportsController.redeemStepsPoints);
+
 // 初始化默认类型
 router.post('/init-types', sportsController.initDefaultTypes);
 

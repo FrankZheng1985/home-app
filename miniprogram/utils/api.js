@@ -669,6 +669,14 @@ const sportsApi = {
       url: '/sports/init-types',
       method: 'POST'
     });
+  },
+  
+  // 步数兑换积分
+  redeemPoints: () => {
+    return app.request({
+      url: '/sports/redeem-points',
+      method: 'POST'
+    });
   }
 };
 

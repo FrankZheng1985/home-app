@@ -340,7 +340,7 @@ const getTodaySteps = async (req, res) => {
     const userId = req.user.id;
     
     const result = await pool.query(
-      `SELECT steps FROM step_records 
+      `SELECT steps, points_redeemed as "pointsRedeemed" FROM step_records 
        WHERE user_id = $1 AND record_date = CURRENT_DATE`,
       [userId]
     );
@@ -348,12 +348,99 @@ const getTodaySteps = async (req, res) => {
     res.json({
       success: true,
       data: {
-        steps: result.rows[0]?.steps || 0
+        steps: result.rows[0]?.steps || 0,
+        pointsRedeemed: result.rows[0]?.pointsRedeemed || false
       }
     });
   } catch (error) {
     console.error('获取步数失败:', error);
     res.status(500).json({ success: false, message: '获取步数失败' });
+  }
+};
+
+/**
+ * 步数兑换积分
+ * 规则：每5000步可兑换50积分，每天只能兑换一次
+ */
+const redeemStepsPoints = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const familyId = req.user.familyId;
+    
+    if (!familyId) {
+      return res.status(400).json({ success: false, message: '请先加入家庭' });
+    }
+    
+    // 获取今日步数记录
+    const stepRecord = await pool.query(
+      `SELECT id, steps, points_redeemed FROM step_records 
+       WHERE user_id = $1 AND record_date = CURRENT_DATE`,
+      [userId]
+    );
+    
+    if (stepRecord.rows.length === 0) {
+      return res.status(400).json({ success: false, message: '今日还没有步数记录，请先同步步数' });
+    }
+    
+    const record = stepRecord.rows[0];
+    
+    // 检查是否已兑换
+    if (record.points_redeemed) {
+      return res.status(400).json({ success: false, message: '今日已兑换过积分' });
+    }
+    
+    // 检查步数是否达标
+    const requiredSteps = 5000;
+    const rewardPoints = 50;
+    
+    if (record.steps < requiredSteps) {
+      return res.status(400).json({ 
+        success: false, 
+        message: \`步数不足，需要\${requiredSteps}步才能兑换，当前\${record.steps}步\`
+      });
+    }
+    
+    // 开始事务：更新兑换状态并添加积分
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // 更新步数记录为已兑换
+      await client.query(
+        `UPDATE step_records SET points_redeemed = true, redeemed_at = NOW() 
+         WHERE id = $1`,
+        [record.id]
+      );
+      
+      // 添加积分记录
+      await client.query(
+        `INSERT INTO point_transactions (id, user_id, family_id, points, type, description, created_at)
+         VALUES (uuid_generate_v4(), $1, $2, $3, 'earn', $4, NOW())`,
+        [userId, familyId, rewardPoints, \`运动达标奖励（\${record.steps}步）\`]
+      );
+      
+      // 更新用户总积分（如果有积分汇总表）
+      // 这里假设积分是通过 point_transactions 表计算的
+      
+      await client.query('COMMIT');
+      
+      res.json({
+        success: true,
+        message: \`恭喜！成功兑换\${rewardPoints}积分\`,
+        data: {
+          points: rewardPoints,
+          steps: record.steps
+        }
+      });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('兑换积分失败:', error);
+    res.status(500).json({ success: false, message: '兑换积分失败: ' + error.message });
   }
 };
 
@@ -414,6 +501,7 @@ module.exports = {
   getWeekStats,
   syncSteps,
   getTodaySteps,
-  initDefaultTypes
+  initDefaultTypes,
+  redeemStepsPoints
 };
 

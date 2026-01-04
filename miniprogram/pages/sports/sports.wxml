@@ -65,6 +65,37 @@
     </view>
   </view>
 
+  <!-- 步数兑换积分 -->
+  <view class="redeem-section">
+    <view class="redeem-card">
+      <view class="redeem-info">
+        <view class="redeem-icon">🎁</view>
+        <view class="redeem-text">
+          <text class="redeem-title">步数换积分</text>
+          <text class="redeem-rule">每日达到5000步可兑换50积分</text>
+        </view>
+      </view>
+      <view class="redeem-status">
+        <block wx:if="{{pointsRedeemed}}">
+          <view class="redeem-done">
+            <text class="done-icon">✅</text>
+            <text class="done-text">今日已兑换</text>
+          </view>
+        </block>
+        <block wx:elif="{{todaySteps >= 5000}}">
+          <button class="redeem-btn" bindtap="redeemPoints">
+            <text>兑换50积分</text>
+          </button>
+        </block>
+        <block wx:else>
+          <view class="redeem-progress">
+            <text class="progress-text">还差{{5000 - todaySteps}}步</text>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
   <!-- 打卡日历 -->
   <view class="calendar-section">
     <view class="section-header">

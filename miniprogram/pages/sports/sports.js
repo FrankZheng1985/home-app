@@ -9,8 +9,9 @@ Page({
     
     // 步数相关
     todaySteps: 0,
-    stepsTarget: 8000,
+    stepsTarget: 5000,  // 目标改为5000步（与兑换积分一致）
     stepsProgress: 0,
+    pointsRedeemed: false,  // 今日是否已兑换积分
     
     // 统计
     weekStats: {
@@ -177,15 +178,27 @@ Page({
     }
     
     try {
-      // 先从本地存储读取
-      const today = this.formatDate(new Date());
-      const savedSteps = wx.getStorageSync(`steps_${today}`) || 0;
-      if (savedSteps > 0) {
-        const stepsProgress = Math.round((savedSteps / this.data.stepsTarget) * 100);
-        this.setData({ todaySteps: savedSteps, stepsProgress });
+      // 从服务器获取今日步数和兑换状态
+      const res = await api.sportsApi.getTodaySteps();
+      if (res.success && res.data) {
+        const { steps, pointsRedeemed } = res.data;
+        const stepsProgress = Math.round((steps / this.data.stepsTarget) * 100);
+        this.setData({ 
+          todaySteps: steps, 
+          stepsProgress,
+          pointsRedeemed: pointsRedeemed || false
+        });
+      } else {
+        // 从本地存储读取
+        const today = this.formatDate(new Date());
+        const savedSteps = wx.getStorageSync(`steps_${today}`) || 0;
+        if (savedSteps > 0) {
+          const stepsProgress = Math.round((savedSteps / this.data.stepsTarget) * 100);
+          this.setData({ todaySteps: savedSteps, stepsProgress });
+        }
       }
     } catch (error) {
-      console.log('读取本地步数:', error.message || error);
+      console.log('读取步数:', error.message || error);
     }
   },
   
@@ -565,6 +578,41 @@ Page({
   // 跳转到家庭页面
   goToFamily() {
     wx.navigateTo({ url: '/pages/family/family' });
+  },
+  
+  // 兑换积分
+  async redeemPoints() {
+    if (this.data.pointsRedeemed) {
+      wx.showToast({ title: '今日已兑换', icon: 'none' });
+      return;
+    }
+    
+    if (this.data.todaySteps < 5000) {
+      wx.showToast({ title: '步数不足5000步', icon: 'none' });
+      return;
+    }
+    
+    wx.showLoading({ title: '兑换中...' });
+    
+    try {
+      const res = await api.sportsApi.redeemPoints();
+      wx.hideLoading();
+      
+      if (res.success) {
+        this.setData({ pointsRedeemed: true });
+        wx.showModal({
+          title: '🎉 兑换成功',
+          content: `恭喜获得50积分！\n今日步数：${this.data.todaySteps}步`,
+          showCancel: false
+        });
+      } else {
+        wx.showToast({ title: res.message || '兑换失败', icon: 'none' });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.log('兑换积分失败:', error);
+      wx.showToast({ title: '兑换失败', icon: 'none' });
+    }
   },
 
   // 删除运动类型
