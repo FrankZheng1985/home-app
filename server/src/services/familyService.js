@@ -326,6 +326,32 @@ class FamilyService extends BaseService {
 
     return { memberId, role: newRole };
   }
+
+  /**
+   * 获取用户所属的家庭信息
+   * @param {string} userId - 用户ID
+   * @returns {Promise<Object|null>} 家庭信息
+   */
+  async getUserFamily(userId) {
+    if (!this.isDatabaseAvailable()) {
+      return null;
+    }
+
+    try {
+      const result = await this.queryOne(
+        `SELECT fm.family_id as "familyId", fm.role, f.name as "familyName"
+         FROM family_members fm
+         JOIN families f ON fm.family_id = f.id
+         WHERE fm.user_id = $1
+         LIMIT 1`,
+        [userId]
+      );
+      return result;
+    } catch (error) {
+      logger.debug('获取用户家庭信息失败:', error.message);
+      return null;
+    }
+  }
 }
 
 module.exports = new FamilyService();

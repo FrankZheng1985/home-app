@@ -73,6 +73,17 @@ const authenticate = async (req, res, next) => {
       );
     }
     
+    // 获取用户的家庭信息
+    try {
+      const familyInfo = await familyService.getUserFamily(user.id);
+      if (familyInfo) {
+        user.familyId = familyInfo.familyId;
+        user.familyRole = familyInfo.role;
+      }
+    } catch (familyError) {
+      logger.debug('获取家庭信息失败:', familyError.message);
+    }
+    
     req.user = user;
     next();
   } catch (error) {
