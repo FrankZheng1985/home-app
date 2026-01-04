@@ -63,15 +63,21 @@ Page({
     try {
       // 优先从服务器获取最新用户信息
       const res = await api.userApi.getProfile();
+      console.log('获取用户信息响应:', JSON.stringify(res));
       
-      if (res.success && res.data) {
-        const userInfo = res.data;
+      // 兼容两种响应格式: { success: true, data: {...} } 或 { data: {...} }
+      const userInfo = res.data || res;
+      console.log('用户信息:', JSON.stringify(userInfo));
+      console.log('familyId:', userInfo.familyId);
+      
+      if (userInfo && userInfo.id) {
         // 更新全局和本地存储
         const app = getApp();
         app.globalData.userInfo = userInfo;
         wx.setStorageSync('userInfo', userInfo);
         
         if (userInfo.familyId) {
+          console.log('用户已加入家庭，familyId:', userInfo.familyId);
           this.setData({ hasFamily: true, isLoading: false });
           this.loadSportTypes();
           this.loadTodayRecords();
@@ -79,9 +85,11 @@ Page({
           this.loadWeekStats();
           this.syncWechatSteps();
         } else {
+          console.log('用户未加入家庭');
           this.setData({ hasFamily: false, isLoading: false });
         }
       } else {
+        console.log('API响应无效，尝试本地存储');
         // 如果获取失败，尝试从本地存储读取
         const localUserInfo = wx.getStorageSync('userInfo');
         if (localUserInfo && localUserInfo.familyId) {
@@ -95,7 +103,7 @@ Page({
         }
       }
     } catch (error) {
-      console.log('检查用户状态:', error.message || error);
+      console.log('检查用户状态错误:', error.message || error);
       // 网络错误时尝试从本地存储读取
       const localUserInfo = wx.getStorageSync('userInfo');
       if (localUserInfo && localUserInfo.familyId) {
