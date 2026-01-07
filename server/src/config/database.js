@@ -8,7 +8,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 const pool = mysql.createPool({
   host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
   port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
-  user: process.env.MYSQL_USERNAME || process.env.DB_USER,
+  // 优先使用环境变量，如果环境变量是默认的root且存在DB_USER则用DB_USER，否则尝试使用 family_assistant
+  user: process.env.MYSQL_USERNAME || process.env.DB_USER || 'family_assistant',
   password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
   waitForConnections: true,
