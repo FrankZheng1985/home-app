@@ -1,33 +1,25 @@
-// src/config/database.js
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 
 // 数据库连接配置
-const isProduction = process.env.NODE_ENV === 'production';
-
-// 创建连接池
-const pool = mysql.createPool({
-  host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
-  port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
-  // 优先使用环境变量，如果环境变量是默认的root且存在DB_USER则用DB_USER，否则尝试使用 family_assistant
-  user: process.env.MYSQL_USERNAME || process.env.DB_USER || 'family_assistant',
-  password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD,
+const pool = new Pool({
+  host: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
+  port: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[1] : (process.env.DB_PORT || 5432),
+  user: process.env.POSTGRES_USERNAME || process.env.DB_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  // 保持连接
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
 // 测试数据库连接
 (async () => {
   try {
-    const connection = await pool.getConnection();
-    console.log('数据库连接成功');
-    connection.release();
+    const client = await pool.connect();
+    console.log('PostgreSQL 数据库连接成功');
+    client.release();
   } catch (err) {
-    console.error('数据库连接错误:', err);
+    console.error('数据库连接错误:', err.message);
   }
 })();
 
@@ -40,36 +32,12 @@ const pool = mysql.createPool({
 const query = async (text, params) => {
   const start = Date.now();
   try {
-    // 转换 PostgreSQL 风格的占位符 ($1, $2) 为 MySQL 风格 (?)
-    let sql = text;
-    let queryParams = params;
-
-    // 简单替换 $n 为 ?
-    if (sql.includes('$')) {
-      sql = sql.replace(/\$\d+/g, '?');
-    }
-    
-    // MySQL的 RETURNING 语法处理（MySQL不支持RETURNING，需要改写）
-    // 这里仅做简单处理，复杂逻辑需要在业务层修改
-    if (sql.includes('RETURNING')) {
-       // 移除 RETURNING 子句，后续在业务逻辑中处理 ID 返回
-       sql = sql.split('RETURNING')[0];
-    }
-
-    const [rows, fields] = await pool.execute(sql, queryParams);
-    
+    const res = await pool.query(text, params);
     const duration = Date.now() - start;
     if (process.env.NODE_ENV === 'development') {
-      console.log('执行查询:', { text: sql, duration, rows: Array.isArray(rows) ? rows.length : 1 });
+      console.log('执行查询:', { text, duration, rows: res.rowCount });
     }
-    
-    // 模拟 PostgreSQL 的返回格式
-    return {
-      rows: Array.isArray(rows) ? rows : [],
-      rowCount: Array.isArray(rows) ? rows.length : (rows.affectedRows || 0),
-      // 如果是插入操作，返回 insertId
-      insertId: rows.insertId
-    };
+    return res;
   } catch (error) {
     console.error('查询错误:', error);
     throw error;
@@ -81,31 +49,25 @@ const query = async (text, params) => {
  * @returns {Promise}
  */
 const getClient = async () => {
-  const connection = await pool.getConnection();
+  const client = await pool.connect();
+  const query = client.query;
+  const release = client.release;
   
-  // 包装 query 方法以匹配原有接口
-  const originalQuery = connection.query.bind(connection);
-  const originalExecute = connection.execute.bind(connection);
-  
-  connection.query = async (text, params) => {
-    let sql = text;
-    if (sql.includes('$')) {
-      sql = sql.replace(/\$\d+/g, '?');
-    }
-    if (sql.includes('RETURNING')) {
-       sql = sql.split('RETURNING')[0];
-    }
-    
-    // 使用 execute 以支持预编译语句
-    const [rows] = await originalExecute(sql, params);
-    return {
-      rows: Array.isArray(rows) ? rows : [],
-      rowCount: Array.isArray(rows) ? rows.length : (rows.affectedRows || 0),
-      insertId: rows.insertId
-    };
+  // 覆盖 query 方法以添加日志
+  const timeout = 5000;
+  client.query = (...args) => {
+    client.lastQuery = args;
+    return query.apply(client, args);
   };
-
-  return connection;
+  
+  client.timeout = timeout;
+  client.release = () => {
+    client.query = query;
+    client.release = release;
+    return release.apply(client);
+  };
+  
+  return client;
 };
 
 module.exports = {

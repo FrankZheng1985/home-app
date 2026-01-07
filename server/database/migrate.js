@@ -1,49 +1,44 @@
-// database/migrate.js
 require('dotenv').config({ path: '../.env' });
-
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 
-// 数据库连接配置
-const config = {
-  host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
-  port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
-  user: process.env.MYSQL_USERNAME || process.env.DB_USER || 'family_assistant',
-  password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD,
+const pool = new Pool({
+  host: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
+  port: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[1] : (process.env.DB_PORT || 5432),
+  user: process.env.POSTGRES_USERNAME || process.env.DB_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
-  multipleStatements: true // 允许执行多条SQL
-};
+});
 
 async function runMigrations() {
-  let connection;
-  
+  let client;
   try {
-    console.log('开始连接数据库...');
-    connection = await mysql.createConnection(config);
-    console.log('数据库连接成功');
-    
-    console.log('开始执行数据库迁移...');
-    
-    // 读取迁移文件 - 优先使用 init_mysql.sql
-    const initFile = path.join(__dirname, 'init_mysql.sql');
-    if (fs.existsSync(initFile)) {
-      console.log('发现 MySQL 初始化脚本，开始执行...');
-      const sql = fs.readFileSync(initFile, 'utf8');
-      await connection.query(sql);
-      console.log('MySQL 初始化完成！');
+    console.log('连接数据库...');
+    client = await pool.connect();
+    console.log('连接成功');
+
+    const migrationsDir = path.join(__dirname, 'migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const files = fs.readdirSync(migrationsDir).sort(); // 按文件名排序执行
+      for (const file of files) {
+        if (file.endsWith('.sql')) {
+          console.log(`正在执行迁移: ${file}`);
+          const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+          await client.query(sql);
+          console.log(`${file} 执行成功`);
+        }
+      }
     } else {
-      console.warn('未找到 init_mysql.sql 文件，跳过初始化');
+      console.log('未找到迁移文件目录');
     }
-    
-    console.log('所有迁移执行完成！');
-  } catch (error) {
-    console.error('迁移失败:', error);
-    process.exit(1);
+
+    console.log('所有迁移完成');
+  } catch (err) {
+    console.error('迁移失败:', err);
   } finally {
-    if (connection) {
-      await connection.end();
-    }
+    if (client) client.release();
+    await pool.end();
   }
 }
 

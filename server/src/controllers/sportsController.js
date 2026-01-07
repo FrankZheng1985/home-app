@@ -1,7 +1,6 @@
 // controllers/sportsController.js - 运动打卡控制器
 const pool = require('../config/database');
-const crypto = require('crypto');
-const authService = require('../services/authService');
+const { v4: uuidv4 } = require('uuid');
 
 /**
  * 获取运动类型列表
@@ -408,15 +407,15 @@ const redeemStepsPoints = async (req, res) => {
       // 更新步数记录为已兑换
       await client.query(
         `UPDATE step_records SET points_redeemed = true, redeemed_at = NOW() 
-         WHERE id = ?`,
+         WHERE id = $1`,
         [record.id]
       );
       
       // 添加积分记录
       await client.query(
         `INSERT INTO point_transactions (id, user_id, family_id, points, type, description, created_at)
-         VALUES (UUID(), ?, ?, ?, 'earn', ?, NOW())`,
-        [userId, familyId, rewardPoints, `运动达标奖励（${record.steps}步）`]
+         VALUES ($1, $2, $3, $4, 'earn', $5, NOW())`,
+        [uuidv4(), userId, familyId, rewardPoints, `运动达标奖励（${record.steps}步）`]
       );
       
       // 更新用户总积分（如果有积分汇总表）
