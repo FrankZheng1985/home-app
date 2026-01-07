@@ -581,37 +581,42 @@ Page({
   },
   
   // 兑换积分
-  async redeemPoints() {
+  async redeemPoints(isAuto = false) {
     if (this.data.pointsRedeemed) {
-      wx.showToast({ title: '今日已兑换', icon: 'none' });
+      if (!isAuto) wx.showToast({ title: '今日已兑换', icon: 'none' });
       return;
     }
     
     if (this.data.todaySteps < 5000) {
-      wx.showToast({ title: '步数不足5000步', icon: 'none' });
+      if (!isAuto) wx.showToast({ title: '步数不足5000步', icon: 'none' });
       return;
     }
     
-    wx.showLoading({ title: '兑换中...' });
+    if (!isAuto) wx.showLoading({ title: '兑换中...' });
     
     try {
       const res = await api.sportsApi.redeemPoints();
-      wx.hideLoading();
+      if (!isAuto) wx.hideLoading();
       
       if (res.success) {
         this.setData({ pointsRedeemed: true });
-        wx.showModal({
-          title: '🎉 兑换成功',
-          content: `恭喜获得50积分！\n今日步数：${this.data.todaySteps}步`,
-          showCancel: false
-        });
+        
+        if (isAuto) {
+          wx.showToast({ title: '已自动兑换50积分', icon: 'success' });
+        } else {
+          wx.showModal({
+            title: '🎉 兑换成功',
+            content: `恭喜获得50积分！\n今日步数：${this.data.todaySteps}步`,
+            showCancel: false
+          });
+        }
       } else {
-        wx.showToast({ title: res.message || '兑换失败', icon: 'none' });
+        if (!isAuto) wx.showToast({ title: res.message || '兑换失败', icon: 'none' });
       }
     } catch (error) {
-      wx.hideLoading();
+      if (!isAuto) wx.hideLoading();
       console.log('兑换积分失败:', error);
-      wx.showToast({ title: '兑换失败', icon: 'none' });
+      if (!isAuto) wx.showToast({ title: '兑换失败', icon: 'none' });
     }
   },
 
