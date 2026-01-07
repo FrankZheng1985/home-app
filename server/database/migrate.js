@@ -7,11 +7,11 @@ const path = require('path');
 
 // 数据库连接配置
 const config = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
+  port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
+  user: process.env.MYSQL_USERNAME || process.env.DB_USER,
+  password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
-  port: process.env.DB_PORT || 3306,
   multipleStatements: true // 允许执行多条SQL
 };
 

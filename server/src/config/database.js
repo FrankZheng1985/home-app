@@ -6,11 +6,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // 创建连接池
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
+  port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
+  user: process.env.MYSQL_USERNAME || process.env.DB_USER,
+  password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
-  port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
