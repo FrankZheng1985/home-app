@@ -396,27 +396,27 @@ const redeemStepsPoints = async (req, res) => {
     if (record.steps < requiredSteps) {
       return res.status(400).json({ 
         success: false, 
-        message: \`步数不足，需要\${requiredSteps}步才能兑换，当前\${record.steps}步\`
+        message: `步数不足，需要${requiredSteps}步才能兑换，当前${record.steps}步`
       });
     }
     
     // 开始事务：更新兑换状态并添加积分
-    const client = await pool.connect();
+    const client = await pool.getClient();
     try {
       await client.query('BEGIN');
       
       // 更新步数记录为已兑换
       await client.query(
         `UPDATE step_records SET points_redeemed = true, redeemed_at = NOW() 
-         WHERE id = $1`,
+         WHERE id = ?`,
         [record.id]
       );
       
       // 添加积分记录
       await client.query(
         `INSERT INTO point_transactions (id, user_id, family_id, points, type, description, created_at)
-         VALUES (uuid_generate_v4(), $1, $2, $3, 'earn', $4, NOW())`,
-        [userId, familyId, rewardPoints, \`运动达标奖励（\${record.steps}步）\`]
+         VALUES (UUID(), ?, ?, ?, 'earn', ?, NOW())`,
+        [userId, familyId, rewardPoints, `运动达标奖励（${record.steps}步）`]
       );
       
       // 更新用户总积分（如果有积分汇总表）
@@ -426,7 +426,7 @@ const redeemStepsPoints = async (req, res) => {
       
       res.json({
         success: true,
-        message: \`恭喜！成功兑换\${rewardPoints}积分\`,
+        message: `恭喜！成功兑换${rewardPoints}积分`,
         data: {
           points: rewardPoints,
           steps: record.steps
