@@ -56,6 +56,39 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// 临时数据库迁移接口
+app.get('/api/migrate', async (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const mysql = require('mysql2/promise');
+
+  try {
+    const config = {
+      host: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
+      port: process.env.MYSQL_ADDRESS ? process.env.MYSQL_ADDRESS.split(':')[1] : (process.env.DB_PORT || 3306),
+      user: process.env.MYSQL_USERNAME || process.env.DB_USER,
+      password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD,
+      database: process.env.DB_NAME || 'family_assistant',
+      multipleStatements: true
+    };
+
+    const connection = await mysql.createConnection(config);
+    const initFile = path.join(__dirname, '../database/init_mysql.sql');
+    
+    if (fs.existsSync(initFile)) {
+      const sql = fs.readFileSync(initFile, 'utf8');
+      await connection.query(sql);
+      await connection.end();
+      res.json({ success: true, message: '数据库初始化成功！' });
+    } else {
+      await connection.end();
+      res.status(500).json({ success: false, message: '未找到 init_mysql.sql 文件' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: '迁移失败', error: error.message });
+  }
+});
+
 // API 健康检查（详细版）
 app.get('/api/health', (req, res) => {
   res.json({ 
