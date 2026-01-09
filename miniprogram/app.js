@@ -48,9 +48,10 @@ App({
     familyInfo: null,
     token: null,
     // 后端服务地址配置
-    // 开发环境用 localhost，生产环境用 Render
+    // 开发环境用 localhost，生产环境用微信云托管
     // backendUrl: 'http://localhost:3000', // 本地开发
-    backendUrl: 'https://family-assistant-api.onrender.com', // 生产环境 Render
+    // backendUrl: 'https://express-56rh-214915-5-13943135431.sh.run.tcloudbase.com', // 生产环境微信云托管
+    backendUrl: 'http://81.70.239.82:3000', // 腾讯云服务器自托管 (HTTP)
     systemInfo: null,
     statusBarHeight: 0,
     safeAreaBottom: 0
