@@ -202,13 +202,12 @@ const getTransactions = async (req, res) => {
         return res.status(403).json({ error: '您不是该家庭成员' });
       }
 
-      // 构建查询
+      // 构建查询（MySQL用?占位符）
       let whereClause = 'pt.family_id = ? AND pt.user_id = ?';
       const values = [familyId, req.user.id];
-      let paramIndex = 3;
 
       if (type) {
-        whereClause += ` AND pt.type = $${paramIndex++}`;
+        whereClause += ` AND pt.type = ?`;
         values.push(type);
       }
 
@@ -219,7 +218,7 @@ const getTransactions = async (req, res) => {
          FROM point_transactions pt
          WHERE ${whereClause}
          ORDER BY pt.created_at DESC
-         LIMIT $${paramIndex++} OFFSET $${paramIndex}`,
+         LIMIT ? OFFSET ?`,
         values
       );
 
@@ -583,14 +582,14 @@ const getRanking = async (req, res) => {
         return res.status(403).json({ error: '您不是该家庭成员' });
       }
 
-      // 构建时间条件
+      // 构建时间条件（MySQL语法）
       let timeCondition = '';
-      const values = [familyId];
+      const values = [familyId, familyId]; // 两个占位符都需要familyId
 
       if (period === 'week') {
-        timeCondition = 'AND pt.created_at >= CURRENT_DATE - INTERVAL \'7 days\'';
+        timeCondition = 'AND pt.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)';
       } else if (period === 'month') {
-        timeCondition = 'AND pt.created_at >= DATE_TRUNC(\'month\', CURRENT_DATE)';
+        timeCondition = 'AND pt.created_at >= DATE_FORMAT(CURRENT_DATE, \'%Y-%m-01\')';
       }
 
       const result = await query(
