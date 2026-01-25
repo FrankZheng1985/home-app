@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/login/login",
     "pages/index/index",
+    "pages/login/login",
     "pages/register/register",
     "pages/family/family",
     "pages/family/create",
@@ -9,7 +9,6 @@
     "pages/chores/chores",
     "pages/rewards/rewards",
     "pages/moments/moments",
-    "pages/moments/comments",
     "pages/sports/sports",
     "pages/profile/profile",
     "pages/profile/edit",
@@ -17,6 +16,7 @@
     "pages/profile/points",
     "pages/profile/feedback",
     "pages/profile/about",
+    "pages/profile/agreement",
     "pages/savings/savings"
   ],
   "window": {

@@ -22,16 +22,7 @@
       <view class="char-count text-muted">{{feedbackContent.length}}/500</view>
     </view>
 
-    <view class="form-group">
-      <view class="form-label">联系方式（选填）</view>
-      <input 
-        class="form-input" 
-        placeholder="方便我们与您联系"
-        value="{{contact}}"
-        bindinput="onContactInput"
-        maxlength="50"
-      />
-    </view>
+    <!-- 已移除联系方式收集字段，符合隐私合规要求 -->
   </view>
 
   <view class="action-section">

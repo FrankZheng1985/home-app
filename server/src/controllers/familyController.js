@@ -75,6 +75,12 @@ const create = async (req, res) => {
            VALUES ($1, $2, $3, $4, NOW())`,
           [uuidv4(), familyId, userId, 'creator']
         );
+        
+        // 更新用户表中的 family_id（重要！）
+        await client.query(
+          `UPDATE users SET family_id = $1 WHERE id = $2`,
+          [familyId, userId]
+        );
 
         // 添加预设家务类型
         const presetChores = [
@@ -272,6 +278,12 @@ const joinByCode = async (req, res) => {
        VALUES ($1, $2, $3, $4, NOW())`,
       [uuidv4(), family.id, userId, 'member']
     );
+    
+    // 更新用户表中的 family_id（重要！）
+    await query(
+      `UPDATE users SET family_id = $1 WHERE id = $2`,
+      [family.id, userId]
+    );
 
     return res.json({
       data: {
@@ -453,6 +465,12 @@ const removeMember = async (req, res) => {
       'DELETE FROM family_members WHERE family_id = $1 AND user_id = $2',
       [familyId, memberId]
     );
+    
+    // 清除用户表中的 family_id
+    await query(
+      'UPDATE users SET family_id = NULL WHERE id = $1',
+      [memberId]
+    );
 
     return res.json({ data: { message: '移除成功' } });
   } catch (error) {
@@ -477,6 +495,12 @@ const leave = async (req, res) => {
     await query(
       'DELETE FROM family_members WHERE family_id = $1 AND user_id = $2',
       [familyId, userId]
+    );
+    
+    // 清除用户表中的 family_id
+    await query(
+      'UPDATE users SET family_id = NULL WHERE id = $1',
+      [userId]
     );
 
     return res.json({ data: { message: '退出成功' } });

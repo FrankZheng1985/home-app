@@ -60,11 +60,26 @@
 
   <!-- 登录按钮区域 -->
   <view class="login-section">
+    <!-- 隐私协议勾选框 -->
+    <view class="agreement-section">
+      <view class="agreement-checkbox" bindtap="toggleAgreement">
+        <view class="checkbox-icon {{agreedToTerms ? 'checked' : ''}}">
+          <text wx:if="{{agreedToTerms}}">✓</text>
+        </view>
+        <view class="agreement-text">
+          <text class="tip-text">我已阅读并同意</text>
+          <text class="link" catchtap="viewUserAgreement">《用户协议》</text>
+          <text class="tip-text">和</text>
+          <text class="link" catchtap="viewPrivacyPolicy">《隐私政策》</text>
+        </view>
+      </view>
+    </view>
+
     <button 
-      class="wx-login-btn" 
+      class="wx-login-btn {{!agreedToTerms ? 'disabled' : ''}}" 
       bindtap="getUserProfile"
       loading="{{isLogging}}"
-      disabled="{{isLogging}}"
+      disabled="{{isLogging || !agreedToTerms}}"
     >
       <view class="btn-content" wx:if="{{!isLogging}}">
         <text class="wx-icon-text">💚</text>
@@ -73,11 +88,8 @@
       <text wx:else class="btn-text">登录中...</text>
     </button>
     
-    <view class="login-tip">
-      <text class="tip-text">登录即表示您同意</text>
-      <text class="link">《用户协议》</text>
-      <text class="tip-text">和</text>
-      <text class="link">《隐私政策》</text>
+    <view class="login-note" wx:if="{{!agreedToTerms}}">
+      <text class="note-text">请先阅读并同意相关协议</text>
     </view>
   </view>
   

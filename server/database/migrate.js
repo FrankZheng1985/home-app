@@ -1,21 +1,24 @@
-require('dotenv').config({ path: '../.env' });
-const { Pool } = require('pg');
+require('dotenv').config();
+const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
 
-const pool = new Pool({
-  host: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
-  port: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[1] : (process.env.DB_PORT || 5432),
-  user: process.env.POSTGRES_USERNAME || process.env.DB_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD,
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
-});
+  multipleStatements: true  // 允许执行多条 SQL 语句
+};
 
 async function runMigrations() {
-  let client;
+  let connection;
   try {
     console.log('连接数据库...');
-    client = await pool.connect();
+    console.log(`Host: ${dbConfig.host}, Port: ${dbConfig.port}, Database: ${dbConfig.database}`);
+    
+    connection = await mysql.createConnection(dbConfig);
     console.log('连接成功');
 
     const migrationsDir = path.join(__dirname, 'migrations');
@@ -25,7 +28,7 @@ async function runMigrations() {
         if (file.endsWith('.sql')) {
           console.log(`正在执行迁移: ${file}`);
           const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
-          await client.query(sql);
+          await connection.query(sql);
           console.log(`${file} 执行成功`);
         }
       }
@@ -37,8 +40,7 @@ async function runMigrations() {
   } catch (err) {
     console.error('迁移失败:', err);
   } finally {
-    if (client) client.release();
-    await pool.end();
+    if (connection) await connection.end();
   }
 }
 

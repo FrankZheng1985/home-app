@@ -1,5 +1,5 @@
 // src/services/savingsService.js
-// 存款服务层 - 处理存款相关业务逻辑
+// 存款服务层 - 处理存款相关业务逻辑 (MySQL 版本)
 
 const { v4: uuidv4 } = require('uuid');
 const BaseService = require('./baseService');
@@ -7,6 +7,10 @@ const familyService = require('./familyService');
 const logger = require('../utils/logger');
 const { ERROR_CODES } = require('../constants/errorCodes');
 const { REVIEW_STATUS, TRANSACTION_TYPE } = require('../constants/statusCodes');
+
+// 开发模式下的模拟数据
+const mockSavingsAccounts = global.mockSavingsAccounts || (global.mockSavingsAccounts = new Map());
+const mockSavingsTransactions = global.mockSavingsTransactions || (global.mockSavingsTransactions = new Map());
 
 class SavingsService extends BaseService {
   /**
@@ -51,12 +55,31 @@ class SavingsService extends BaseService {
    * @returns {Promise<Object>}
    */
   async getOrCreateAccount(userId, familyId) {
+    // 开发模式：使用模拟数据
     if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
+      logger.info('🔧 开发模式：获取模拟存款账户');
+      const accountKey = `${userId}_${familyId}`;
+      let account = mockSavingsAccounts.get(accountKey);
+      
+      if (!account) {
+        account = {
+          id: uuidv4(),
+          user_id: userId,
+          family_id: familyId,
+          balance: 0,
+          total_interest: 0,
+          annual_rate: 0.03,
+          last_interest_date: new Date(),
+          created_at: new Date()
+        };
+        mockSavingsAccounts.set(accountKey, account);
+      }
+      
+      return account;
     }
 
     let account = await this.queryOne(
-      'SELECT * FROM savings_accounts WHERE user_id = $1 AND family_id = $2',
+      'SELECT * FROM savings_accounts WHERE user_id = ? AND family_id = ?',
       [userId, familyId]
     );
 
@@ -73,7 +96,7 @@ class SavingsService extends BaseService {
       });
 
       account = await this.queryOne(
-        'SELECT * FROM savings_accounts WHERE id = $1',
+        'SELECT * FROM savings_accounts WHERE id = ?',
         [accountId]
       );
     }
@@ -98,16 +121,45 @@ class SavingsService extends BaseService {
       account.last_interest_date
     );
 
+    // 开发模式：使用模拟数据
+    if (!this.isDatabaseAvailable()) {
+      const mockUsers = global.mockUsers || new Map();
+      let user = null;
+      for (const [openid, u] of mockUsers) {
+        if (u.id === userId) {
+          user = u;
+          break;
+        }
+      }
+      
+      return {
+        id: account.id,
+        balance: parseFloat(account.balance),
+        totalInterest: parseFloat(account.total_interest),
+        annualRate: parseFloat(account.annual_rate),
+        dailyRate: parseFloat(account.annual_rate) / 365,
+        lastInterestDate: account.last_interest_date,
+        pendingInterest: pendingInterest.interest,
+        pendingDays: pendingInterest.days,
+        projectedBalance: pendingInterest.newBalance,
+        userNickname: user?.nickname || '模拟用户',
+        userAvatar: user?.avatar_url || '',
+        isAdmin,
+        pendingRequestCount: 0,
+        createdAt: account.created_at
+      };
+    }
+
     // 获取用户信息
     const user = await this.queryOne(
-      'SELECT nickname, avatar_url FROM users WHERE id = $1',
+      'SELECT nickname, avatar_url FROM users WHERE id = ?',
       [userId]
     );
 
     // 获取待审核数量
     const pendingCount = await this.queryOne(
       `SELECT COUNT(*) as count FROM savings_requests 
-       WHERE account_id = $1 AND status = $2`,
+       WHERE account_id = ? AND status = ?`,
       [account.id, REVIEW_STATUS.PENDING]
     );
 
@@ -142,7 +194,7 @@ class SavingsService extends BaseService {
       `SELECT sa.*, u.nickname, u.avatar_url
        FROM savings_accounts sa
        JOIN users u ON sa.user_id = u.id
-       WHERE sa.family_id = $1
+       WHERE sa.family_id = ?
        ORDER BY sa.balance DESC`,
       [familyId]
     );
@@ -182,7 +234,7 @@ class SavingsService extends BaseService {
 
     // 验证账户存在
     const account = await this.queryOne(
-      'SELECT * FROM savings_accounts WHERE id = $1',
+      'SELECT * FROM savings_accounts WHERE id = ?',
       [accountId]
     );
 
@@ -225,7 +277,7 @@ class SavingsService extends BaseService {
       `SELECT sr.*, sa.family_id, sa.balance
        FROM savings_requests sr
        JOIN savings_accounts sa ON sr.account_id = sa.id
-       WHERE sr.id = $1`,
+       WHERE sr.id = ?`,
       [requestId]
     );
 
@@ -258,22 +310,22 @@ class SavingsService extends BaseService {
       await this.transaction(async (client) => {
         // 更新账户余额
         await client.query(
-          'UPDATE savings_accounts SET balance = $1, updated_at = NOW() WHERE id = $2',
+          'UPDATE savings_accounts SET balance = ?, updated_at = NOW() WHERE id = ?',
           [newBalance, request.account_id]
         );
 
         // 记录交易
         await client.query(
           `INSERT INTO savings_transactions (id, account_id, type, amount, balance_after, description, created_by)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [uuidv4(), request.account_id, request.type, amount, newBalance, request.description, reviewerId]
         );
 
         // 更新申请状态
         await client.query(
           `UPDATE savings_requests 
-           SET status = $1, reviewed_by = $2, reviewed_at = NOW(), updated_at = NOW()
-           WHERE id = $3`,
+           SET status = ?, reviewed_by = ?, reviewed_at = NOW(), updated_at = NOW()
+           WHERE id = ?`,
           [REVIEW_STATUS.APPROVED, reviewerId, requestId]
         );
       });
@@ -322,9 +374,9 @@ class SavingsService extends BaseService {
     const result = await this.queryOne(
       `SELECT sa.*, fm.role 
        FROM savings_accounts sa
-       JOIN family_members fm ON fm.family_id = sa.family_id AND fm.user_id = $2
-       WHERE sa.id = $1`,
-      [accountId, operatorId]
+       JOIN family_members fm ON fm.family_id = sa.family_id AND fm.user_id = ?
+       WHERE sa.id = ?`,
+      [operatorId, accountId]
     );
 
     if (!result) {
@@ -341,13 +393,13 @@ class SavingsService extends BaseService {
     // 更新余额并记录交易
     await this.transaction(async (client) => {
       await client.query(
-        'UPDATE savings_accounts SET balance = $1, updated_at = NOW() WHERE id = $2',
+        'UPDATE savings_accounts SET balance = ?, updated_at = NOW() WHERE id = ?',
         [newBalance, accountId]
       );
 
       await client.query(
         `INSERT INTO savings_transactions (id, account_id, type, amount, balance_after, description, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [uuidv4(), accountId, TRANSACTION_TYPE.DEPOSIT, amount, newBalance, description || '管理员存款', operatorId]
       );
     });
@@ -377,9 +429,9 @@ class SavingsService extends BaseService {
     const result = await this.queryOne(
       `SELECT sa.*, fm.role 
        FROM savings_accounts sa
-       JOIN family_members fm ON fm.family_id = sa.family_id AND fm.user_id = $2
-       WHERE sa.id = $1`,
-      [accountId, operatorId]
+       JOIN family_members fm ON fm.family_id = sa.family_id AND fm.user_id = ?
+       WHERE sa.id = ?`,
+      [operatorId, accountId]
     );
 
     if (!result) {
@@ -400,13 +452,13 @@ class SavingsService extends BaseService {
 
     await this.transaction(async (client) => {
       await client.query(
-        'UPDATE savings_accounts SET balance = $1, updated_at = NOW() WHERE id = $2',
+        'UPDATE savings_accounts SET balance = ?, updated_at = NOW() WHERE id = ?',
         [newBalance, accountId]
       );
 
       await client.query(
         `INSERT INTO savings_transactions (id, account_id, type, amount, balance_after, description, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [uuidv4(), accountId, TRANSACTION_TYPE.WITHDRAW, amount, newBalance, description || '管理员取款', operatorId]
       );
     });
@@ -429,7 +481,7 @@ class SavingsService extends BaseService {
    */
   async settleInterest(accountId, operatorId) {
     const account = await this.queryOne(
-      'SELECT * FROM savings_accounts WHERE id = $1',
+      'SELECT * FROM savings_accounts WHERE id = ?',
       [accountId]
     );
 
@@ -453,14 +505,14 @@ class SavingsService extends BaseService {
     await this.transaction(async (client) => {
       await client.query(
         `UPDATE savings_accounts 
-         SET balance = $1, total_interest = $2, last_interest_date = CURRENT_DATE, updated_at = NOW() 
-         WHERE id = $3`,
+         SET balance = ?, total_interest = ?, last_interest_date = CURDATE(), updated_at = NOW() 
+         WHERE id = ?`,
         [newBalance, newTotalInterest, accountId]
       );
 
       await client.query(
         `INSERT INTO savings_transactions (id, account_id, type, amount, balance_after, description, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [uuidv4(), accountId, TRANSACTION_TYPE.INTEREST, pendingInterest.interest, newBalance,
          `${pendingInterest.days}天利息结算`, operatorId]
       );
@@ -491,18 +543,35 @@ class SavingsService extends BaseService {
     const { accountId, page = 1, pageSize = 20 } = params;
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
 
+    // 开发模式：返回模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：返回模拟存款交易记录');
+      const transactions = mockSavingsTransactions.get(accountId) || [];
+      const total = transactions.length;
+      const paginatedData = transactions.slice(offset, offset + parseInt(pageSize));
+      
+      return {
+        data: paginatedData,
+        pagination: {
+          page: parseInt(page),
+          pageSize: parseInt(pageSize),
+          total
+        }
+      };
+    }
+
     const transactions = await this.queryMany(
       `SELECT st.*, u.nickname as operator_name
        FROM savings_transactions st
        LEFT JOIN users u ON st.created_by = u.id
-       WHERE st.account_id = $1
+       WHERE st.account_id = ?
        ORDER BY st.created_at DESC
-       LIMIT $2 OFFSET $3`,
+       LIMIT ? OFFSET ?`,
       [accountId, parseInt(pageSize), offset]
     );
 
     const countResult = await this.queryOne(
-      'SELECT COUNT(*) as total FROM savings_transactions WHERE account_id = $1',
+      'SELECT COUNT(*) as total FROM savings_transactions WHERE account_id = ?',
       [accountId]
     );
 
@@ -540,9 +609,9 @@ class SavingsService extends BaseService {
     const result = await this.queryOne(
       `SELECT fm.role 
        FROM savings_accounts sa
-       JOIN family_members fm ON fm.family_id = sa.family_id AND fm.user_id = $2
-       WHERE sa.id = $1`,
-      [accountId, operatorId]
+       JOIN family_members fm ON fm.family_id = sa.family_id AND fm.user_id = ?
+       WHERE sa.id = ?`,
+      [operatorId, accountId]
     );
 
     if (!result || result.role !== 'creator') {
@@ -578,7 +647,7 @@ class SavingsService extends BaseService {
       `SELECT COUNT(*) as count 
        FROM savings_requests sr
        JOIN savings_accounts sa ON sr.account_id = sa.id
-       WHERE sa.family_id = $1 AND sr.status = $2`,
+       WHERE sa.family_id = ? AND sr.status = ?`,
       [familyId, REVIEW_STATUS.PENDING]
     );
 
@@ -587,4 +656,3 @@ class SavingsService extends BaseService {
 }
 
 module.exports = new SavingsService();
-

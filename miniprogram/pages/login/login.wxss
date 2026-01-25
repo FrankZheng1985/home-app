@@ -365,23 +365,75 @@
   letter-spacing: 2rpx;
 }
 
-/* 登录提示 */
-.login-tip {
-  text-align: center;
-  margin-top: 32rpx;
+/* 协议勾选区域 */
+.agreement-section {
+  margin-bottom: 32rpx;
+}
+
+.agreement-checkbox {
+  display: flex;
+  align-items: flex-start;
+  padding: 24rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+.checkbox-icon {
+  width: 40rpx;
+  height: 40rpx;
+  min-width: 40rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.6);
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  margin-top: 4rpx;
+  transition: all 0.2s ease;
+  font-size: 24rpx;
+  color: #07C160;
+}
+
+.checkbox-icon.checked {
+  background: #07C160;
+  border-color: #07C160;
+  color: #ffffff;
+}
+
+.agreement-text {
+  flex: 1;
   line-height: 1.8;
 }
 
 .tip-text {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .link {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #ffffff;
   text-decoration: underline;
   text-underline-offset: 4rpx;
+  font-weight: 500;
+}
+
+/* 登录提示 */
+.login-note {
+  text-align: center;
+  margin-top: 24rpx;
+}
+
+.note-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 禁用状态按钮 */
+.wx-login-btn.disabled {
+  background: linear-gradient(135deg, #999999 0%, #AAAAAA 100%);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
 }
 
 /* ================================ */

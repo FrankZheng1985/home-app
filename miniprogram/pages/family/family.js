@@ -32,21 +32,88 @@ Page({
     try {
       showLoading('加载中...');
       
+      // 首先检查用户信息中的 familyId（最可靠的判断）
+      const userInfo = wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.familyId) {
+        console.log('用户信息显示未加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          members: [],
+          isAdmin: false,
+          isCreator: false
+        });
+        
+        hideLoading();
+        wx.showModal({
+          title: '提示',
+          content: '您尚未加入家庭，请先创建或加入一个家庭',
+          confirmText: '去首页',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+        return;
+      }
+      
       const familiesRes = await familyApi.getMyFamilies();
       if (familiesRes.data && familiesRes.data.length > 0) {
         const familyInfo = familiesRes.data[0];
+        
+        // 同步更新本地存储
+        wx.setStorageSync('familyInfo', familyInfo);
+        app.globalData.familyInfo = familyInfo;
+        
         this.setData({ familyInfo });
 
         // 获取成员列表
-        const membersRes = await familyApi.getMembers(familyInfo.id);
+        let membersRes;
+        try {
+          membersRes = await familyApi.getMembers(familyInfo.id);
+        } catch (e) {
+          console.error('获取成员列表失败:', e);
+          membersRes = { data: [] };
+        }
+        
         const members = membersRes.data || [];
         
-        // 判断当前用户角色
-        const currentMember = members.find(m => m.userId === this.data.currentUserId);
-        const isAdmin = currentMember && (currentMember.role === 'admin' || currentMember.role === 'creator');
-        const isCreator = currentMember && currentMember.role === 'creator';
+        // 判断当前用户角色（确保返回布尔值，避免 undefined）
+        const currentMember = members.find(m => 
+          m.userId === this.data.currentUserId || 
+          m.id === this.data.currentUserId ||
+          m.user_id === this.data.currentUserId
+        );
+        const isAdmin = !!(currentMember && (currentMember.role === 'admin' || currentMember.role === 'creator'));
+        const isCreator = !!(currentMember && currentMember.role === 'creator');
         
         this.setData({ members, isAdmin, isCreator });
+      } else {
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          members: [],
+          isAdmin: false,
+          isCreator: false
+        });
+        
+        hideLoading();
+        wx.showModal({
+          title: '提示',
+          content: '您尚未加入家庭，请先创建或加入一个家庭',
+          confirmText: '去首页',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+        return;
       }
       
       hideLoading();

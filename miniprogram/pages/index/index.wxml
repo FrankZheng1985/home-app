@@ -6,7 +6,131 @@
     <text class="loading-text">加载中...</text>
   </view>
 
-  <!-- 已有家庭 -->
+  <!-- 未登录 - 游客浏览模式 -->
+  <block wx:elif="{{!isLoggedIn}}">
+    <!-- 渐变头部 -->
+    <view class="home-header guest-mode">
+      <view class="header-bg"></view>
+      <view class="header-content">
+        <view class="welcome-row">
+          <view class="welcome-text">
+            <text class="greeting">欢迎来到 👋</text>
+            <view class="family-badge">
+              <text class="family-icon">🏠</text>
+              <text class="family-name">家庭小助手</text>
+            </view>
+          </view>
+          <view class="guest-login-mini" bindtap="goToLogin">
+            <text class="login-text">登录</text>
+          </view>
+        </view>
+        
+        <!-- 功能亮点 -->
+        <view class="stats-card">
+          <view class="stat-item">
+            <text class="stat-value">🧹</text>
+            <text class="stat-label">家务积分</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-value">🎁</text>
+            <text class="stat-label">奖励兑换</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-value">🏦</text>
+            <text class="stat-label">复利存款</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 主内容区域 -->
+    <view class="home-content">
+      <!-- 功能介绍 -->
+      <view class="section-title">
+        <text class="title-icon">✨</text>
+        <text class="title-text">主要功能</text>
+      </view>
+      <view class="quick-actions">
+        <view class="action-card" bindtap="previewChores">
+          <view class="action-icon-wrap action-chore">
+            <text class="action-emoji">🧹</text>
+          </view>
+          <text class="action-name">家务记录</text>
+          <text class="action-desc">记录家务获得积分</text>
+        </view>
+        <view class="action-card" bindtap="previewSports">
+          <view class="action-icon-wrap action-savings">
+            <text class="action-emoji">🏃</text>
+          </view>
+          <text class="action-name">运动打卡</text>
+          <text class="action-desc">健康生活好习惯</text>
+        </view>
+        <view class="action-card" bindtap="previewRewards">
+          <view class="action-icon-wrap action-reward">
+            <text class="action-emoji">🎁</text>
+          </view>
+          <text class="action-name">积分奖励</text>
+          <text class="action-desc">兑换心仪的奖品</text>
+        </view>
+        <view class="action-card" bindtap="previewMoments">
+          <view class="action-icon-wrap action-family">
+            <text class="action-emoji">💬</text>
+          </view>
+          <text class="action-name">家庭动态</text>
+          <text class="action-desc">分享美好时光</text>
+        </view>
+      </view>
+
+      <!-- 使用说明 -->
+      <view class="section-title">
+        <text class="title-icon">📖</text>
+        <text class="title-text">如何使用</text>
+      </view>
+      <view class="guide-card">
+        <view class="guide-item">
+          <view class="guide-num">1</view>
+          <view class="guide-content">
+            <text class="guide-title">微信登录</text>
+            <text class="guide-desc">一键登录，无需注册账号</text>
+          </view>
+        </view>
+        <view class="guide-item">
+          <view class="guide-num">2</view>
+          <view class="guide-content">
+            <text class="guide-title">创建或加入家庭</text>
+            <text class="guide-desc">邀请家人一起使用</text>
+          </view>
+        </view>
+        <view class="guide-item">
+          <view class="guide-num">3</view>
+          <view class="guide-content">
+            <text class="guide-title">记录家务</text>
+            <text class="guide-desc">完成家务获得积分奖励</text>
+          </view>
+        </view>
+        <view class="guide-item">
+          <view class="guide-num">4</view>
+          <view class="guide-content">
+            <text class="guide-title">积分兑换</text>
+            <text class="guide-desc">用积分兑换各种奖励</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 登录提示 -->
+      <view class="guest-login-section">
+        <button class="login-btn-large" bindtap="goToLogin">
+          <text class="btn-icon">💚</text>
+          <text class="btn-text">微信登录开始使用</text>
+        </button>
+        <text class="login-tip">登录后可以创建或加入家庭</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 已登录 - 已有家庭 -->
   <block wx:elif="{{hasFamily}}">
     <!-- 渐变头部 -->
     <view class="home-header">

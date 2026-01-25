@@ -1,5 +1,5 @@
 // src/services/authService.js
-// 认证服务层 - 处理认证相关业务逻辑
+// 认证服务层 - 处理认证相关业务逻辑 (MySQL 版本)
 
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
@@ -18,12 +18,12 @@ class AuthService extends BaseService {
    * @returns {Promise<{openid: string, sessionKey: string}>}
    */
   async getWxOpenId(code) {
-    // 开发模式：使用模拟的openid
+    // 开发模式：使用固定的模拟openid（确保每次登录是同一个用户）
     if (process.env.NODE_ENV === 'development' && 
         (!process.env.WX_SECRET || process.env.WX_SECRET === 'your_wx_secret_here')) {
       logger.info('🔧 开发模式：使用模拟登录');
       return {
-        openid: 'dev_openid_' + (code || 'default'),
+        openid: 'dev_openid_fixed',  // 使用固定的 openid
         sessionKey: 'dev_session_key'
       };
     }
@@ -56,7 +56,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         await this.query(
-          'UPDATE users SET session_key = $1 WHERE id = $2',
+          'UPDATE users SET session_key = ? WHERE id = ?',
           [sessionKey, userId]
         );
       } catch (error) {
@@ -72,7 +72,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         const result = await this.queryOne(
-          'SELECT session_key FROM users WHERE id = $1',
+          'SELECT session_key FROM users WHERE id = ?',
           [userId]
         );
         return result?.session_key;
@@ -93,7 +93,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         const user = await this.queryOne(
-          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE openid = $1',
+          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE openid = ?',
           [openid]
         );
         if (user) return user;
@@ -119,7 +119,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         return await this.queryOne(
-          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = $1',
+          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = ?',
           [userId]
         );
       } catch (error) {
@@ -149,7 +149,7 @@ class AuthService extends BaseService {
       try {
         // 检查是否已存在
         const existing = await this.queryOne(
-          'SELECT id FROM users WHERE openid = $1',
+          'SELECT id FROM users WHERE openid = ?',
           [openId]
         );
 
@@ -237,4 +237,3 @@ class AuthService extends BaseService {
 }
 
 module.exports = new AuthService();
-

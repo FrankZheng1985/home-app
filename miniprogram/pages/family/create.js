@@ -51,6 +51,14 @@ Page({
         // 保存家庭信息到本地
         wx.setStorageSync('familyInfo', res.data);
         app.globalData.familyInfo = res.data;
+        
+        // 更新用户信息中的 familyId（重要！）
+        const userInfo = wx.getStorageSync('userInfo') || {};
+        userInfo.familyId = res.data.id;
+        userInfo.familyRole = 'creator';
+        wx.setStorageSync('userInfo', userInfo);
+        app.globalData.userInfo = userInfo;
+        console.log('已更新用户信息，familyId:', res.data.id);
 
         showSuccess('创建成功');
         

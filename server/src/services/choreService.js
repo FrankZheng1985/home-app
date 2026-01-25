@@ -1,5 +1,5 @@
 // src/services/choreService.js
-// 家务服务层 - 处理家务相关业务逻辑
+// 家务服务层 - 处理家务相关业务逻辑 (MySQL 版本)
 
 const { v4: uuidv4 } = require('uuid');
 const BaseService = require('./baseService');
@@ -7,6 +7,22 @@ const familyService = require('./familyService');
 const logger = require('../utils/logger');
 const { ERROR_CODES } = require('../constants/errorCodes');
 const { REVIEW_STATUS, TRANSACTION_TYPE } = require('../constants/statusCodes');
+
+// 开发模式下的模拟数据
+const mockChoreTypes = global.mockChoreTypes || (global.mockChoreTypes = new Map());
+const mockChoreRecords = global.mockChoreRecords || (global.mockChoreRecords = new Map());
+
+// 预设家务类型
+const PRESET_CHORE_TYPES = [
+  { name: '洗碗', points: 5, icon: '🍽️' },
+  { name: '扫地', points: 5, icon: '🧹' },
+  { name: '拖地', points: 8, icon: '🧹' },
+  { name: '做饭', points: 15, icon: '🍳' },
+  { name: '洗衣服', points: 10, icon: '👕' },
+  { name: '整理房间', points: 10, icon: '🛏️' },
+  { name: '倒垃圾', points: 3, icon: '🗑️' },
+  { name: '擦桌子', points: 3, icon: '🧽' }
+];
 
 class ChoreService extends BaseService {
   /**
@@ -19,10 +35,32 @@ class ChoreService extends BaseService {
     // 验证用户是家庭成员
     await familyService.validateMembership(userId, familyId);
 
+    // 开发模式：返回模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：返回模拟家务类型');
+      // 如果该家庭还没有家务类型，初始化预设类型
+      let types = mockChoreTypes.get(familyId);
+      if (!types) {
+        types = PRESET_CHORE_TYPES.map((t, index) => ({
+          id: uuidv4(),
+          familyId,
+          name: t.name,
+          points: t.points,
+          icon: t.icon,
+          description: '',
+          isPreset: true,
+          isActive: true,
+          createdAt: new Date()
+        }));
+        mockChoreTypes.set(familyId, types);
+      }
+      return types;
+    }
+
     const types = await this.queryMany(
       `SELECT id, name, points, icon, description, is_preset, is_active, created_at
        FROM chore_types
-       WHERE family_id = $1 AND is_active = true
+       WHERE family_id = ? AND is_active = true
        ORDER BY is_preset DESC, created_at ASC`,
       [familyId]
     );
@@ -52,7 +90,7 @@ class ChoreService extends BaseService {
 
     // 检查名称是否重复
     const existing = await this.queryOne(
-      'SELECT id FROM chore_types WHERE family_id = $1 AND name = $2 AND is_active = true',
+      'SELECT id FROM chore_types WHERE family_id = ? AND name = ? AND is_active = true',
       [familyId, name]
     );
 
@@ -94,9 +132,40 @@ class ChoreService extends BaseService {
    * @returns {Promise<Object>}
    */
   async updateChoreType(typeId, userId, updateData) {
+    // 开发模式：更新模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：更新模拟家务类型');
+      
+      // 查找家务类型
+      for (const [familyId, types] of mockChoreTypes) {
+        const typeIndex = types.findIndex(t => t.id === typeId);
+        if (typeIndex !== -1) {
+          const type = types[typeIndex];
+          
+          // 验证管理员权限
+          await familyService.validateAdminRole(userId, familyId);
+          
+          // 更新数据
+          const { name, points, icon, description, isActive } = updateData;
+          if (name !== undefined) type.name = name;
+          if (points !== undefined) type.points = points;
+          if (icon !== undefined) type.icon = icon;
+          if (description !== undefined) type.description = description;
+          if (isActive !== undefined) type.isActive = isActive;
+          
+          types[typeIndex] = type;
+          mockChoreTypes.set(familyId, types);
+          
+          logger.audit('更新家务类型(模拟)', userId, { typeId });
+          return { message: '更新成功' };
+        }
+      }
+      throw new Error(ERROR_CODES.CHORE_TYPE_NOT_FOUND.message);
+    }
+
     // 获取类型信息
     const type = await this.queryOne(
-      'SELECT family_id FROM chore_types WHERE id = $1',
+      'SELECT family_id FROM chore_types WHERE id = ?',
       [typeId]
     );
 
@@ -137,7 +206,7 @@ class ChoreService extends BaseService {
    */
   async deleteChoreType(typeId, userId) {
     const type = await this.queryOne(
-      'SELECT family_id FROM chore_types WHERE id = $1',
+      'SELECT family_id FROM chore_types WHERE id = ?',
       [typeId]
     );
 
@@ -167,9 +236,63 @@ class ChoreService extends BaseService {
       throw new Error(ERROR_CODES.FAMILY_NOT_MEMBER.message);
     }
 
+    // 开发模式：使用模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：创建模拟家务记录');
+      
+      // 从模拟家务类型中获取信息
+      const choreTypes = mockChoreTypes.get(familyId) || [];
+      const choreType = choreTypes.find(t => t.id === choreTypeId);
+      
+      if (!choreType) {
+        throw new Error(ERROR_CODES.CHORE_TYPE_NOT_FOUND.message);
+      }
+
+      const recordId = uuidv4();
+      const status = isAdmin ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.PENDING;
+      const finalPoints = isAdmin ? choreType.points : null;
+
+      // 获取用户信息
+      const mockUsers = global.mockUsers || new Map();
+      let user = null;
+      for (const [openid, u] of mockUsers) {
+        if (u.id === userId) {
+          user = u;
+          break;
+        }
+      }
+
+      const newRecord = {
+        id: recordId,
+        choreType: { name: choreType.name, icon: choreType.icon },
+        user: { nickname: user?.nickname || '模拟用户', avatarUrl: user?.avatar_url || '' },
+        points: choreType.points,
+        finalPoints,
+        deduction: 0,
+        deductionReason: '',
+        remark: note || '',
+        images: images || [],
+        status,
+        completedAt: new Date()
+      };
+
+      // 存储记录
+      let records = mockChoreRecords.get(familyId) || [];
+      records.unshift(newRecord);
+      mockChoreRecords.set(familyId, records);
+
+      return {
+        id: recordId,
+        choreName: choreType.name,
+        points: choreType.points,
+        status,
+        message: isAdmin ? '记录成功，积分已到账' : '记录已提交，等待家长审核'
+      };
+    }
+
     // 获取家务类型信息
     const choreType = await this.queryOne(
-      'SELECT name, points FROM chore_types WHERE id = $1 AND family_id = $2 AND is_active = true',
+      'SELECT name, points FROM chore_types WHERE id = ? AND family_id = ? AND is_active = true',
       [choreTypeId, familyId]
     );
 
@@ -233,17 +356,25 @@ class ChoreService extends BaseService {
     // 验证权限
     await familyService.validateMembership(requestUserId, familyId);
 
-    let whereClause = 'cr.family_id = $1';
+    // 开发模式：返回模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：返回模拟家务记录');
+      let records = mockChoreRecords.get(familyId) || [];
+      // 按时间倒序
+      records = records.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+      return records.slice(offset, offset + limit);
+    }
+
+    let whereClause = 'cr.family_id = ?';
     const values = [familyId];
-    let paramIndex = 2;
 
     if (userId) {
-      whereClause += ` AND cr.user_id = $${paramIndex++}`;
+      whereClause += ' AND cr.user_id = ?';
       values.push(userId);
     }
 
     if (date) {
-      whereClause += ` AND DATE(cr.completed_at) = $${paramIndex++}`;
+      whereClause += ' AND DATE(cr.completed_at) = ?';
       values.push(date);
     }
 
@@ -259,7 +390,7 @@ class ChoreService extends BaseService {
        JOIN users u ON cr.user_id = u.id
        WHERE ${whereClause}
        ORDER BY cr.completed_at DESC
-       LIMIT $${paramIndex++} OFFSET $${paramIndex}`,
+       LIMIT ? OFFSET ?`,
       values
     );
 
@@ -294,7 +425,7 @@ class ChoreService extends BaseService {
        FROM chore_records cr
        JOIN chore_types ct ON cr.chore_type_id = ct.id
        JOIN users u ON cr.user_id = u.id
-       WHERE cr.family_id = $1 AND cr.status = $2
+       WHERE cr.family_id = ? AND cr.status = ?
        ORDER BY cr.completed_at DESC`,
       [familyId, REVIEW_STATUS.PENDING]
     );
@@ -326,7 +457,7 @@ class ChoreService extends BaseService {
     }
 
     const result = await this.queryOne(
-      `SELECT COUNT(*) as count FROM chore_records WHERE family_id = $1 AND status = $2`,
+      `SELECT COUNT(*) as count FROM chore_records WHERE family_id = ? AND status = ?`,
       [familyId, REVIEW_STATUS.PENDING]
     );
 
@@ -346,7 +477,7 @@ class ChoreService extends BaseService {
       `SELECT cr.*, ct.name as chore_name
        FROM chore_records cr
        JOIN chore_types ct ON cr.chore_type_id = ct.id
-       WHERE cr.id = $1`,
+       WHERE cr.id = ?`,
       [recordId]
     );
 
@@ -449,7 +580,7 @@ class ChoreService extends BaseService {
   }
 
   /**
-   * 获取家务统计
+   * 获取家务统计 (MySQL 版本)
    * @param {string} familyId - 家庭ID
    * @param {string} userId - 用户ID
    * @returns {Promise<Object>}
@@ -457,23 +588,35 @@ class ChoreService extends BaseService {
   async getStatistics(familyId, userId) {
     await familyService.validateMembership(userId, familyId);
 
+    // 开发模式：返回模拟统计数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：返回模拟家务统计');
+      return {
+        totalChores: 0,
+        totalPoints: 0,
+        myChores: 0,
+        myPoints: 0
+      };
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
+    // MySQL 版本 - 使用 SUM(CASE WHEN...) 代替 FILTER
     const todayStats = await this.queryOne(
       `SELECT 
         COUNT(*) as total_chores,
         COALESCE(SUM(points_earned), 0) as total_points,
-        COUNT(*) FILTER (WHERE user_id = $2) as my_chores,
-        COALESCE(SUM(points_earned) FILTER (WHERE user_id = $2), 0) as my_points
+        SUM(CASE WHEN user_id = ? THEN 1 ELSE 0 END) as my_chores,
+        COALESCE(SUM(CASE WHEN user_id = ? THEN points_earned ELSE 0 END), 0) as my_points
        FROM chore_records
-       WHERE family_id = $1 AND DATE(completed_at) = $3 AND status = 'approved'`,
-      [familyId, userId, today]
+       WHERE family_id = ? AND DATE(completed_at) = ? AND status = 'approved'`,
+      [userId, userId, familyId, today]
     );
 
     const totalPoints = await this.queryOne(
       `SELECT COALESCE(SUM(final_points), 0) as total
        FROM chore_records 
-       WHERE family_id = $1 AND user_id = $2 AND status = 'approved'`,
+       WHERE family_id = ? AND user_id = ? AND status = 'approved'`,
       [familyId, userId]
     );
 
@@ -487,4 +630,3 @@ class ChoreService extends BaseService {
 }
 
 module.exports = new ChoreService();
-

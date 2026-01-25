@@ -9,7 +9,9 @@
 /* 头部背景 */
 .header-bg {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: calc(80rpx + env(safe-area-inset-top)) 30rpx 60rpx;
+  padding: calc(120rpx + env(safe-area-inset-top)) 30rpx 60rpx;
+  padding-top: calc(constant(safe-area-inset-top) + 120rpx); /* iOS 兼容 */
+  padding-top: calc(env(safe-area-inset-top) + 120rpx);
   border-radius: 0 0 60rpx 60rpx;
   position: relative;
   overflow: hidden;

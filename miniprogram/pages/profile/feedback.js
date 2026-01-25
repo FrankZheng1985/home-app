@@ -5,7 +5,6 @@ Page({
   data: {
     feedbackType: '',
     feedbackContent: '',
-    contact: '',
     typeOptions: ['功能建议', '问题反馈', '其他'],
     isSubmitting: false
   },
@@ -20,11 +19,6 @@ Page({
   // 输入内容
   onContentInput(e) {
     this.setData({ feedbackContent: e.detail.value });
-  },
-
-  // 输入联系方式
-  onContactInput(e) {
-    this.setData({ contact: e.detail.value });
   },
 
   // 提交反馈
@@ -59,8 +53,7 @@ Page({
       // 清空表单
       this.setData({
         feedbackType: '',
-        feedbackContent: '',
-        contact: ''
+        feedbackContent: ''
       });
 
       setTimeout(() => {

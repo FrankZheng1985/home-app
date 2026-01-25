@@ -1,5 +1,80 @@
 <!--pages/profile/profile.wxml - Aurora 极光主题版-->
 <view class="profile-page">
+  <!-- 未登录 - 可浏览部分功能 -->
+  <view class="guest-profile-page" wx:if="{{!isLoggedIn}}">
+    <!-- 头部 -->
+    <view class="profile-header guest-mode">
+      <view class="header-bg">
+        <view class="header-glow"></view>
+      </view>
+      <view class="header-content">
+        <view class="user-section" bindtap="goToLogin">
+          <view class="avatar-wrapper">
+            <view class="guest-avatar">
+              <text class="guest-avatar-icon">👤</text>
+            </view>
+            <view class="avatar-ring"></view>
+          </view>
+          <view class="user-info">
+            <text class="user-name">点击登录</text>
+            <view class="user-family">
+              <text class="family-icon">🏠</text>
+              <text class="family-name">登录后体验更多功能</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 登录提示卡片 -->
+    <view class="guest-login-card">
+      <view class="login-card-icon">💚</view>
+      <view class="login-card-info">
+        <text class="login-card-title">微信一键登录</text>
+        <text class="login-card-desc">登录后可创建家庭、记录家务、获得积分</text>
+      </view>
+      <button class="login-card-btn" bindtap="goToLogin">登录</button>
+    </view>
+
+    <!-- 公开菜单 -->
+    <view class="profile-content">
+      <view class="menu-section">
+        <view class="menu-card">
+          <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/about">
+            <view class="menu-icon-wrap icon-about">
+              <text class="menu-emoji">ℹ️</text>
+            </view>
+            <text class="menu-title">关于我们</text>
+            <text class="menu-arrow">›</text>
+          </view>
+          
+          <view class="menu-item" bindtap="viewAgreement" data-type="user">
+            <view class="menu-icon-wrap icon-agreement">
+              <text class="menu-emoji">📄</text>
+            </view>
+            <text class="menu-title">用户协议</text>
+            <text class="menu-arrow">›</text>
+          </view>
+          
+          <view class="menu-item" bindtap="viewAgreement" data-type="privacy">
+            <view class="menu-icon-wrap icon-privacy">
+              <text class="menu-emoji">🔒</text>
+            </view>
+            <text class="menu-title">隐私政策</text>
+            <text class="menu-arrow">›</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 版本信息 -->
+      <view class="version-section">
+        <text class="version-text">家庭小助手 v1.0.0</text>
+        <text class="copyright">✨ Made with ❤️ for Family ✨</text>
+      </view>
+    </view>
+  </view>
+
+  <block wx:else>
   <!-- 极光渐变头部 -->
   <view class="profile-header">
     <view class="header-bg">
@@ -146,4 +221,5 @@
       <text class="copyright">✨ Made with ❤️ for Family ✨</text>
     </view>
   </view>
+  </block>
 </view>

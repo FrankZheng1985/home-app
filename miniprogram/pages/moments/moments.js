@@ -28,19 +28,24 @@ Page({
   },
 
   onLoad() {
-    if (!isLoggedIn()) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
+    this.setData({ isLoggedIn: isLoggedIn() });
+    if (isLoggedIn()) {
+      this.loadFamilyInfo();
     }
-    this.loadFamilyInfo();
   },
 
   onShow() {
-    if (!isLoggedIn()) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
-    }
+    const loggedIn = isLoggedIn();
+    this.setData({ isLoggedIn: loggedIn });
+    
+    if (!loggedIn) return;
+    
     this.loadPosts(true);
+  },
+  
+  // 去登录
+  goToLogin() {
+    wx.navigateTo({ url: '/pages/login/login' });
   },
 
   onPullDownRefresh() {
@@ -57,17 +62,46 @@ Page({
 
   async loadFamilyInfo() {
     try {
-      const familiesRes = await familyApi.getMyFamilies();
-      if (familiesRes.data && familiesRes.data.length > 0) {
-        this.setData({ familyInfo: familiesRes.data[0] });
-      }
-      
       // 获取当前用户信息
       const userInfo = wx.getStorageSync('userInfo');
       if (userInfo) {
         this.setData({ 
           currentUserId: userInfo.id,
           userInfo: userInfo
+        });
+      }
+      
+      // 首先检查用户信息中的 familyId（最可靠的判断）
+      if (!userInfo || !userInfo.familyId) {
+        console.log('用户信息显示未加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          posts: []
+        });
+        return;
+      }
+      
+      const familiesRes = await familyApi.getMyFamilies();
+      if (familiesRes.data && familiesRes.data.length > 0) {
+        const familyInfo = familiesRes.data[0];
+        
+        // 同步更新本地存储
+        wx.setStorageSync('familyInfo', familyInfo);
+        app.globalData.familyInfo = familyInfo;
+        
+        this.setData({ familyInfo });
+      } else {
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          posts: []
         });
       }
     } catch (error) {

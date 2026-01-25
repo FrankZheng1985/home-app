@@ -1,0 +1,54 @@
+/* pages/profile/agreement.wxss */
+/* 协议页面样式 */
+
+.agreement-page {
+  min-height: 100vh;
+  background: #F8F9FA;
+}
+
+.agreement-content {
+  height: 100vh;
+  padding: 40rpx;
+  box-sizing: border-box;
+}
+
+.agreement-title {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #2D3436;
+  text-align: center;
+  margin-bottom: 16rpx;
+}
+
+.agreement-date {
+  font-size: 24rpx;
+  color: #B2BEC3;
+  text-align: center;
+  margin-bottom: 48rpx;
+}
+
+.section {
+  margin-bottom: 48rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 2rpx solid #F1F3F4;
+}
+
+.section-content {
+  line-height: 1.8;
+}
+
+.section-content text {
+  font-size: 28rpx;
+  color: #636E72;
+}

@@ -1,5 +1,99 @@
 <!--pages/chores/chores.wxml - 精美设计版-->
 <view class="chores-page">
+  <!-- 未登录 - 可浏览家务类型示例 -->
+  <view class="guest-chores-page" wx:if="{{!isLoggedIn}}">
+    <!-- 头部 -->
+    <view class="guest-header-card">
+      <view class="header-bg"></view>
+      <view class="header-content">
+        <view class="guest-title-row">
+          <view class="guest-title-info">
+            <text class="guest-page-title">🧹 家务记录</text>
+            <text class="guest-page-desc">记录家务获得积分，培养好习惯</text>
+          </view>
+          <view class="guest-login-mini" bindtap="goToLogin">
+            <text class="login-text">登录</text>
+          </view>
+        </view>
+        
+        <!-- 功能预览 -->
+        <view class="guest-stats-preview">
+          <view class="preview-stat">
+            <text class="preview-icon">✏️</text>
+            <text class="preview-label">快速记录</text>
+          </view>
+          <view class="preview-stat">
+            <text class="preview-icon">💰</text>
+            <text class="preview-label">积分奖励</text>
+          </view>
+          <view class="preview-stat">
+            <text class="preview-icon">📊</text>
+            <text class="preview-label">排行榜</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 家务类型示例 -->
+    <view class="guest-content-section">
+      <view class="section-header">
+        <text class="section-title">🏠 家务类型示例</text>
+        <text class="section-tip">登录后可自定义</text>
+      </view>
+      
+      <view class="chore-types-preview">
+        <view class="chore-type-card" wx:for="{{defaultChoreTypes}}" wx:key="id">
+          <view class="chore-type-icon" style="background: {{item.bgColor}}">
+            <text>{{item.icon}}</text>
+          </view>
+          <view class="chore-type-info">
+            <text class="chore-type-name">{{item.name}}</text>
+            <text class="chore-type-points">+{{item.points}} 积分</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 功能说明 -->
+      <view class="section-header">
+        <text class="section-title">✨ 功能亮点</text>
+      </view>
+      
+      <view class="feature-list">
+        <view class="feature-card">
+          <text class="feature-emoji">📸</text>
+          <view class="feature-text">
+            <text class="feature-title">拍照记录</text>
+            <text class="feature-desc">上传照片记录家务完成情况</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-emoji">👨‍👩‍👧</text>
+          <view class="feature-text">
+            <text class="feature-title">家长审核</text>
+            <text class="feature-desc">家长可审核孩子的家务记录</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-emoji">🏆</text>
+          <view class="feature-text">
+            <text class="feature-title">排行榜</text>
+            <text class="feature-desc">查看家庭成员的积分排名</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 登录提示 -->
+      <view class="guest-login-section">
+        <button class="login-btn-primary" bindtap="goToLogin">
+          <text class="btn-icon">💚</text>
+          <text class="btn-text">登录开始记录家务</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 已登录内容 -->
+  <block wx:else>
   <!-- 顶部标签切换 -->
   <view class="tabs-wrapper">
     <view class="tabs-bg"></view>
@@ -354,4 +448,5 @@
       </view>
     </view>
   </view>
+  </block>
 </view>

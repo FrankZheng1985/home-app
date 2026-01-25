@@ -414,3 +414,91 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-12rpx); }
 }
+
+/* ================================ */
+/*     游客浏览模式样式              */
+/* ================================ */
+
+.guest-profile-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #FFF5F8 0%, #FFF9F5 25%, #F5F7FA 100%);
+}
+
+.profile-header.guest-mode .header-content {
+  padding-top: 80rpx;
+}
+
+.guest-avatar {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #E8ECEF 0%, #DFE6E9 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guest-avatar-icon {
+  font-size: 60rpx;
+  opacity: 0.8;
+}
+
+/* 登录提示卡片 */
+.guest-login-card {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  margin: -40rpx 30rpx 30rpx;
+  padding: 30rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 157, 0.15);
+  position: relative;
+  z-index: 10;
+}
+
+.login-card-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.login-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 6rpx;
+}
+
+.login-card-desc {
+  font-size: 24rpx;
+  color: #636E72;
+}
+
+.login-card-btn {
+  background: linear-gradient(135deg, #FF6B9D 0%, #C44EFF 100%);
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 600;
+  padding: 16rpx 36rpx;
+  border-radius: 30rpx;
+  border: none;
+  box-shadow: 0 8rpx 20rpx rgba(255, 107, 157, 0.3);
+}
+
+.login-card-btn::after {
+  border: none;
+}
+
+/* 协议相关图标背景 */
+.icon-agreement {
+  background: linear-gradient(135deg, rgba(78, 140, 255, 0.15) 0%, rgba(78, 205, 196, 0.15) 100%);
+}
+
+.icon-privacy {
+  background: linear-gradient(135deg, rgba(196, 78, 255, 0.15) 0%, rgba(255, 107, 157, 0.15) 100%);
+}

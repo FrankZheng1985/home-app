@@ -29,26 +29,37 @@ Page({
     deductingRecord: null,
     deductAmount: 0,
     deductReason: '',
-    isReviewing: false
+    isReviewing: false,
+    
+    // 默认家务类型（未登录时展示）
+    defaultChoreTypes: [
+      { id: 1, name: '扫地', icon: '🧹', points: 10, bgColor: 'rgba(78, 205, 196, 0.2)' },
+      { id: 2, name: '拖地', icon: '🧽', points: 15, bgColor: 'rgba(255, 107, 157, 0.2)' },
+      { id: 3, name: '洗碗', icon: '🍽️', points: 10, bgColor: 'rgba(78, 140, 255, 0.2)' },
+      { id: 4, name: '做饭', icon: '🍳', points: 20, bgColor: 'rgba(255, 179, 71, 0.2)' },
+      { id: 5, name: '洗衣服', icon: '👕', points: 15, bgColor: 'rgba(196, 78, 255, 0.2)' },
+      { id: 6, name: '整理房间', icon: '🛏️', points: 15, bgColor: 'rgba(56, 239, 125, 0.2)' }
+    ]
   },
 
   onLoad() {
-    if (!isLoggedIn()) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
-    }
     this.setData({
       selectedDate: formatDate(new Date()),
-      currentUserId: wx.getStorageSync('userInfo')?.id || ''
+      currentUserId: wx.getStorageSync('userInfo')?.id || '',
+      isLoggedIn: isLoggedIn()
     });
-    this.loadFamilyInfo();
+    
+    if (isLoggedIn()) {
+      this.loadFamilyInfo();
+    }
   },
 
   onShow() {
-    if (!isLoggedIn()) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
-    }
+    const loggedIn = isLoggedIn();
+    this.setData({ isLoggedIn: loggedIn });
+    
+    if (!loggedIn) return;
+    
     this.loadChoreTypes();
     this.loadPendingCount();
     if (this.data.activeTab === 'history') {
@@ -56,6 +67,11 @@ Page({
     } else if (this.data.activeTab === 'review' && this.data.isAdmin) {
       this.loadPendingRecords();
     }
+  },
+  
+  // 去登录
+  goToLogin() {
+    wx.navigateTo({ url: '/pages/login/login' });
   },
 
   // 下拉刷新
@@ -75,9 +91,33 @@ Page({
   // 加载家庭信息
   async loadFamilyInfo() {
     try {
+      // 首先检查用户信息中的 familyId（最可靠的判断）
+      const userInfo = wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.familyId) {
+        console.log('用户信息显示未加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({
+          familyInfo: null,
+          isAdmin: false,
+          choreTypes: [],
+          choreRecords: [],
+          pendingRecords: [],
+          pendingCount: 0
+        });
+        return;
+      }
+      
       const familiesRes = await familyApi.getMyFamilies();
       if (familiesRes.data && familiesRes.data.length > 0) {
         const family = familiesRes.data[0];
+        
+        // 同步更新本地存储
+        wx.setStorageSync('familyInfo', family);
+        app.globalData.familyInfo = family;
+        
         const currentUserId = wx.getStorageSync('userInfo')?.id;
         
         // 判断是否为管理员
@@ -99,6 +139,19 @@ Page({
         
         // 加载待审核数量
         this.loadPendingCount();
+      } else {
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({
+          familyInfo: null,
+          isAdmin: false,
+          choreTypes: [],
+          choreRecords: [],
+          pendingRecords: [],
+          pendingCount: 0
+        });
       }
     } catch (error) {
       console.error('加载家庭信息失败:', error);

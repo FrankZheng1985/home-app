@@ -18,8 +18,8 @@ RUN npm install --production
 # 复制源代码
 COPY . .
 
-# 暴露端口 (微信云托管默认使用 80 端口)
-EXPOSE 80
+# 暴露端口
+EXPOSE 3000
 
 # 启动命令
 CMD ["npm", "start"]

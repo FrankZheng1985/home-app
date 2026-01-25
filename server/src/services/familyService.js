@@ -1,5 +1,5 @@
 // src/services/familyService.js
-// 家庭服务层 - 处理家庭相关业务逻辑
+// 家庭服务层 - 处理家庭相关业务逻辑 (MySQL 版本)
 
 const { v4: uuidv4 } = require('uuid');
 const BaseService = require('./baseService');
@@ -7,6 +7,10 @@ const logger = require('../utils/logger');
 const { generateRandomString } = require('../utils');
 const { ERROR_CODES } = require('../constants/errorCodes');
 const { FAMILY_ROLES, isAdmin, isCreator } = require('../constants/roles');
+
+// 开发模式下的模拟数据存储（与 familyController 共享）
+const mockFamilies = global.mockFamilies || (global.mockFamilies = new Map());
+const mockFamilyMembers = global.mockFamilyMembers || (global.mockFamilyMembers = new Map());
 
 class FamilyService extends BaseService {
   /**
@@ -16,26 +20,49 @@ class FamilyService extends BaseService {
    * @returns {Promise<Object>}
    */
   async createFamily(userId, name) {
-    if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
-    }
-
     const familyId = uuidv4();
     const inviteCode = generateRandomString(6);
+
+    // 开发模式：使用模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：创建模拟家庭');
+      const family = {
+        id: familyId,
+        name,
+        invite_code: inviteCode,
+        creator_id: userId,
+        points_value: 0.1,
+        created_at: new Date()
+      };
+      mockFamilies.set(familyId, family);
+      
+      // 添加创建人为成员
+      const memberId = uuidv4();
+      mockFamilyMembers.set(memberId, {
+        id: memberId,
+        family_id: familyId,
+        user_id: userId,
+        role: FAMILY_ROLES.CREATOR,
+        joined_at: new Date()
+      });
+
+      logger.audit('创建家庭(模拟)', userId, { familyId, name });
+      return { id: familyId, name, inviteCode };
+    }
 
     // 使用事务创建家庭和添加创建人为成员
     const family = await this.transaction(async (client) => {
       // 创建家庭
       await client.query(
         `INSERT INTO families (id, name, invite_code, creator_id, created_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
+         VALUES (?, ?, ?, ?, NOW())`,
         [familyId, name, inviteCode, userId]
       );
 
       // 添加创建人为成员
       await client.query(
         `INSERT INTO family_members (id, family_id, user_id, role, joined_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
+         VALUES (?, ?, ?, ?, NOW())`,
         [uuidv4(), familyId, userId, FAMILY_ROLES.CREATOR]
       );
 
@@ -73,7 +100,7 @@ class FamilyService extends BaseService {
     for (const preset of presets) {
       await client.query(
         `INSERT INTO chore_types (id, family_id, name, points, icon, is_preset, is_active, created_at)
-         VALUES ($1, $2, $3, $4, $5, true, true, NOW())`,
+         VALUES (?, ?, ?, ?, ?, true, true, NOW())`,
         [uuidv4(), familyId, preset.name, preset.points, preset.icon]
       );
     }
@@ -85,13 +112,27 @@ class FamilyService extends BaseService {
    * @returns {Promise<Object>}
    */
   async getFamilyInfo(familyId) {
+    // 开发模式：使用模拟数据
     if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
+      const family = mockFamilies.get(familyId);
+      if (!family) {
+        throw new Error(ERROR_CODES.FAMILY_NOT_FOUND.message);
+      }
+      const members = await this.getFamilyMembers(familyId);
+      return {
+        id: family.id,
+        name: family.name,
+        inviteCode: family.invite_code,
+        creatorId: family.creator_id,
+        pointsValue: family.points_value || 0.1,
+        members,
+        createdAt: family.created_at
+      };
     }
 
     const family = await this.queryOne(
       `SELECT id, name, invite_code, creator_id, points_value, created_at 
-       FROM families WHERE id = $1`,
+       FROM families WHERE id = ?`,
       [familyId]
     );
 
@@ -119,8 +160,28 @@ class FamilyService extends BaseService {
    * @returns {Promise<Array>}
    */
   async getUserFamilies(userId) {
+    // 开发模式：使用模拟数据
     if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
+      const result = [];
+      for (const [memberId, member] of mockFamilyMembers) {
+        if (member.user_id === userId) {
+          const family = mockFamilies.get(member.family_id);
+          if (family) {
+            const members = await this.getFamilyMembers(family.id);
+            result.push({
+              id: family.id,
+              name: family.name,
+              inviteCode: family.invite_code,
+              creatorId: family.creator_id,
+              pointsValue: family.points_value || 0.1,
+              role: member.role,
+              members,
+              createdAt: family.created_at
+            });
+          }
+        }
+      }
+      return result;
     }
 
     const families = await this.queryMany(
@@ -128,7 +189,7 @@ class FamilyService extends BaseService {
               fm.role, f.created_at
        FROM families f
        JOIN family_members fm ON f.id = fm.family_id
-       WHERE fm.user_id = $1
+       WHERE fm.user_id = ?
        ORDER BY f.created_at DESC`,
       [userId]
     );
@@ -158,15 +219,38 @@ class FamilyService extends BaseService {
    * @returns {Promise<Array>}
    */
   async getFamilyMembers(familyId) {
+    // 开发模式：使用模拟数据
     if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
+      const members = [];
+      const mockUsers = global.mockUsers || new Map();
+      for (const [memberId, member] of mockFamilyMembers) {
+        if (member.family_id === familyId) {
+          // 获取用户信息 - 遍历 mockUsers 查找
+          let user = null;
+          for (const [openid, u] of mockUsers) {
+            if (u.id === member.user_id) {
+              user = u;
+              break;
+            }
+          }
+          user = user || { nickname: '模拟用户', avatar_url: '' };
+          members.push({
+            id: member.user_id,
+            nickname: user.nickname,
+            avatarUrl: user.avatar_url,
+            role: member.role,
+            joinedAt: member.joined_at
+          });
+        }
+      }
+      return members;
     }
 
     const members = await this.queryMany(
       `SELECT u.id, u.nickname, u.avatar_url, fm.role, fm.joined_at
        FROM family_members fm
        JOIN users u ON fm.user_id = u.id
-       WHERE fm.family_id = $1
+       WHERE fm.family_id = ?
        ORDER BY 
          CASE fm.role 
            WHEN 'creator' THEN 1 
@@ -200,7 +284,7 @@ class FamilyService extends BaseService {
 
     // 查找家庭
     const family = await this.queryOne(
-      'SELECT id, name FROM families WHERE invite_code = $1',
+      'SELECT id, name FROM families WHERE invite_code = ?',
       [inviteCode.toUpperCase()]
     );
 
@@ -210,7 +294,7 @@ class FamilyService extends BaseService {
 
     // 检查是否已是成员
     const existingMember = await this.queryOne(
-      'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
       [family.id, userId]
     );
 
@@ -239,12 +323,23 @@ class FamilyService extends BaseService {
    * @returns {Promise<Object>}
    */
   async checkMemberRole(userId, familyId) {
+    // 开发模式：使用模拟数据
     if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
+      for (const [memberId, member] of mockFamilyMembers) {
+        if (member.family_id === familyId && member.user_id === userId) {
+          return {
+            isMember: true,
+            role: member.role,
+            isAdmin: isAdmin(member.role),
+            isCreator: isCreator(member.role)
+          };
+        }
+      }
+      return { isMember: false, role: null, isAdmin: false, isCreator: false };
     }
 
     const member = await this.queryOne(
-      'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
       [familyId, userId]
     );
 
@@ -333,16 +428,29 @@ class FamilyService extends BaseService {
    * @returns {Promise<Object|null>} 家庭信息
    */
   async getUserFamily(userId) {
+    // 开发模式：使用模拟数据
     if (!this.isDatabaseAvailable()) {
+      for (const [memberId, member] of mockFamilyMembers) {
+        if (member.user_id === userId) {
+          const family = mockFamilies.get(member.family_id);
+          if (family) {
+            return {
+              familyId: family.id,
+              role: member.role,
+              familyName: family.name
+            };
+          }
+        }
+      }
       return null;
     }
 
     try {
       const result = await this.queryOne(
-        `SELECT fm.family_id as "familyId", fm.role, f.name as "familyName"
+        `SELECT fm.family_id as familyId, fm.role, f.name as familyName
          FROM family_members fm
          JOIN families f ON fm.family_id = f.id
-         WHERE fm.user_id = $1
+         WHERE fm.user_id = ?
          LIMIT 1`,
         [userId]
       );
@@ -355,4 +463,3 @@ class FamilyService extends BaseService {
 }
 
 module.exports = new FamilyService();
-

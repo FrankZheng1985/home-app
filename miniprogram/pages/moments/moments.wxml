@@ -1,5 +1,96 @@
 <!--pages/moments/moments.wxml - 精美设计版 (支持图片上传)-->
 <view class="moments-page">
+  <!-- 未登录 - 显示功能介绍 -->
+  <view class="guest-moments-page" wx:if="{{!isLoggedIn}}">
+    <!-- 头部 -->
+    <view class="guest-header-card">
+      <view class="header-bg"></view>
+      <view class="header-content">
+        <view class="guest-title-row">
+          <view class="guest-title-info">
+            <text class="guest-page-title">💬 家庭动态</text>
+            <text class="guest-page-desc">分享生活点滴，记录美好时光</text>
+          </view>
+          <view class="guest-login-mini" bindtap="goToLogin">
+            <text class="login-text">登录</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功能介绍 -->
+    <view class="guest-content-section">
+      <!-- 模拟动态卡片 -->
+      <view class="section-header">
+        <text class="section-title">📝 动态预览</text>
+      </view>
+      
+      <view class="demo-post-card">
+        <view class="demo-post-header">
+          <view class="demo-avatar">👨</view>
+          <view class="demo-info">
+            <text class="demo-name">家庭成员</text>
+            <text class="demo-time">刚刚</text>
+          </view>
+        </view>
+        <text class="demo-content">今天和家人一起做了家务，感觉很开心！🎉</text>
+        <view class="demo-images">
+          <view class="demo-image">📷</view>
+          <view class="demo-image">📷</view>
+        </view>
+        <view class="demo-actions">
+          <view class="demo-action">
+            <text>❤️</text>
+            <text class="action-text">点赞</text>
+          </view>
+          <view class="demo-action">
+            <text>↗️</text>
+            <text class="action-text">分享</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 功能说明 -->
+      <view class="section-header">
+        <text class="section-title">✨ 功能亮点</text>
+      </view>
+      
+      <view class="feature-list">
+        <view class="feature-card">
+          <text class="feature-emoji">🔒</text>
+          <view class="feature-text">
+            <text class="feature-title">家庭私密圈</text>
+            <text class="feature-desc">只有家庭成员可以查看和互动</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-emoji">📸</text>
+          <view class="feature-text">
+            <text class="feature-title">图片分享</text>
+            <text class="feature-desc">支持上传多张图片，记录美好瞬间</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-emoji">🙈</text>
+          <view class="feature-text">
+            <text class="feature-title">匿名发布</text>
+            <text class="feature-desc">支持匿名发表心情，保护隐私</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 登录提示 -->
+      <view class="guest-login-section">
+        <button class="login-btn-primary" bindtap="goToLogin">
+          <text class="btn-icon">💚</text>
+          <text class="btn-text">登录查看家庭动态</text>
+        </button>
+        <text class="login-tip">登录后可以发布和查看家庭动态</text>
+      </view>
+    </view>
+  </view>
+
+  <block wx:else>
   <!-- 渐变头部 -->
   <view class="moments-header">
     <view class="header-bg"></view>
@@ -84,7 +175,7 @@
           </view>
         </view>
 
-        <!-- 互动区 -->
+        <!-- 互动区（已移除评论功能，个人主体小程序不支持） -->
         <view class="post-footer">
           <view 
             class="action-btn {{item.isLiked ? 'liked' : ''}}" 
@@ -95,48 +186,13 @@
             <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
             <text class="action-text">{{item.likesCount || '点赞'}}</text>
           </view>
-          <view 
-            class="action-btn"
-            data-id="{{item.id}}"
-            data-index="{{index}}"
-            bindtap="viewComments"
-          >
-            <text class="action-icon">💬</text>
-            <text class="action-text">{{item.commentsCount || '评论'}}</text>
-          </view>
           <view class="action-btn" bindtap="sharePost" data-id="{{item.id}}" data-content="{{item.content}}">
             <text class="action-icon">↗️</text>
             <text class="action-text">分享</text>
           </view>
         </view>
 
-        <!-- 评论预览区（最多显示2条） -->
-        <view class="comments-preview" wx:if="{{item.comments && item.comments.length > 0}}">
-          <view class="preview-comment" wx:for="{{item.comments}}" wx:for-item="comment" wx:key="id" wx:if="{{index < 2}}">
-            <text class="comment-author">{{comment.author.nickname}}</text>
-            <text class="comment-text">：{{comment.content}}</text>
-          </view>
-          <view class="view-all-comments" wx:if="{{item.commentsCount > 2}}" bindtap="viewComments" data-id="{{item.id}}">
-            查看全部 {{item.commentsCount}} 条评论
-          </view>
-        </view>
-
-        <!-- 快速评论输入 -->
-        <view class="quick-comment" wx:if="{{expandedCommentPostId === item.id}}">
-          <input 
-            class="quick-input" 
-            placeholder="写评论..." 
-            value="{{quickCommentContent}}"
-            bindinput="onQuickCommentInput"
-            bindconfirm="submitQuickComment"
-            data-id="{{item.id}}"
-            data-index="{{index}}"
-            focus="{{expandedCommentPostId === item.id}}"
-          />
-          <button class="quick-send-btn" bindtap="submitQuickComment" data-id="{{item.id}}" data-index="{{index}}">
-            发送
-          </button>
-        </view>
+        <!-- 评论功能已隐藏（个人主体小程序暂不支持） -->
       </view>
 
       <!-- 加载状态 -->
@@ -261,4 +317,5 @@
       </view>
     </view>
   </view>
+  </block>
 </view>

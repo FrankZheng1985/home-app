@@ -1,18 +1,14 @@
 // app.js
 App({
   onLaunch() {
-    // 检查登录状态
+    // 恢复登录状态（如果有）
     const token = wx.getStorageSync('token');
     if (token) {
       this.globalData.token = token;
       this.globalData.userInfo = wx.getStorageSync('userInfo');
       this.globalData.familyInfo = wx.getStorageSync('familyInfo');
-      // 已登录，跳转到首页
-      setTimeout(() => {
-        wx.switchTab({ url: '/pages/index/index' });
-      }, 100);
     }
-    // 未登录时，停留在登录页（登录页是首页）
+    // 不强制跳转，让用户先浏览首页体验功能
 
     // 获取系统信息（使用新版 API 避免弃用警告）
     this.initSystemInfo();
@@ -47,11 +43,17 @@ App({
     userInfo: null,
     familyInfo: null,
     token: null,
+    // ============================================
     // 后端服务地址配置
-    // 开发环境用 localhost，生产环境用微信云托管
-    // backendUrl: 'http://localhost:3000', // 本地开发
-    // backendUrl: 'https://express-56rh-214915-5-13943135431.sh.run.tcloudbase.com', // 生产环境微信云托管
-    backendUrl: 'http://81.70.239.82:3000', // 腾讯云服务器自托管 (HTTP)
+    // ============================================
+    // 📍 本地开发测试：使用下面这组
+    backendUrl: 'https://api.family-app.com.cn',
+    baseUrl: 'https://api.family-app.com.cn/api',
+    // --------------------------------------------
+    // 🚀 提交审核/发布：使用下面这组（注释掉上面的，取消注释下面的）
+    // backendUrl: 'https://api.family-app.com.cn',
+    // baseUrl: 'https://api.family-app.com.cn/api',
+    // ============================================
     systemInfo: null,
     statusBarHeight: 0,
     safeAreaBottom: 0

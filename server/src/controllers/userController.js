@@ -23,9 +23,10 @@ const getProfile = async (req, res) => {
   if (query) {
     try {
       // 查询用户信息和家庭成员关系
+      // 优先使用 users 表中的 family_id，如果没有则从 family_members 获取
       const result = await query(
         `SELECT u.id, u.openid, u.nickname, u.avatar_url, u.gender, u.birthday, u.preferences, u.created_at,
-                fm.family_id, fm.role as family_role
+                COALESCE(u.family_id, fm.family_id) as family_id, fm.role as family_role
          FROM users u
          LEFT JOIN family_members fm ON u.id = fm.user_id
          WHERE u.id = $1

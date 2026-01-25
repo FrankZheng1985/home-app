@@ -5,7 +5,8 @@ const { showLoading, hideLoading, showError, showSuccess } = require('../../util
 
 Page({
   data: {
-    isLogging: false
+    isLogging: false,
+    agreedToTerms: false  // 是否同意协议
   },
 
   onLoad() {
@@ -14,6 +15,27 @@ Page({
     if (token) {
       this.validateAndRedirect();
     }
+  },
+
+  // 切换协议同意状态
+  toggleAgreement() {
+    this.setData({
+      agreedToTerms: !this.data.agreedToTerms
+    });
+  },
+
+  // 查看用户协议
+  viewUserAgreement() {
+    wx.navigateTo({
+      url: '/pages/profile/agreement?type=user'
+    });
+  },
+
+  // 查看隐私政策
+  viewPrivacyPolicy() {
+    wx.navigateTo({
+      url: '/pages/profile/agreement?type=privacy'
+    });
   },
 
   // 验证token并跳转
@@ -84,7 +106,13 @@ Page({
         hideLoading();
         showSuccess('登录成功');
         setTimeout(() => {
-          wx.switchTab({ url: '/pages/index/index' });
+          // 检查是否有页面栈，如果有则返回，否则跳转首页
+          const pages = getCurrentPages();
+          if (pages.length > 1) {
+            wx.navigateBack();
+          } else {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
         }, 1000);
       }
     } catch (error) {
@@ -98,6 +126,16 @@ Page({
 
   // 获取用户头像昵称
   getUserProfile() {
+    // 检查是否同意协议
+    if (!this.data.agreedToTerms) {
+      wx.showToast({
+        title: '请先同意用户协议和隐私政策',
+        icon: 'none',
+        duration: 2000
+      });
+      return;
+    }
+
     wx.getUserProfile({
       desc: '用于完善用户资料',
       success: (res) => {

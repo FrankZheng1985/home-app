@@ -65,8 +65,17 @@ Page({
 
       if (res.data) {
         // 保存家庭信息到本地
-        wx.setStorageSync('familyInfo', res.data);
-        app.globalData.familyInfo = res.data;
+        const familyInfo = res.data.familyId ? res.data : { id: res.data.familyId, ...res.data };
+        wx.setStorageSync('familyInfo', familyInfo);
+        app.globalData.familyInfo = familyInfo;
+        
+        // 更新用户信息中的 familyId（重要！）
+        const userInfo = wx.getStorageSync('userInfo') || {};
+        userInfo.familyId = res.data.familyId || res.data.id;
+        userInfo.familyRole = 'member';
+        wx.setStorageSync('userInfo', userInfo);
+        app.globalData.userInfo = userInfo;
+        console.log('已更新用户信息，familyId:', userInfo.familyId);
 
         showSuccess('加入成功');
         

@@ -1,8 +1,11 @@
 // pages/sports/sports.js - 运动打卡页面
 const api = require('../../utils/api');
+const { isLoggedIn } = require('../../utils/util');
 
 Page({
   data: {
+    // 登录状态
+    isLoggedIn: false,
     // 用户状态
     hasFamily: false,
     isLoading: true,
@@ -45,7 +48,17 @@ Page({
     
     // 新类型表单
     newTypeName: '',
-    newTypeCalories: ''
+    newTypeCalories: '',
+    
+    // 默认运动类型（未登录时展示）
+    defaultSportTypes: [
+      { id: 'run', name: '跑步', icon: '🏃', color: '#4caf50', caloriesPerMin: 10 },
+      { id: 'walk', name: '步行', icon: '🚶', color: '#8bc34a', caloriesPerMin: 4 },
+      { id: 'bike', name: '骑行', icon: '🚴', color: '#03a9f4', caloriesPerMin: 8 },
+      { id: 'swim', name: '游泳', icon: '🏊', color: '#00bcd4', caloriesPerMin: 12 },
+      { id: 'yoga', name: '瑜伽', icon: '🧘', color: '#9c27b0', caloriesPerMin: 3 },
+      { id: 'gym', name: '健身', icon: '💪', color: '#ff5722', caloriesPerMin: 8 }
+    ]
   },
 
   onLoad() {
@@ -53,12 +66,33 @@ Page({
   },
 
   onShow() {
-    // 每次显示页面时都重新检查用户状态
+    // 先检查登录状态
+    const loggedIn = isLoggedIn();
+    this.setData({ isLoggedIn: loggedIn });
+    
+    if (!loggedIn) {
+      // 未登录，不发起 API 请求
+      this.setData({ isLoading: false, hasFamily: false });
+      return;
+    }
+    
+    // 已登录，检查用户状态
     this.checkUserStatus();
+  },
+  
+  // 去登录
+  goToLogin() {
+    wx.navigateTo({ url: '/pages/login/login' });
   },
   
   // 检查用户状态
   async checkUserStatus() {
+    // 再次确认登录状态
+    if (!isLoggedIn()) {
+      this.setData({ isLoading: false, hasFamily: false, isLoggedIn: false });
+      return;
+    }
+    
     this.setData({ isLoading: true });
     
     try {
@@ -87,6 +121,9 @@ Page({
           this.syncWechatSteps();
         } else {
           console.log('用户未加入家庭');
+          // 清理本地存储中的旧家庭信息
+          wx.removeStorageSync('familyInfo');
+          app.globalData.familyInfo = null;
           this.setData({ hasFamily: false, isLoading: false });
         }
       } else {

@@ -1,6 +1,29 @@
 // controllers/sportsController.js - 运动打卡控制器
-const pool = require('../config/database');
+let pool;
+try {
+  pool = require('../config/database');
+} catch (e) {
+  console.warn('数据库模块未加载');
+  pool = null;
+}
 const { v4: uuidv4 } = require('uuid');
+
+// 开发模式下的模拟数据
+const mockSportTypes = global.mockSportTypes || (global.mockSportTypes = new Map());
+const mockSportRecords = global.mockSportRecords || (global.mockSportRecords = new Map());
+const mockStepRecords = global.mockStepRecords || (global.mockStepRecords = new Map());
+
+// 预设运动类型
+const PRESET_SPORT_TYPES = [
+  { name: '跑步', icon: '🏃', color: '#4caf50', caloriesPerMin: 10 },
+  { name: '步行', icon: '🚶', color: '#8bc34a', caloriesPerMin: 4 },
+  { name: '骑行', icon: '🚴', color: '#03a9f4', caloriesPerMin: 8 },
+  { name: '游泳', icon: '🏊', color: '#00bcd4', caloriesPerMin: 12 },
+  { name: '瑜伽', icon: '🧘', color: '#9c27b0', caloriesPerMin: 3 },
+  { name: '健身', icon: '💪', color: '#ff5722', caloriesPerMin: 8 },
+  { name: '球类', icon: '⚽', color: '#ff9800', caloriesPerMin: 9 },
+  { name: '跳绳', icon: '🪢', color: '#e91e63', caloriesPerMin: 11 }
+];
 
 /**
  * 获取运动类型列表
@@ -12,6 +35,26 @@ const getTypes = async (req, res) => {
     
     if (!familyId) {
       return res.json({ success: true, data: [] });
+    }
+    
+    // 开发模式：返回模拟数据
+    if (!pool || !pool.query) {
+      console.log('🔧 开发模式：返回模拟运动类型');
+      let types = mockSportTypes.get(familyId);
+      if (!types) {
+        // 初始化预设运动类型
+        types = PRESET_SPORT_TYPES.map(t => ({
+          id: uuidv4(),
+          familyId,
+          name: t.name,
+          icon: t.icon,
+          color: t.color,
+          caloriesPerMin: t.caloriesPerMin,
+          isPreset: true
+        }));
+        mockSportTypes.set(familyId, types);
+      }
+      return res.json({ success: true, data: types });
     }
     
     const result = await pool.query(
@@ -140,6 +183,22 @@ const getRecords = async (req, res) => {
       return res.json({ success: true, data: [] });
     }
     
+    // 开发模式：返回模拟数据
+    if (!pool || !pool.query) {
+      console.log('🔧 开发模式：返回模拟运动记录');
+      const userKey = `${userId}_${familyId}`;
+      let records = mockSportRecords.get(userKey) || [];
+      
+      // 按日期筛选
+      if (date) {
+        records = records.filter(r => r.recordDate === date);
+      }
+      
+      // 分页
+      records = records.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+      return res.json({ success: true, data: records });
+    }
+    
     let query = `
       SELECT sr.id, sr.sport_type as "sportType", sr.icon, sr.color, 
              sr.duration, sr.calories, sr.steps, sr.remark,
@@ -178,6 +237,21 @@ const getWeekStats = async (req, res) => {
       return res.json({ 
         success: true, 
         data: { totalDays: 0, totalMinutes: 0, continuousDays: 0, checkedDates: [] } 
+      });
+    }
+    
+    // 开发模式：返回模拟数据
+    if (!pool || !pool.query) {
+      console.log('🔧 开发模式：返回模拟周统计');
+      return res.json({
+        success: true,
+        data: {
+          totalDays: 0,
+          totalMinutes: 0,
+          totalCalories: 0,
+          continuousDays: 0,
+          checkedDates: []
+        }
       });
     }
     
@@ -337,6 +411,20 @@ const syncSteps = async (req, res) => {
 const getTodaySteps = async (req, res) => {
   try {
     const userId = req.user.id;
+    
+    // 开发模式：返回模拟数据
+    if (!pool || !pool.query) {
+      console.log('🔧 开发模式：返回模拟步数');
+      const today = new Date().toISOString().split('T')[0];
+      const stepRecord = mockStepRecords.get(`${userId}_${today}`);
+      return res.json({
+        success: true,
+        data: {
+          steps: stepRecord?.steps || 0,
+          pointsRedeemed: stepRecord?.pointsRedeemed || false
+        }
+      });
+    }
     
     const result = await pool.query(
       `SELECT steps, points_redeemed as "pointsRedeemed" FROM step_records 

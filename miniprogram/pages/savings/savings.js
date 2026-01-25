@@ -66,21 +66,77 @@ Page({
   },
 
   async loadData() {
+    const app = getApp();
+    
     try {
       this.setData({ isLoading: true });
+      
+      // 首先检查用户信息中的 familyId（最可靠的判断）
+      const userInfo = wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.familyId) {
+        console.log('用户信息显示未加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          isLoading: false,
+          familyInfo: null,
+          account: null
+        });
+        
+        wx.showModal({
+          title: '提示',
+          content: '您尚未加入家庭，请先创建或加入一个家庭',
+          confirmText: '去首页',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+        return;
+      }
 
       // 获取家庭信息
       const familiesRes = await familyApi.getMyFamilies();
       if (!familiesRes.data || familiesRes.data.length === 0) {
-        this.setData({ isLoading: false });
-        showError('请先加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          isLoading: false,
+          familyInfo: null,
+          account: null
+        });
+        
+        wx.showModal({
+          title: '提示',
+          content: '您尚未加入家庭，请先创建或加入一个家庭',
+          confirmText: '去首页',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
         return;
       }
 
       const familyInfo = familiesRes.data[0];
       
+      // 同步更新本地存储
+      wx.setStorageSync('familyInfo', familyInfo);
+      app.globalData.familyInfo = familyInfo;
+      
       // 检查角色
-      const membersRes = await familyApi.getMembers(familyInfo.id);
+      let membersRes;
+      try {
+        membersRes = await familyApi.getMembers(familyInfo.id);
+      } catch (e) {
+        console.error('获取成员信息失败:', e);
+        membersRes = { data: [] };
+      }
+      
       const currentUserId = wx.getStorageSync('userInfo')?.id;
       const currentMember = membersRes.data?.find(m => 
         m.id === currentUserId || m.userId === currentUserId || m.user_id === currentUserId

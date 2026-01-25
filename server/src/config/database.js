@@ -1,25 +1,41 @@
-const { Pool } = require('pg');
+const mysql = require('mysql2/promise');
+
+// 开发模式下如果没有配置数据库，直接跳过
+const isDev = process.env.NODE_ENV === 'development';
+const hasDbConfig = process.env.DB_PASSWORD || process.env.DATABASE_URL;
+
+if (isDev && !hasDbConfig) {
+  console.log('🔧 开发模式：未配置数据库，将使用模拟数据');
+  module.exports = null;
+  return;
+}
 
 // 数据库连接配置
-const pool = new Pool({
-  host: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[0] : (process.env.DB_HOST || 'localhost'),
-  port: process.env.POSTGRES_ADDRESS ? process.env.POSTGRES_ADDRESS.split(':')[1] : (process.env.DB_PORT || 5432),
-  user: process.env.POSTGRES_USERNAME || process.env.DB_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD,
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'family_assistant',
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  waitForConnections: true,
+  connectionLimit: 20,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
+  connectTimeout: 5000  // 5秒连接超时
 });
 
 // 测试数据库连接
 (async () => {
   try {
-    const client = await pool.connect();
-    console.log('PostgreSQL 数据库连接成功');
-    client.release();
+    const connection = await pool.getConnection();
+    console.log('✅ MySQL 数据库连接成功');
+    connection.release();
   } catch (err) {
-    console.error('数据库连接错误:', err.message);
+    console.error('❌ 数据库连接错误:', err.message);
+    if (isDev) {
+      console.log('🔧 开发模式：数据库连接失败，将使用模拟数据');
+    }
   }
 })();
 
@@ -32,12 +48,18 @@ const pool = new Pool({
 const query = async (text, params) => {
   const start = Date.now();
   try {
-    const res = await pool.query(text, params);
+    const [rows, fields] = await pool.execute(text, params);
     const duration = Date.now() - start;
     if (process.env.NODE_ENV === 'development') {
-      console.log('执行查询:', { text, duration, rows: res.rowCount });
+      console.log('执行查询:', { text, duration, rows: Array.isArray(rows) ? rows.length : rows.affectedRows });
     }
-    return res;
+    // 返回兼容 pg 格式的结果
+    return {
+      rows: Array.isArray(rows) ? rows : [],
+      rowCount: Array.isArray(rows) ? rows.length : rows.affectedRows,
+      affectedRows: rows.affectedRows,
+      insertId: rows.insertId
+    };
   } catch (error) {
     console.error('查询错误:', error);
     throw error;
@@ -49,25 +71,19 @@ const query = async (text, params) => {
  * @returns {Promise}
  */
 const getClient = async () => {
-  const client = await pool.connect();
-  const query = client.query;
-  const release = client.release;
+  const connection = await pool.getConnection();
   
-  // 覆盖 query 方法以添加日志
-  const timeout = 5000;
-  client.query = (...args) => {
-    client.lastQuery = args;
-    return query.apply(client, args);
+  // 包装成兼容 pg 的接口
+  return {
+    query: async (sql, params) => {
+      const [rows] = await connection.execute(sql, params);
+      return {
+        rows: Array.isArray(rows) ? rows : [],
+        rowCount: Array.isArray(rows) ? rows.length : rows.affectedRows
+      };
+    },
+    release: () => connection.release()
   };
-  
-  client.timeout = timeout;
-  client.release = () => {
-    client.query = query;
-    client.release = release;
-    return release.apply(client);
-  };
-  
-  return client;
 };
 
 module.exports = {

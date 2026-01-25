@@ -93,10 +93,33 @@
   margin-top: 20rpx;
 }
 
+/* 隐私通知 */
+.privacy-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 24rpx 30rpx 0;
+  padding: 20rpx 24rpx;
+  background: rgba(7, 193, 96, 0.1);
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(7, 193, 96, 0.2);
+}
+
+.notice-icon {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+}
+
+.notice-text {
+  font-size: 24rpx;
+  color: #07C160;
+  font-weight: 500;
+}
+
 /* 表单区域 */
 .form-section {
   padding: 0 30rpx;
-  margin-top: -40rpx;
+  margin-top: 24rpx;
   position: relative;
   z-index: 2;
 }
@@ -117,12 +140,43 @@
   margin-bottom: 0;
 }
 
+.label-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
 .form-label {
-  display: block;
   font-size: 28rpx;
   font-weight: 600;
   color: #2D3436;
-  margin-bottom: 16rpx;
+}
+
+.required-tag {
+  font-size: 22rpx;
+  color: #FF6B6B;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  margin-left: 12rpx;
+  font-weight: 500;
+}
+
+.optional-tag {
+  font-size: 22rpx;
+  color: #B2BEC3;
+  background: #F1F3F4;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  margin-left: 12rpx;
+  font-weight: 500;
+}
+
+.field-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #B2BEC3;
+  margin-top: 12rpx;
 }
 
 .input-wrapper {
@@ -240,12 +294,16 @@
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
 }
 
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
 .card-title {
-  display: block;
   font-size: 30rpx;
   font-weight: 600;
   color: #2D3436;
-  margin-bottom: 8rpx;
 }
 
 .card-desc {

@@ -9,8 +9,7 @@ Page({
     userInfo: {
       nickname: '',
       avatarUrl: '',
-      gender: 0, // 0: 保密, 1: 男, 2: 女
-      birthday: ''
+      gender: 0 // 0: 保密, 1: 男, 2: 女
     },
     isSubmitting: false,
     // 喜好选项
@@ -75,13 +74,6 @@ Page({
     });
   },
 
-  // 日期选择
-  onDateChange(e) {
-    this.setData({
-      'userInfo.birthday': e.detail.value
-    });
-  },
-
   // 切换喜好选择
   togglePreference(e) {
     const id = e.currentTarget.dataset.id;
@@ -131,13 +123,12 @@ Page({
       // 获取选中的喜好
       const preferences = this.getSelectedPreferences();
 
-      // 调用注册接口
+      // 调用注册接口（仅发送必要信息）
       const result = await authApi.register({
         openId: openId,
         nickname: userInfo.nickname.trim(),
-        avatarUrl: userInfo.avatarUrl,
-        gender: userInfo.gender,
-        birthday: userInfo.birthday,
+        avatarUrl: userInfo.avatarUrl || '',
+        gender: userInfo.gender || 0,
         preferences: {
           hobbies: preferences
         }

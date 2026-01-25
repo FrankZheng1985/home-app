@@ -1213,3 +1213,123 @@ page {
   -webkit-backdrop-filter: blur(20rpx) saturate(180%);
   border: 1rpx solid rgba(255, 255, 255, 0.1);
 }
+
+/* ================================ */
+/*      未登录提示页面通用样式        */
+/* ================================ */
+
+.guest-prompt {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.guest-prompt .guest-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(160deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%);
+  background-size: 300% 300%;
+  animation: aurora-flow 12s ease infinite;
+}
+
+.guest-prompt .guest-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 50rpx;
+}
+
+.guest-prompt .guest-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+  filter: drop-shadow(0 8rpx 20rpx rgba(0, 0, 0, 0.15));
+  animation: float 4s ease-in-out infinite;
+}
+
+.guest-prompt .guest-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.2);
+  letter-spacing: 4rpx;
+  margin-bottom: 16rpx;
+}
+
+.guest-prompt .guest-desc {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  margin-bottom: 50rpx;
+}
+
+.guest-prompt .guest-features {
+  display: flex;
+  justify-content: center;
+  gap: 40rpx;
+  margin-bottom: 60rpx;
+}
+
+.guest-prompt .guest-feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10rpx);
+  -webkit-backdrop-filter: blur(10rpx);
+  padding: 24rpx 32rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+}
+
+.guest-prompt .feature-icon {
+  font-size: 36rpx;
+  margin-bottom: 10rpx;
+}
+
+.guest-prompt .feature-text {
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.guest-prompt .guest-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  max-width: 500rpx;
+  height: 100rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50rpx;
+  border: none;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.2);
+  transition: all 0.3s;
+}
+
+.guest-prompt .guest-login-btn::after {
+  border: none;
+}
+
+.guest-prompt .guest-login-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.guest-prompt .guest-login-btn .btn-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.guest-prompt .guest-login-btn .btn-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2D3436;
+  letter-spacing: 2rpx;
+}

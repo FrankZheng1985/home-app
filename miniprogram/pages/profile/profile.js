@@ -21,19 +21,28 @@ Page({
   },
 
   onLoad() {
-    if (!isLoggedIn()) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
-    }
+    this.setData({ isLoggedIn: isLoggedIn() });
   },
 
   onShow() {
-    if (!isLoggedIn()) {
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
+    const loggedIn = isLoggedIn();
+    this.setData({ isLoggedIn: loggedIn });
+    
+    if (loggedIn) {
+      this.loadUserInfo();
+      this.loadFamilyInfo();
     }
-    this.loadUserInfo();
-    this.loadFamilyInfo();
+  },
+  
+  // 去登录
+  goToLogin() {
+    wx.navigateTo({ url: '/pages/login/login' });
+  },
+
+  // 查看协议（未登录可访问）
+  viewAgreement(e) {
+    const type = e.currentTarget.dataset.type;
+    wx.navigateTo({ url: `/pages/profile/agreement?type=${type}` });
   },
 
   async loadUserInfo() {
@@ -47,14 +56,47 @@ Page({
 
   async loadFamilyInfo() {
     try {
+      // 首先检查用户信息中的 familyId（最可靠的判断）
+      const userInfo = wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.familyId) {
+        console.log('用户信息显示未加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          pointsSummary: { totalPoints: 0, thisMonth: 0 }
+        });
+        return;
+      }
+      
       const familiesRes = await familyApi.getMyFamilies();
       if (familiesRes.data && familiesRes.data.length > 0) {
         const familyInfo = familiesRes.data[0];
+        
+        // 同步更新本地存储
+        wx.setStorageSync('familyInfo', familyInfo);
+        app.globalData.familyInfo = familyInfo;
+        
         this.setData({ familyInfo });
 
         // 获取积分概览
-        const pointsRes = await pointsApi.getSummary(familyInfo.id);
-        this.setData({ pointsSummary: pointsRes.data || {} });
+        try {
+          const pointsRes = await pointsApi.getSummary(familyInfo.id);
+          this.setData({ pointsSummary: pointsRes.data || {} });
+        } catch (e) {
+          console.log('获取积分概览失败:', e);
+        }
+      } else {
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          pointsSummary: { totalPoints: 0, thisMonth: 0 }
+        });
       }
     } catch (error) {
       console.error('加载家庭信息失败:', error);

@@ -32,13 +32,43 @@ Page({
   },
 
   async loadData() {
+    const app = getApp();
+    
     try {
       showLoading('加载中...');
+      
+      // 首先检查用户信息中的 familyId（最可靠的判断）
+      const userInfo = wx.getStorageSync('userInfo');
+      if (!userInfo || !userInfo.familyId) {
+        console.log('用户信息显示未加入家庭');
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ familyInfo: null, choreTypes: [] });
+        hideLoading();
+        
+        wx.showModal({
+          title: '提示',
+          content: '您尚未加入家庭，请先创建或加入一个家庭',
+          confirmText: '去首页',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+        return;
+      }
       
       // 获取家庭信息
       const familiesRes = await familyApi.getMyFamilies();
       if (familiesRes.data && familiesRes.data.length > 0) {
         const familyInfo = familiesRes.data[0];
+        
+        // 同步更新本地存储
+        wx.setStorageSync('familyInfo', familyInfo);
+        app.globalData.familyInfo = familyInfo;
+        
         this.setData({ familyInfo });
 
         // 检查是否为管理员
@@ -55,6 +85,27 @@ Page({
 
         // 获取家务类型
         await this.loadChoreTypes();
+      } else {
+        // 清理本地存储中的旧家庭信息
+        wx.removeStorageSync('familyInfo');
+        app.globalData.familyInfo = null;
+        
+        this.setData({ 
+          familyInfo: null,
+          choreTypes: []
+        });
+        
+        hideLoading();
+        wx.showModal({
+          title: '提示',
+          content: '您尚未加入家庭，请先创建或加入一个家庭',
+          confirmText: '去首页',
+          showCancel: false,
+          success: () => {
+            wx.switchTab({ url: '/pages/index/index' });
+          }
+        });
+        return;
       }
       
       hideLoading();

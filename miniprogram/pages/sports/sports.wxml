@@ -1,5 +1,98 @@
 <!--pages/sports/sports.wxml - 运动打卡页面-->
 <view class="sports-page">
+  <!-- 未登录 - 可浏览运动类型 -->
+  <view class="guest-sports-page" wx:if="{{!isLoggedIn}}">
+    <!-- 头部 -->
+    <view class="guest-header-card">
+      <view class="header-bg"></view>
+      <view class="header-content">
+        <view class="guest-title-row">
+          <view class="guest-title-info">
+            <text class="guest-page-title">🏃 运动打卡</text>
+            <text class="guest-page-desc">记录运动数据，培养健康习惯</text>
+          </view>
+          <view class="guest-login-mini" bindtap="goToLogin">
+            <text class="login-text">登录</text>
+          </view>
+        </view>
+        
+        <!-- 功能预览 -->
+        <view class="guest-stats-preview">
+          <view class="preview-stat">
+            <text class="preview-icon">👟</text>
+            <text class="preview-label">步数同步</text>
+          </view>
+          <view class="preview-stat">
+            <text class="preview-icon">🔥</text>
+            <text class="preview-label">卡路里</text>
+          </view>
+          <view class="preview-stat">
+            <text class="preview-icon">📅</text>
+            <text class="preview-label">打卡日历</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 运动类型展示 -->
+    <view class="guest-content-section">
+      <view class="section-header">
+        <text class="section-title">🏋️ 支持的运动类型</text>
+        <text class="section-tip">登录后可自定义</text>
+      </view>
+      
+      <view class="sport-types-preview">
+        <view class="sport-type-card" wx:for="{{defaultSportTypes}}" wx:key="id">
+          <view class="sport-type-icon" style="background: {{item.color}}">
+            <text>{{item.icon}}</text>
+          </view>
+          <view class="sport-type-info">
+            <text class="sport-type-name">{{item.name}}</text>
+            <text class="sport-type-cal">约 {{item.caloriesPerMin}} 千卡/分钟</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 功能说明 -->
+      <view class="section-header">
+        <text class="section-title">✨ 功能亮点</text>
+      </view>
+      
+      <view class="feature-list">
+        <view class="feature-card">
+          <text class="feature-icon">📱</text>
+          <view class="feature-text">
+            <text class="feature-title">微信运动同步</text>
+            <text class="feature-desc">自动同步微信步数数据</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-icon">🎯</text>
+          <view class="feature-text">
+            <text class="feature-title">每日目标</text>
+            <text class="feature-desc">设定步数目标，达成获得积分</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-icon">📊</text>
+          <view class="feature-text">
+            <text class="feature-title">数据统计</text>
+            <text class="feature-desc">查看运动历史和连续打卡天数</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 登录提示 -->
+      <view class="guest-login-section">
+        <button class="login-btn-primary" bindtap="goToLogin">
+          <text class="btn-icon">💚</text>
+          <text class="btn-text">登录开始运动打卡</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <block wx:else>
   <!-- 加载中 -->
   <view class="loading-container" wx:if="{{isLoading}}">
     <view class="loading-icon">⏳</view>
@@ -346,6 +439,7 @@
       </view>
     </view>
   </view>
+  </block>
   </block>
 </view>
 

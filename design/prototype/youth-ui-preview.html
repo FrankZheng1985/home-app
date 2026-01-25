@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>家庭小助手 - 年轻化UI预览（阿拉斯加吉祥物版）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* 🌈 极光渐变色彩系统 - 保持原有 + 增加活力 */
+      --aurora-pink: #FF6B9D;
+      --aurora-purple: #C44EFF;
+      --aurora-blue: #4E8CFF;
+      --aurora-cyan: #4ECDC4;
+      --aurora-orange: #FF8E53;
+      --aurora-gold: #FFB347;
+      
+      /* 主渐变 */
+      --gradient-aurora: linear-gradient(135deg, #FF6B9D 0%, #C44EFF 50%, #4E8CFF 100%);
+      --gradient-sunset: linear-gradient(135deg, #FF7675 0%, #FFB347 50%, #F8C291 100%);
+      --gradient-ocean: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-forest: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      --gradient-candy: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      
+      /* 年轻化新增 - 更大圆角 */
+      --radius-card: 32px;
+      --radius-card-lg: 40px;
+      --radius-btn: 50px;
+      
+      /* 柔和阴影 */
+      --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.08);
+      --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.1);
+      --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.15);
+      --shadow-pink: 0 12px 40px rgba(255, 107, 157, 0.3);
+      --shadow-purple: 0 12px 40px rgba(196, 78, 255, 0.3);
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    /* 页面选择器 */
+    .page-selector {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .page-selector h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: var(--gradient-aurora);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-selector .subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .page-selector .mascot-info {
+      color: rgba(255,255,255,0.8);
+      font-size: 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .page-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .page-tab {
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .page-tab:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
+    }
+
+    .page-tab.active {
+      background: var(--gradient-aurora);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: var(--shadow-pink);
+    }
+
+    /* 手机展示区 */
+    .phones-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .phone-wrapper {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .phone-wrapper.active {
+      display: block;
+    }
+
+    .phone-label {
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .phone {
+      width: 375px;
+      height: 812px;
+      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+      border-radius: 55px;
+      padding: 12px;
+      box-shadow: 
+        0 50px 100px rgba(0,0,0,0.5),
+        inset 0 1px 1px rgba(255,255,255,0.1);
+      position: relative;
+    }
+
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #1a1a1a;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
+    }
+
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      background: #F5F7FA;
+      border-radius: 45px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 状态栏 */
+    .status-bar {
+      height: 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 28px 8px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    .status-bar-white { color: #fff; }
+    .status-bar-black { color: #000; }
+
+    .status-time {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 5px;
+      font-size: 14px;
+    }
+
+    /* 页面内容 */
+    .page-content {
+      height: 100%;
+      padding-top: 50px;
+      padding-bottom: 90px;
+      overflow-y: auto;
+    }
+
+    .page-content.no-tabbar {
+      padding-bottom: 40px;
+    }
+
+    .page-content::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ==================== 登录页 - 年轻化版本 ==================== */
+    .login-page {
+      background: linear-gradient(180deg, #FF6B9D 0%, #C44EFF 40%, #F5F7FA 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 80px 24px 40px;
+      min-height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 装饰圆球 */
+    .login-page::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .login-page::after {
+      content: '';
+      position: absolute;
+      bottom: 200px;
+      left: -80px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(78, 140, 255, 0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(5deg); }
+    }
+
+    /* 阿拉斯加吉祥物 - 欢迎姿态 */
+    .mascot-welcome {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 50%, #FAFAFA 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+      box-shadow: var(--shadow-float);
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    .mascot-welcome::after {
+      content: '🐕';
+      font-size: 100px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+
+    .mascot-label {
+      position: absolute;
+      bottom: -10px;
+      background: var(--gradient-aurora);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: var(--shadow-pink);
+    }
+
+    .login-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-subtitle {
+      font-size: 16px;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 40px;
+      letter-spacing: 3px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 功能卡片 - 年轻化设计 */
+    .login-features {
+      width: 100%;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-feature {
+      background: rgba(255,255,255,0.95);
+      border-radius: var(--radius-card);
+      padding: 20px 24px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.5);
+      transition: all 0.3s ease;
+    }
+
+    .login-feature:hover {
+      transform: translateX(8px) scale(1.02);
+      box-shadow: var(--shadow-card);
+    }
+
+    .login-feature-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .login-feature:nth-child(1) .login-feature-icon {
+      background: linear-gradient(135deg, #FFE5ED, #FFD0E0);
+    }
+
+    .login-feature:nth-child(2) .login-feature-icon {
+      background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    }
+
+    .login-feature:nth-child(3) .login-feature-icon {
+      background: linear-gradient(135deg, #EDE7F6, #D1C4E9);
+    }
+
+    .login-feature-text {
+      font-size: 17px;
+      font-weight: 600;
+      color: #2D3436;
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 60px;
+      background: linear-gradient(135deg, #07C160 0%, #00D26A 100%);
+      border-radius: var(--radius-btn);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      box-shadow: 0 12px 40px rgba(7, 193, 96, 0.4);
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 50px rgba(7, 193, 96, 0.5);
+    }
+
+    .login-terms {
+      font-size: 12px;
+      color: #636E72;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .login-terms a {
+      color: var(--aurora-pink);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* ==================== 首页 - 年轻化版本 ==================== */
+    .home-page {
+      background: linear-gradient(180deg, #FFF5F8 0%, #F5F7FA 100%);
+      padding: 0;
+      min-height: 100%;
+      position: relative;
+    }
+
+    /* 极光头部 */
+    .home-header-bg {
+      position: relative;
+      height: 280px;
+      background: var(--gradient-aurora);
+      background-size: 200% 200%;
+      animation: aurora-flow 8s ease infinite;
+      border-radius: 0 0 50px 50px;
+      padding: 20px 20px 0;
+      overflow: hidden;
+    }
+
+    @keyframes aurora-flow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* 头部装饰球 */
+    .home-header-bg::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .home-header-bg::after {
+      content: '';
+      position: absolute;
+      bottom: 40px;
+      left: -40px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .home-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .home-greeting {
+      color: #fff;
+    }
+
+    .home-greeting-text {
+      font-size: 28px;
+      font-weight: 800;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .home-family-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin-top: 8px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.95);
+      font-weight: 500;
+    }
+
+    /* 头部吉祥物 */
+    .home-mascot {
+      width: 80px;
+      height: 80px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 45px;
+      box-shadow: var(--shadow-soft);
+      animation: wiggle 3s ease-in-out infinite;
+      position: relative;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+
+    .mascot-headphone {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 24px;
+    }
+
+    /* 统计卡片 - 浮动在头部下方 */
+    .stats-card-float {
+      position: relative;
+      margin: -60px 20px 20px;
+      background: rgba(255,255,255,0.98);
+      border-radius: var(--radius-card-lg);
+      padding: 28px 20px;
+      display: flex;
+      justify-content: space-around;
+      box-shadow: var(--shadow-card);
+      border: 1px solid rgba(255,255,255,0.8);
+      z-index: 10;
+    }
+
+    .stats-card-float::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 5px;
+      background: var(--gradient-aurora);
+      border-radius: 0 0 5px 5px;
+    }
+
+    .stat-item {
+      text-align: center;
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 40px;
+      font-weight: 800;
+      background: var(--gradient-aurora);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-value.green {
+      background: var(--gradient-forest);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-value.gold {
+      background: linear-gradient(135deg, #FFD93D, #FF8C00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #636E72;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .stat-divider {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(180deg, transparent, #E8ECEF, transparent);
+      align-self: center;
+    }
+
+    /* 主内容区 */
+    .home-content {
+      padding: 0 20px 20px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      margin: 24px 0 16px;
+    }
+
+    .section-icon {
+      font-size: 24px;
+      margin-right: 10px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #2D3436;
+      flex: 1;
+    }
+
+    .section-more {
+      font-size: 14px;
+      color: var(--aurora-pink);
+      font-weight: 500;
+    }
+
+    /* 快捷操作 - 卡片组合布局 */
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .action-card {
+      background: #fff;
+      border-radius: var(--radius-card);
+      padding: 24px 20px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .action-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      border-radius: 0 6px 6px 0;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .action-card:hover::before {
+      opacity: 1;
+    }
+
+    .action-card:nth-child(1)::before { background: var(--gradient-forest); }
+    .action-card:nth-child(2)::before { background: linear-gradient(180deg, #FFD93D, #FF8C00); }
+    .action-card:nth-child(3)::before { background: var(--gradient-candy); }
+    .action-card:nth-child(4)::before { background: var(--gradient-ocean); }
+
+    .action-icon-wrap {
+      width: 64px;
+      height: 64px;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 14px;
+    }
+
+    .action-card:nth-child(1) .action-icon-wrap { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+    .action-card:nth-child(2) .action-icon-wrap { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+    .action-card:nth-child(3) .action-icon-wrap { background: linear-gradient(135deg, #FCE4EC, #F8BBD9); }
+    .action-card:nth-child(4) .action-icon-wrap { background: linear-gradient(135deg, #E8EAF6, #C5CAE9); }
+
+    .action-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #2D3436;
+      margin-bottom: 6px;
+    }
+
+    .action-desc {
+      font-size: 13px;
+      color: #636E72;
+    }
+
+    /* 排行榜卡片 */
+    .ranking-card {
+      background: #fff;
+      border-radius: var(--radius-card);
+      padding: 20px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #F0F0F0;
+    }
+
+    .ranking-item:last-child {
+      border-bottom: none;
+    }
+
+    .rank-badge {
+      width: 36px;
+      text-align: center;
+      font-size: 22px;
+    }
+
+    .rank-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #FDF2F8, #FCE7F3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 14px;
+    }
+
+    .rank-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2D3436;
+    }
+
+    .rank-points {
+      font-size: 22px;
+      font-weight: 800;
+      background: var(--gradient-aurora);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .rank-unit {
+      font-size: 12px;
+      color: #636E72;
+      margin-left: 4px;
+    }
+
+    /* ==================== 家务页 ==================== */
+    .chores-page {
+      background: linear-gradient(180deg, #F0FDF4 0%, #F5F7FA 100%);
+      padding: 0 20px 20px;
+      min-height: 100%;
+      position: relative;
+    }
+
+    .chores-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+    }
+
+    .chores-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #2D3436;
+    }
+
+    /* 家务页吉祥物 - 戴围裙 */
+    .chores-mascot {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+    }
+
+    .mascot-apron {
+      position: absolute;
+      bottom: -4px;
+      font-size: 16px;
+    }
+
+    .chores-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .chores-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chores-tab {
+      padding: 12px 22px;
+      background: #fff;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #636E72;
+      white-space: nowrap;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .chores-tab.active {
+      background: var(--gradient-forest);
+      color: #fff;
+      box-shadow: 0 8px 30px rgba(17, 153, 142, 0.35);
+    }
+
+    .chore-card {
+      background: #fff;
+      border-radius: var(--radius-card);
+      padding: 22px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .chore-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .chore-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+    }
+
+    .chore-card.clean::before { background: var(--gradient-ocean); }
+    .chore-card.kitchen::before { background: var(--gradient-sunset); }
+    .chore-card.laundry::before { background: var(--gradient-candy); }
+
+    .chore-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+    }
+
+    .chore-card.clean .chore-icon { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+    .chore-card.kitchen .chore-icon { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+    .chore-card.laundry .chore-icon { background: linear-gradient(135deg, #FCE4EC, #F8BBD9); }
+
+    .chore-info {
+      flex: 1;
+    }
+
+    .chore-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2D3436;
+      margin-bottom: 6px;
+    }
+
+    .chore-points {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FF8C00;
+    }
+
+    .chore-btn {
+      padding: 14px 26px;
+      background: var(--gradient-aurora);
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: var(--shadow-pink);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .chore-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .chore-btn.done {
+      background: var(--gradient-forest);
+      box-shadow: 0 8px 25px rgba(17, 153, 142, 0.35);
+    }
+
+    /* ==================== 个人中心 ==================== */
+    .profile-page {
+      background: #F5F7FA;
+      min-height: 100%;
+    }
+
+    .profile-header {
+      background: var(--gradient-aurora);
+      background-size: 200% 200%;
+      animation: aurora-flow 8s ease infinite;
+      padding: 60px 20px 80px;
+      text-align: center;
+      position: relative;
+      border-radius: 0 0 50px 50px;
+      overflow: hidden;
+    }
+
+    .profile-header::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* 个人中心吉祥物 - 休息姿态 */
+    .profile-mascot {
+      width: 110px;
+      height: 110px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 60px;
+      box-shadow: var(--shadow-float);
+      position: relative;
+      z-index: 1;
+    }
+
+    .mascot-zzz {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 20px;
+      animation: zzz 2s ease-in-out infinite;
+    }
+
+    @keyframes zzz {
+      0%, 100% { opacity: 0.5; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-5px); }
+    }
+
+    .profile-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-tags {
+      font-size: 14px;
+      color: rgba(255,255,255,0.9);
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-stats-card {
+      position: relative;
+      margin: -50px 20px 20px;
+      background: rgba(255,255,255,0.98);
+      border-radius: var(--radius-card-lg);
+      padding: 28px;
+      display: flex;
+      box-shadow: var(--shadow-card);
+      z-index: 10;
+    }
+
+    .profile-stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .profile-stat:first-child {
+      border-right: 1px solid #E8ECEF;
+    }
+
+    .profile-stat-value {
+      font-size: 36px;
+      font-weight: 800;
+      background: var(--gradient-aurora);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .profile-stat-label {
+      font-size: 13px;
+      color: #636E72;
+      margin-top: 4px;
+    }
+
+    .profile-menu {
+      margin: 0 20px 20px;
+      background: #fff;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 18px 20px;
+      border-bottom: 1px solid #F0F0F0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .profile-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .profile-menu-item:hover {
+      background: #FAFAFA;
+    }
+
+    .profile-menu-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-right: 14px;
+    }
+
+    .profile-menu-item:nth-child(1) .profile-menu-icon { background: linear-gradient(135deg, #FCE4EC, #F8BBD9); }
+    .profile-menu-item:nth-child(2) .profile-menu-icon { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+    .profile-menu-item:nth-child(3) .profile-menu-icon { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+    .profile-menu-item:nth-child(4) .profile-menu-icon { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+
+    .profile-menu-text {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 600;
+      color: #2D3436;
+    }
+
+    .profile-menu-arrow {
+      color: #B2BEC3;
+      font-size: 20px;
+    }
+
+    /* ==================== 空状态页 ==================== */
+    .empty-page {
+      background: linear-gradient(180deg, #FFF5F8 0%, #F5F7FA 100%);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .empty-mascot {
+      width: 160px;
+      height: 160px;
+      background: linear-gradient(135deg, #F5F5F5, #EEEEEE);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-soft);
+      animation: tilt 3s ease-in-out infinite;
+    }
+
+    @keyframes tilt {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    .empty-mascot-question {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 30px;
+      animation: pop 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pop {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .empty-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #2D3436;
+      margin-bottom: 12px;
+    }
+
+    .empty-desc {
+      font-size: 15px;
+      color: #636E72;
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .empty-btn {
+      padding: 16px 48px;
+      background: var(--gradient-aurora);
+      border-radius: var(--radius-btn);
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: var(--shadow-pink);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .empty-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+    }
+
+    /* ==================== TabBar ==================== */
+    .tabbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      padding-bottom: 34px;
+      border-radius: 24px 24px 0 0;
+    }
+
+    .tabbar-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #B2BEC3;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tabbar-item.active {
+      color: var(--aurora-pink);
+    }
+
+    .tabbar-item.active .tabbar-icon {
+      transform: scale(1.2);
+    }
+
+    .tabbar-icon {
+      font-size: 26px;
+      margin-bottom: 4px;
+      transition: transform 0.3s;
+    }
+
+    .tabbar-text {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* 浮动按钮 */
+    .fab {
+      position: fixed;
+      right: 24px;
+      bottom: 110px;
+      width: 64px;
+      height: 64px;
+      background: var(--gradient-aurora);
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 30px;
+      box-shadow: var(--shadow-pink), var(--shadow-float);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .fab:hover {
+      transform: rotate(90deg) scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-selector">
+    <h1>🏠 家庭小助手 - 年轻化UI预览</h1>
+    <p class="subtitle">年轻化设计风格 · 阿拉斯加吉祥物版本</p>
+    <div class="mascot-info">
+      <span>🐕</span>
+      <span>吉祥物: 阿拉斯加雪橇犬（各页面不同姿态）</span>
+    </div>
+    <div class="page-tabs">
+      <button class="page-tab active" data-page="login">登录页</button>
+      <button class="page-tab" data-page="home">首页</button>
+      <button class="page-tab" data-page="chores">家务页</button>
+      <button class="page-tab" data-page="profile">个人中心</button>
+      <button class="page-tab" data-page="empty">空状态</button>
+    </div>
+  </div>
+
+  <div class="phones-container">
+    <!-- 登录页 -->
+    <div class="phone-wrapper active" id="page-login">
+      <div class="phone-label">登录页 · 阿拉斯加欢迎姿态 👋</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-white">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content no-tabbar">
+            <div class="login-page">
+              <div class="mascot-welcome">
+                <span class="mascot-label">阿拉斯加</span>
+              </div>
+              <div class="login-title">家庭小助手</div>
+              <div class="login-subtitle">记录家务 · 积累幸福</div>
+              
+              <div class="login-features">
+                <div class="login-feature">
+                  <div class="login-feature-icon">👨‍👩‍👧‍👦</div>
+                  <span class="login-feature-text">家庭成员管理</span>
+                </div>
+                <div class="login-feature">
+                  <div class="login-feature-icon">✨</div>
+                  <span class="login-feature-text">家务记录积分奖励</span>
+                </div>
+                <div class="login-feature">
+                  <div class="login-feature-icon">💕</div>
+                  <span class="login-feature-text">分享美好生活点滴</span>
+                </div>
+              </div>
+              
+              <div class="login-btn">
+                <span>微信一键登录</span>
+              </div>
+              
+              <div class="login-terms">
+                登录即表示同意 <a href="#">《用户协议》</a> 和 <a href="#">《隐私政策》</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 首页 -->
+    <div class="phone-wrapper" id="page-home">
+      <div class="phone-label">首页 · 阿拉斯加戴耳机听歌 🎧</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-white">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="home-page">
+              <div class="home-header-bg">
+                <div class="home-header-top">
+                  <div class="home-greeting">
+                    <div class="home-greeting-text">你好，小明 👋</div>
+                    <div class="home-family-badge">
+                      <span>🏠</span>
+                      <span>温馨小窝</span>
+                    </div>
+                  </div>
+                  <div class="home-mascot">
+                    🐕
+                    <span class="mascot-headphone">🎧</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stats-card-float">
+                <div class="stat-item">
+                  <div class="stat-value">1,280</div>
+                  <div class="stat-label">总积分</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <div class="stat-value green">86</div>
+                  <div class="stat-label">本周获得</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <div class="stat-value gold">2</div>
+                  <div class="stat-label">排名</div>
+                </div>
+              </div>
+
+              <div class="home-content">
+                <div class="section-header">
+                  <span class="section-icon">⚡</span>
+                  <span class="section-title">快捷操作</span>
+                </div>
+                <div class="quick-actions-grid">
+                  <div class="action-card">
+                    <div class="action-icon-wrap">🧹</div>
+                    <div class="action-name">记录家务</div>
+                    <div class="action-desc">记录完成的家务</div>
+                  </div>
+                  <div class="action-card">
+                    <div class="action-icon-wrap">🏦</div>
+                    <div class="action-name">我的存款</div>
+                    <div class="action-desc">复利让钱生钱</div>
+                  </div>
+                  <div class="action-card">
+                    <div class="action-icon-wrap">🎁</div>
+                    <div class="action-name">奖励设置</div>
+                    <div class="action-desc">管理家务奖励</div>
+                  </div>
+                  <div class="action-card">
+                    <div class="action-icon-wrap">👥</div>
+                    <div class="action-name">家庭管理</div>
+                    <div class="action-desc">管理家庭成员</div>
+                  </div>
+                </div>
+
+                <div class="section-header">
+                  <span class="section-icon">🏆</span>
+                  <span class="section-title">本周排行</span>
+                </div>
+                <div class="ranking-card">
+                  <div class="ranking-item">
+                    <div class="rank-badge">🥇</div>
+                    <div class="rank-avatar">👩</div>
+                    <div class="rank-name">妈妈</div>
+                    <div class="rank-points">156<span class="rank-unit">分</span></div>
+                  </div>
+                  <div class="ranking-item">
+                    <div class="rank-badge">🥈</div>
+                    <div class="rank-avatar" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE);">👨</div>
+                    <div class="rank-name">爸爸</div>
+                    <div class="rank-points">128<span class="rank-unit">分</span></div>
+                  </div>
+                  <div class="ranking-item">
+                    <div class="rank-badge">🥉</div>
+                    <div class="rank-avatar" style="background: linear-gradient(135deg, #F3E8FF, #E9D5FF);">👧</div>
+                    <div class="rank-name">我</div>
+                    <div class="rank-points">86<span class="rank-unit">分</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 家务页 -->
+    <div class="phone-wrapper" id="page-chores">
+      <div class="phone-label">家务页 · 阿拉斯加戴围裙 👨‍🍳</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="chores-page">
+              <div class="chores-header">
+                <span class="chores-title">家务记录</span>
+                <div class="chores-mascot">
+                  🐕
+                  <span class="mascot-apron">👨‍🍳</span>
+                </div>
+              </div>
+              
+              <div class="chores-tabs">
+                <div class="chores-tab active">全部</div>
+                <div class="chores-tab">🧹 清洁</div>
+                <div class="chores-tab">🍳 厨房</div>
+                <div class="chores-tab">🧺 洗涤</div>
+                <div class="chores-tab">📦 整理</div>
+              </div>
+              
+              <div class="chore-card clean">
+                <div class="chore-icon">🧹</div>
+                <div class="chore-info">
+                  <div class="chore-name">扫地拖地</div>
+                  <div class="chore-points">+15 积分</div>
+                </div>
+                <div class="chore-btn">记录完成</div>
+              </div>
+              
+              <div class="chore-card kitchen">
+                <div class="chore-icon">🍳</div>
+                <div class="chore-info">
+                  <div class="chore-name">做饭</div>
+                  <div class="chore-points">+20 积分</div>
+                </div>
+                <div class="chore-btn done">已完成 ✓</div>
+              </div>
+              
+              <div class="chore-card laundry">
+                <div class="chore-icon">🧺</div>
+                <div class="chore-info">
+                  <div class="chore-name">洗衣服</div>
+                  <div class="chore-points">+10 积分</div>
+                </div>
+                <div class="chore-btn">记录完成</div>
+              </div>
+              
+              <div class="fab">+</div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 个人中心 -->
+    <div class="phone-wrapper" id="page-profile">
+      <div class="phone-label">个人中心 · 阿拉斯加休息中 💤</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-white">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content">
+            <div class="profile-page">
+              <div class="profile-header">
+                <div class="profile-mascot">
+                  🐕
+                  <span class="mascot-zzz">💤</span>
+                </div>
+                <div class="profile-name">小明</div>
+                <div class="profile-tags">🍔 美食 · ✈️ 旅行 · 🏃 运动</div>
+              </div>
+              
+              <div class="profile-stats-card">
+                <div class="profile-stat">
+                  <div class="profile-stat-value">1,280</div>
+                  <div class="profile-stat-label">我的积分</div>
+                </div>
+                <div class="profile-stat">
+                  <div class="profile-stat-value">56</div>
+                  <div class="profile-stat-label">已完成家务</div>
+                </div>
+              </div>
+              
+              <div class="profile-menu">
+                <div class="profile-menu-item">
+                  <div class="profile-menu-icon">👤</div>
+                  <span class="profile-menu-text">编辑资料</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <div class="profile-menu-icon">📊</div>
+                  <span class="profile-menu-text">积分明细</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <div class="profile-menu-icon">👨‍👩‍👧</div>
+                  <span class="profile-menu-text">家庭管理</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+                <div class="profile-menu-item">
+                  <div class="profile-menu-icon">⚙️</div>
+                  <span class="profile-menu-text">设置</span>
+                  <span class="profile-menu-arrow">›</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tabbar-item">
+              <span class="tabbar-icon">🏠</span>
+              <span class="tabbar-text">首页</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">📋</span>
+              <span class="tabbar-text">家务</span>
+            </div>
+            <div class="tabbar-item">
+              <span class="tabbar-icon">💬</span>
+              <span class="tabbar-text">动态</span>
+            </div>
+            <div class="tabbar-item active">
+              <span class="tabbar-icon">👤</span>
+              <span class="tabbar-text">我的</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="phone-wrapper" id="page-empty">
+      <div class="phone-label">空状态 · 阿拉斯加疑惑中 ❓</div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar status-bar-black">
+            <span class="status-time">9:41</span>
+            <span class="status-icons">📶 📡 🔋</span>
+          </div>
+          <div class="page-content no-tabbar">
+            <div class="empty-page">
+              <div class="empty-mascot" style="position: relative;">
+                🐕
+                <span class="empty-mascot-question">❓</span>
+              </div>
+              <div class="empty-title">还没有加入家庭</div>
+              <div class="empty-desc">创建或加入一个家庭<br>和家人一起记录家务吧！</div>
+              <div class="empty-btn">创建家庭</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 页面切换
+    const tabs = document.querySelectorAll('.page-tab');
+    const pages = document.querySelectorAll('.phone-wrapper');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const pageId = tab.dataset.page;
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+      });
+    });
+
+    // 家务 Tab
+    document.querySelectorAll('.chores-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.chores-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
