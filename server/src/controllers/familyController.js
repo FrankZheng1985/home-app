@@ -349,7 +349,7 @@ const getMembers = async (req, res) => {
          JOIN users u ON fm.user_id = u.id
          WHERE fm.family_id = ?
          ORDER BY fm.joined_at ASC`,
-        [familyId]
+        [familyId, familyId]
       );
 
       return res.json({
