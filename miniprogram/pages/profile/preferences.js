@@ -6,7 +6,6 @@ const { showLoading, hideLoading, showError, showSuccess } = require('../../util
 Page({
   data: {
     preferences: {
-      birthday: '',
       favoriteFood: '',
       favoriteColor: '',
       hobbies: ''
@@ -31,11 +30,6 @@ Page({
       hideLoading();
       console.error('加载喜好设置失败:', error);
     }
-  },
-
-  // 日期选择
-  onDateChange(e) {
-    this.setData({ 'preferences.birthday': e.detail.value });
   },
 
   // 输入喜好

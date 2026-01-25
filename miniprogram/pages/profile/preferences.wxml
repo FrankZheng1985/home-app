@@ -8,15 +8,6 @@
 
   <view class="form-section card">
     <view class="form-group">
-      <view class="form-label">🎂 生日</view>
-      <picker mode="date" bindchange="onDateChange" value="{{preferences.birthday}}">
-        <view class="picker-value {{preferences.birthday ? '' : 'placeholder'}}">
-          {{preferences.birthday || '选择您的生日'}}
-        </view>
-      </picker>
-    </view>
-
-    <view class="form-group">
       <view class="form-label">🍜 喜欢的食物</view>
       <input 
         class="form-input" 
