@@ -48,7 +48,9 @@ const pool = mysql.createPool({
 const query = async (text, params) => {
   const start = Date.now();
   try {
-    const [rows, fields] = await pool.execute(text, params);
+    // 使用 pool.query() 而不是 pool.execute()
+    // execute() 对复杂 SQL（子查询、EXISTS等）支持不好
+    const [rows, fields] = await pool.query(text, params);
     const duration = Date.now() - start;
     if (process.env.NODE_ENV === 'development') {
       console.log('执行查询:', { text, duration, rows: Array.isArray(rows) ? rows.length : rows.affectedRows });
