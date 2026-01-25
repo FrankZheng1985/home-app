@@ -1,4 +1,6 @@
 // controllers/sportsController.js - 运动打卡控制器
+const crypto = require('crypto');
+
 let pool;
 try {
   pool = require('../config/database');
@@ -6,6 +8,15 @@ try {
   console.warn('数据库模块未加载');
   pool = null;
 }
+
+let authService;
+try {
+  authService = require('../services/authService');
+} catch (e) {
+  console.warn('authService 模块未加载');
+  authService = null;
+}
+
 const { v4: uuidv4 } = require('uuid');
 
 // 开发模式下的模拟数据
@@ -363,6 +374,10 @@ const syncSteps = async (req, res) => {
     }
     
     // 获取用户的 session_key
+    if (!authService) {
+      return res.status(500).json({ success: false, message: '认证服务未初始化' });
+    }
+    
     const sessionKey = await authService.getSessionKey(userId);
     
     let todaySteps = 0;
