@@ -51,7 +51,7 @@ const getList = async (req, res) => {
          WHERE p.family_id = ?
          ORDER BY p.created_at DESC
          LIMIT ? OFFSET ?`,
-        [familyId, req.user.id, parseInt(limit), parseInt(offset)]
+        [req.user.id, familyId, parseInt(limit), parseInt(offset)]
       );
 
       return res.json({
