@@ -29,7 +29,7 @@ const getProfile = async (req, res) => {
                 COALESCE(u.family_id, fm.family_id) as family_id, fm.role as family_role
          FROM users u
          LEFT JOIN family_members fm ON u.id = fm.user_id
-         WHERE u.id = $1
+         WHERE u.id = ?
          LIMIT 1`,
         [userId]
       );
@@ -213,7 +213,7 @@ const updatePreferences = async (req, res) => {
   if (query) {
     try {
       const result = await query(
-        `UPDATE users SET preferences = $1 WHERE id = $2
+        `UPDATE users SET preferences = ? WHERE id = ?
          RETURNING id, nickname, avatar_url, preferences`,
         [JSON.stringify(preferences), userId]
       );
@@ -276,7 +276,7 @@ const getPreferences = async (req, res) => {
   if (query) {
     try {
       const result = await query(
-        'SELECT preferences FROM users WHERE id = $1',
+        'SELECT preferences FROM users WHERE id = ?',
         [userId]
       );
 

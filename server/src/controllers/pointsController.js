@@ -31,7 +31,7 @@ const getSummary = async (req, res) => {
     try {
       // 验证用户是否为家庭成员
       const memberCheck = await query(
-        'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -41,7 +41,7 @@ const getSummary = async (req, res) => {
 
       // 获取家庭积分价值
       const familyResult = await query(
-        'SELECT points_value FROM families WHERE id = $1',
+        'SELECT points_value FROM families WHERE id = ?',
         [familyId]
       );
 
@@ -53,7 +53,7 @@ const getSummary = async (req, res) => {
           COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) as total_earned,
           COALESCE(SUM(CASE WHEN type = 'redeem' THEN ABS(points) ELSE 0 END), 0) as total_redeemed
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2`,
+         WHERE family_id = ? AND user_id = ?`,
         [familyId, req.user.id]
       );
 
@@ -69,7 +69,7 @@ const getSummary = async (req, res) => {
       const myWeekPoints = await query(
         `SELECT COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) as total
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2 AND created_at >= $3`,
+         WHERE family_id = ? AND user_id = ? AND created_at >= ?`,
         [familyId, req.user.id, weekStart.toISOString()]
       );
 
@@ -81,7 +81,7 @@ const getSummary = async (req, res) => {
       const myMonthPoints = await query(
         `SELECT COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) as total
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2 AND created_at >= $3`,
+         WHERE family_id = ? AND user_id = ? AND created_at >= ?`,
         [familyId, req.user.id, monthStart.toISOString()]
       );
 
@@ -94,7 +94,7 @@ const getSummary = async (req, res) => {
                 COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) - 
                 COALESCE(SUM(CASE WHEN type = 'redeem' THEN ABS(points) ELSE 0 END), 0) as available
          FROM point_transactions
-         WHERE family_id = $1
+         WHERE family_id = ?
          GROUP BY user_id
          ORDER BY available DESC`,
         [familyId]
@@ -194,7 +194,7 @@ const getTransactions = async (req, res) => {
     try {
       // 验证用户是否为家庭成员
       const memberCheck = await query(
-        'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -203,7 +203,7 @@ const getTransactions = async (req, res) => {
       }
 
       // 构建查询
-      let whereClause = 'pt.family_id = $1 AND pt.user_id = $2';
+      let whereClause = 'pt.family_id = ? AND pt.user_id = ?';
       const values = [familyId, req.user.id];
       let paramIndex = 3;
 
@@ -285,7 +285,7 @@ const getMonthStats = async (req, res) => {
     try {
       // 验证用户是否为家庭成员
       const memberCheck = await query(
-        'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -297,8 +297,8 @@ const getMonthStats = async (req, res) => {
       const earnedResult = await query(
         `SELECT COALESCE(SUM(points), 0) as total
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2 AND type = 'earn' 
-         AND created_at >= $3 AND created_at <= $4`,
+         WHERE family_id = ? AND user_id = ? AND type = 'earn' 
+         AND created_at >= ? AND created_at <= ?`,
         [familyId, req.user.id, startDate.toISOString(), endDate.toISOString()]
       );
 
@@ -306,8 +306,8 @@ const getMonthStats = async (req, res) => {
       const redeemedResult = await query(
         `SELECT COALESCE(SUM(points), 0) as total
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2 AND type = 'redeem' 
-         AND created_at >= $3 AND created_at <= $4`,
+         WHERE family_id = ? AND user_id = ? AND type = 'redeem' 
+         AND created_at >= ? AND created_at <= ?`,
         [familyId, req.user.id, startDate.toISOString(), endDate.toISOString()]
       );
 
@@ -315,7 +315,7 @@ const getMonthStats = async (req, res) => {
       const balanceResult = await query(
         `SELECT COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE -points END), 0) as total
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2 AND created_at <= $3`,
+         WHERE family_id = ? AND user_id = ? AND created_at <= ?`,
         [familyId, req.user.id, endDate.toISOString()]
       );
 
@@ -379,7 +379,7 @@ const getMembersPoints = async (req, res) => {
     try {
       // 验证用户是否为管理员
       const memberCheck = await query(
-        'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -400,7 +400,7 @@ const getMembersPoints = async (req, res) => {
          FROM family_members fm
          JOIN users u ON fm.user_id = u.id
          LEFT JOIN point_transactions pt ON pt.user_id = fm.user_id AND pt.family_id = fm.family_id
-         WHERE fm.family_id = $1
+         WHERE fm.family_id = ?
          GROUP BY fm.id, fm.user_id, fm.role, u.nickname, u.avatar_url
          ORDER BY (COALESCE(SUM(CASE WHEN pt.type = 'earn' THEN pt.points ELSE 0 END), 0) - 
                    COALESCE(SUM(CASE WHEN pt.type = 'redeem' THEN ABS(pt.points) ELSE 0 END), 0)) DESC`,
@@ -482,7 +482,7 @@ const redeemPoints = async (req, res) => {
     try {
       // 验证操作者是否为管理员
       const adminCheck = await query(
-        'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -501,7 +501,7 @@ const redeemPoints = async (req, res) => {
           COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) as total_earned,
           COALESCE(SUM(CASE WHEN type = 'redeem' THEN ABS(points) ELSE 0 END), 0) as total_redeemed
          FROM point_transactions 
-         WHERE family_id = $1 AND user_id = $2`,
+         WHERE family_id = ? AND user_id = ?`,
         [familyId, memberId]
       );
 
@@ -517,7 +517,7 @@ const redeemPoints = async (req, res) => {
       const transactionId = uuidv4();
       await query(
         `INSERT INTO point_transactions (id, family_id, user_id, points, type, description, created_at)
-         VALUES ($1, $2, $3, $4, 'redeem', $5, NOW())`,
+         VALUES (?, ?, ?, ?, 'redeem', ?, NOW())`,
         [transactionId, familyId, memberId, points, remark || '积分结算兑现']
       );
 
@@ -575,7 +575,7 @@ const getRanking = async (req, res) => {
     try {
       // 验证用户是否为家庭成员
       const memberCheck = await query(
-        'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -599,8 +599,8 @@ const getRanking = async (req, res) => {
                 COUNT(pt.id) as total_records
          FROM family_members fm
          JOIN users u ON fm.user_id = u.id
-         LEFT JOIN point_transactions pt ON pt.user_id = u.id AND pt.family_id = $1 ${timeCondition}
-         WHERE fm.family_id = $1
+         LEFT JOIN point_transactions pt ON pt.user_id = u.id AND pt.family_id = ? ${timeCondition}
+         WHERE fm.family_id = ?
          GROUP BY u.id, u.nickname, u.avatar_url
          ORDER BY total_points DESC`,
         values
@@ -608,7 +608,7 @@ const getRanking = async (req, res) => {
 
       // 获取家庭积分价值
       const familyResult = await query(
-        'SELECT points_value FROM families WHERE id = $1',
+        'SELECT points_value FROM families WHERE id = ?',
         [familyId]
       );
       const pointsValue = parseFloat(familyResult.rows[0]?.points_value || 0);

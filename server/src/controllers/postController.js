@@ -31,7 +31,7 @@ const getList = async (req, res) => {
     try {
       // 验证用户是否为家庭成员
       const memberCheck = await query(
-        'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, req.user.id]
       );
 
@@ -45,12 +45,12 @@ const getList = async (req, res) => {
                 u.nickname, u.avatar_url,
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
                 (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count,
-                EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) as is_liked
+                EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
          FROM posts p
          JOIN users u ON p.user_id = u.id
-         WHERE p.family_id = $1
+         WHERE p.family_id = ?
          ORDER BY p.created_at DESC
-         LIMIT $3 OFFSET $4`,
+         LIMIT ? OFFSET ?`,
         [familyId, req.user.id, parseInt(limit), parseInt(offset)]
       );
 
@@ -147,7 +147,7 @@ const create = async (req, res) => {
     try {
       // 验证用户是否为家庭成员
       const memberCheck = await query(
-        'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
         [familyId, userId]
       );
 
@@ -158,7 +158,7 @@ const create = async (req, res) => {
       const postId = uuidv4();
       await query(
         `INSERT INTO posts (id, user_id, family_id, content, images, is_anonymous, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+         VALUES (?, ?, ?, ?, ?, ?, NOW())`,
         [postId, userId, familyId, content, JSON.stringify(images || []), isAnonymous || false]
       );
 
@@ -221,7 +221,7 @@ const deletePost = async (req, res) => {
     try {
       // 验证是否为动态作者
       const postResult = await query(
-        'SELECT user_id FROM posts WHERE id = $1',
+        'SELECT user_id FROM posts WHERE id = ?',
         [postId]
       );
 
@@ -234,9 +234,9 @@ const deletePost = async (req, res) => {
       }
 
       // 删除动态（级联删除点赞和评论）
-      await query('DELETE FROM post_likes WHERE post_id = $1', [postId]);
-      await query('DELETE FROM post_comments WHERE post_id = $1', [postId]);
-      await query('DELETE FROM posts WHERE id = $1', [postId]);
+      await query('DELETE FROM post_likes WHERE post_id = ?', [postId]);
+      await query('DELETE FROM post_comments WHERE post_id = ?', [postId]);
+      await query('DELETE FROM posts WHERE id = ?', [postId]);
 
       return res.json({ data: { message: '删除成功' } });
     } catch (dbError) {
@@ -284,7 +284,7 @@ const toggleLike = async (req, res) => {
     try {
       // 检查动态是否存在
       const postResult = await query(
-        'SELECT family_id FROM posts WHERE id = $1',
+        'SELECT family_id FROM posts WHERE id = ?',
         [postId]
       );
 
@@ -294,21 +294,21 @@ const toggleLike = async (req, res) => {
 
       // 检查是否已点赞
       const likeCheck = await query(
-        'SELECT id FROM post_likes WHERE post_id = $1 AND user_id = $2',
+        'SELECT id FROM post_likes WHERE post_id = ? AND user_id = ?',
         [postId, userId]
       );
 
       if (likeCheck.rows.length > 0) {
         // 取消点赞
         await query(
-          'DELETE FROM post_likes WHERE post_id = $1 AND user_id = $2',
+          'DELETE FROM post_likes WHERE post_id = ? AND user_id = ?',
           [postId, userId]
         );
         return res.json({ data: { liked: false, message: '已取消点赞' } });
       } else {
         // 点赞
         await query(
-          'INSERT INTO post_likes (id, post_id, user_id, created_at) VALUES ($1, $2, $3, NOW())',
+          'INSERT INTO post_likes (id, post_id, user_id, created_at) VALUES (?, ?, ?, NOW())',
           [uuidv4(), postId, userId]
         );
         return res.json({ data: { liked: true, message: '点赞成功' } });
@@ -359,7 +359,7 @@ const getComments = async (req, res) => {
     try {
       // 检查动态是否存在并获取家庭ID
       const postResult = await query(
-        'SELECT family_id FROM posts WHERE id = $1',
+        'SELECT family_id FROM posts WHERE id = ?',
         [postId]
       );
 
@@ -372,7 +372,7 @@ const getComments = async (req, res) => {
                 u.id as user_id, u.nickname, u.avatar_url
          FROM post_comments c
          JOIN users u ON c.user_id = u.id
-         WHERE c.post_id = $1
+         WHERE c.post_id = ?
          ORDER BY c.created_at ASC`,
         [postId]
       );
@@ -439,7 +439,7 @@ const addComment = async (req, res) => {
     try {
       // 检查动态是否存在
       const postResult = await query(
-        'SELECT family_id FROM posts WHERE id = $1',
+        'SELECT family_id FROM posts WHERE id = ?',
         [postId]
       );
 
@@ -449,7 +449,7 @@ const addComment = async (req, res) => {
 
       const commentId = uuidv4();
       await query(
-        'INSERT INTO post_comments (id, post_id, user_id, content, created_at) VALUES ($1, $2, $3, $4, NOW())',
+        'INSERT INTO post_comments (id, post_id, user_id, content, created_at) VALUES (?, ?, ?, ?, NOW())',
         [commentId, postId, userId, content]
       );
 
@@ -511,10 +511,10 @@ const getDetail = async (req, res) => {
                 u.nickname, u.avatar_url,
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as like_count,
                 (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comment_count,
-                EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) as is_liked
+                EXISTS(SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) as is_liked
          FROM posts p
          JOIN users u ON p.user_id = u.id
-         WHERE p.id = $1`,
+         WHERE p.id = ?`,
         [postId, req.user.id]
       );
 
@@ -601,7 +601,7 @@ const deleteComment = async (req, res) => {
     try {
       // 检查评论是否存在且属于当前用户
       const commentResult = await query(
-        'SELECT user_id FROM post_comments WHERE id = $1 AND post_id = $2',
+        'SELECT user_id FROM post_comments WHERE id = ? AND post_id = ?',
         [commentId, postId]
       );
 
@@ -613,7 +613,7 @@ const deleteComment = async (req, res) => {
         return res.status(403).json({ error: '只能删除自己的评论' });
       }
 
-      await query('DELETE FROM post_comments WHERE id = $1', [commentId]);
+      await query('DELETE FROM post_comments WHERE id = ?', [commentId]);
 
       return res.json({ data: { message: '删除成功' } });
     } catch (dbError) {

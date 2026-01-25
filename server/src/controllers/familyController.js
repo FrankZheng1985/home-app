@@ -55,7 +55,7 @@ const create = async (req, res) => {
         while (codeExists) {
           inviteCode = generateInviteCode();
           const codeCheck = await client.query(
-            'SELECT id FROM families WHERE invite_code = $1',
+            'SELECT id FROM families WHERE invite_code = ?',
             [inviteCode]
           );
           codeExists = codeCheck.rows.length > 0;
@@ -65,20 +65,20 @@ const create = async (req, res) => {
         const familyId = uuidv4();
         await client.query(
           `INSERT INTO families (id, name, invite_code, creator_id, points_value, created_at)
-           VALUES ($1, $2, $3, $4, $5, NOW())`,
+           VALUES (?, ?, ?, ?, ?, NOW())`,
           [familyId, name, inviteCode, userId, 0.5]
         );
 
         // 将创建者添加为家庭成员
         await client.query(
           `INSERT INTO family_members (id, family_id, user_id, role, joined_at)
-           VALUES ($1, $2, $3, $4, NOW())`,
+           VALUES (?, ?, ?, ?, NOW())`,
           [uuidv4(), familyId, userId, 'creator']
         );
         
         // 更新用户表中的 family_id（重要！）
         await client.query(
-          `UPDATE users SET family_id = $1 WHERE id = $2`,
+          `UPDATE users SET family_id = ? WHERE id = ?`,
           [familyId, userId]
         );
 
@@ -97,7 +97,7 @@ const create = async (req, res) => {
         for (const chore of presetChores) {
           await client.query(
             `INSERT INTO chore_types (id, family_id, name, points, is_preset, is_active, created_at)
-             VALUES ($1, $2, $3, $4, true, true, NOW())`,
+             VALUES (?, ?, ?, ?, true, true, NOW())`,
             [uuidv4(), familyId, chore.name, chore.points]
           );
         }
@@ -180,7 +180,7 @@ const getMyFamilies = async (req, res) => {
                 (SELECT COUNT(*) FROM family_members WHERE family_id = f.id) as member_count
          FROM families f
          JOIN family_members fm ON f.id = fm.family_id
-         WHERE fm.user_id = $1
+         WHERE fm.user_id = ?
          ORDER BY fm.joined_at DESC`,
         [userId]
       );
@@ -252,7 +252,7 @@ const joinByCode = async (req, res) => {
   try {
     // 查找家庭
     const familyResult = await query(
-      'SELECT id, name FROM families WHERE invite_code = $1',
+      'SELECT id, name FROM families WHERE invite_code = ?',
       [inviteCode.toUpperCase()]
     );
 
@@ -264,7 +264,7 @@ const joinByCode = async (req, res) => {
 
     // 检查是否已是成员
     const memberCheck = await query(
-      'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
       [family.id, userId]
     );
 
@@ -275,13 +275,13 @@ const joinByCode = async (req, res) => {
     // 加入家庭
     await query(
       `INSERT INTO family_members (id, family_id, user_id, role, joined_at)
-       VALUES ($1, $2, $3, $4, NOW())`,
+       VALUES (?, ?, ?, ?, NOW())`,
       [uuidv4(), family.id, userId, 'member']
     );
     
     // 更新用户表中的 family_id（重要！）
     await query(
-      `UPDATE users SET family_id = $1 WHERE id = $2`,
+      `UPDATE users SET family_id = ? WHERE id = ?`,
       [family.id, userId]
     );
 
@@ -307,7 +307,7 @@ const getInfo = async (req, res) => {
   try {
     const result = await query(
       `SELECT id, name, invite_code, creator_id, points_value, created_at
-       FROM families WHERE id = $1`,
+       FROM families WHERE id = ?`,
       [familyId]
     );
 
@@ -344,10 +344,10 @@ const getMembers = async (req, res) => {
       const result = await query(
         `SELECT u.id, u.nickname, u.avatar_url, fm.role, fm.joined_at,
                 (SELECT COALESCE(SUM(points_earned), 0) FROM chore_records 
-                 WHERE user_id = u.id AND family_id = $1) as total_points
+                 WHERE user_id = u.id AND family_id = ?) as total_points
          FROM family_members fm
          JOIN users u ON fm.user_id = u.id
-         WHERE fm.family_id = $1
+         WHERE fm.family_id = ?
          ORDER BY fm.joined_at ASC`,
         [familyId]
       );
@@ -416,7 +416,7 @@ const updateMemberRole = async (req, res) => {
   try {
     // 不能修改创建者角色
     const memberCheck = await query(
-      'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
       [familyId, memberId]
     );
 
@@ -429,7 +429,7 @@ const updateMemberRole = async (req, res) => {
     }
 
     await query(
-      'UPDATE family_members SET role = $1 WHERE family_id = $2 AND user_id = $3',
+      'UPDATE family_members SET role = ? WHERE family_id = ? AND user_id = ?',
       [role, familyId, memberId]
     );
 
@@ -449,7 +449,7 @@ const removeMember = async (req, res) => {
   try {
     // 不能移除创建者
     const memberCheck = await query(
-      'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
       [familyId, memberId]
     );
 
@@ -462,13 +462,13 @@ const removeMember = async (req, res) => {
     }
 
     await query(
-      'DELETE FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'DELETE FROM family_members WHERE family_id = ? AND user_id = ?',
       [familyId, memberId]
     );
     
     // 清除用户表中的 family_id
     await query(
-      'UPDATE users SET family_id = NULL WHERE id = $1',
+      'UPDATE users SET family_id = NULL WHERE id = ?',
       [memberId]
     );
 
@@ -493,13 +493,13 @@ const leave = async (req, res) => {
     }
 
     await query(
-      'DELETE FROM family_members WHERE family_id = $1 AND user_id = $2',
+      'DELETE FROM family_members WHERE family_id = ? AND user_id = ?',
       [familyId, userId]
     );
     
     // 清除用户表中的 family_id
     await query(
-      'UPDATE users SET family_id = NULL WHERE id = $1',
+      'UPDATE users SET family_id = NULL WHERE id = ?',
       [userId]
     );
 
@@ -518,7 +518,7 @@ const generateQRCode = async (req, res) => {
 
   try {
     const result = await query(
-      'SELECT invite_code FROM families WHERE id = $1',
+      'SELECT invite_code FROM families WHERE id = ?',
       [familyId]
     );
 
@@ -554,7 +554,7 @@ const updatePointsValue = async (req, res) => {
 
   try {
     await query(
-      'UPDATE families SET points_value = $1 WHERE id = $2',
+      'UPDATE families SET points_value = ? WHERE id = ?',
       [pointsValue, familyId]
     );
 

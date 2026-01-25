@@ -61,7 +61,7 @@ const getTypes = async (req, res) => {
       `SELECT id, name, icon, color, calories_per_min as "caloriesPerMin", 
               description, is_preset as "isPreset"
        FROM sport_types 
-       WHERE family_id = $1 
+       WHERE family_id = ? 
        ORDER BY is_preset DESC, created_at ASC`,
       [familyId]
     );
@@ -91,7 +91,7 @@ const createType = async (req, res) => {
     
     const result = await pool.query(
       `INSERT INTO sport_types (family_id, name, icon, color, calories_per_min)
-       VALUES ($1, $2, $3, $4, $5)
+       VALUES (?, ?, ?, ?, ?)
        RETURNING id, name, icon, color, calories_per_min as "caloriesPerMin", is_preset as "isPreset"`,
       [familyId, name.trim(), icon || '🏋️', color || '#607d8b', caloriesPerMin || 5]
     );
@@ -113,7 +113,7 @@ const deleteType = async (req, res) => {
     
     // 检查是否为预设类型
     const checkResult = await pool.query(
-      'SELECT is_preset FROM sport_types WHERE id = $1 AND family_id = $2',
+      'SELECT is_preset FROM sport_types WHERE id = ? AND family_id = ?',
       [typeId, familyId]
     );
     
@@ -126,7 +126,7 @@ const deleteType = async (req, res) => {
     }
     
     await pool.query(
-      'DELETE FROM sport_types WHERE id = $1 AND family_id = $2',
+      'DELETE FROM sport_types WHERE id = ? AND family_id = ?',
       [typeId, familyId]
     );
     
@@ -157,7 +157,7 @@ const createRecord = async (req, res) => {
     const result = await pool.query(
       `INSERT INTO sport_records 
        (user_id, family_id, sport_type_id, sport_type, icon, color, duration, calories, steps, remark, record_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_DATE)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?0, CURRENT_DATE)
        RETURNING *`,
       [userId, familyId, sportTypeId || null, sportType, icon || '🏃', color || '#4caf50', 
        duration, calories || 0, steps || 0, remark || null]
@@ -204,12 +204,12 @@ const getRecords = async (req, res) => {
              sr.duration, sr.calories, sr.steps, sr.remark,
              sr.record_date as "recordDate", sr.created_at as "createdAt"
       FROM sport_records sr
-      WHERE sr.user_id = $1 AND sr.family_id = $2
+      WHERE sr.user_id = ? AND sr.family_id = ?
     `;
     const params = [userId, familyId];
     
     if (date) {
-      query += ` AND sr.record_date = $3`;
+      query += ` AND sr.record_date = ?`;
       params.push(date);
     }
     
@@ -270,7 +270,7 @@ const getWeekStats = async (req, res) => {
          COALESCE(SUM(duration), 0) as "totalMinutes",
          COALESCE(SUM(calories), 0) as "totalCalories"
        FROM sport_records 
-       WHERE user_id = $1 AND family_id = $2 AND record_date >= $3`,
+       WHERE user_id = ? AND family_id = ? AND record_date >= ?`,
       [userId, familyId, monday.toISOString().split('T')[0]]
     );
     
@@ -278,7 +278,7 @@ const getWeekStats = async (req, res) => {
     const checkedDatesResult = await pool.query(
       `SELECT DISTINCT record_date::text as date
        FROM sport_records 
-       WHERE user_id = $1 AND family_id = $2 AND record_date >= $3
+       WHERE user_id = ? AND family_id = ? AND record_date >= ?
        ORDER BY date`,
       [userId, familyId, monday.toISOString().split('T')[0]]
     );
@@ -288,7 +288,7 @@ const getWeekStats = async (req, res) => {
       `WITH dates AS (
          SELECT DISTINCT record_date
          FROM sport_records 
-         WHERE user_id = $1 AND family_id = $2
+         WHERE user_id = ? AND family_id = ?
          ORDER BY record_date DESC
        ),
        numbered AS (
@@ -386,9 +386,9 @@ const syncSteps = async (req, res) => {
     // 保存或更新今日步数
     await pool.query(
       `INSERT INTO step_records (user_id, family_id, steps, record_date)
-       VALUES ($1, $2, $3, CURRENT_DATE)
+       VALUES (?, ?, ?, CURRENT_DATE)
        ON CONFLICT (user_id, record_date) 
-       DO UPDATE SET steps = $3, updated_at = CURRENT_TIMESTAMP`,
+       DO UPDATE SET steps = ?, updated_at = CURRENT_TIMESTAMP`,
       [userId, familyId, todaySteps]
     );
     
@@ -428,7 +428,7 @@ const getTodaySteps = async (req, res) => {
     
     const result = await pool.query(
       `SELECT steps, points_redeemed as "pointsRedeemed" FROM step_records 
-       WHERE user_id = $1 AND record_date = CURRENT_DATE`,
+       WHERE user_id = ? AND record_date = CURRENT_DATE`,
       [userId]
     );
     
@@ -461,7 +461,7 @@ const redeemStepsPoints = async (req, res) => {
     // 获取今日步数记录
     const stepRecord = await pool.query(
       `SELECT id, steps, points_redeemed FROM step_records 
-       WHERE user_id = $1 AND record_date = CURRENT_DATE`,
+       WHERE user_id = ? AND record_date = CURRENT_DATE`,
       [userId]
     );
     
@@ -495,14 +495,14 @@ const redeemStepsPoints = async (req, res) => {
       // 更新步数记录为已兑换
       await client.query(
         `UPDATE step_records SET points_redeemed = true, redeemed_at = NOW() 
-         WHERE id = $1`,
+         WHERE id = ?`,
         [record.id]
       );
       
       // 添加积分记录
       await client.query(
         `INSERT INTO point_transactions (id, user_id, family_id, points, type, description, created_at)
-         VALUES ($1, $2, $3, $4, 'earn', $5, NOW())`,
+         VALUES (?, ?, ?, ?, 'earn', ?, NOW())`,
         [uuidv4(), userId, familyId, rewardPoints, `运动达标奖励（${record.steps}步）`]
       );
       
@@ -544,7 +544,7 @@ const initDefaultTypes = async (req, res) => {
     
     // 检查是否已有运动类型
     const existingResult = await pool.query(
-      'SELECT COUNT(*) FROM sport_types WHERE family_id = $1',
+      'SELECT COUNT(*) FROM sport_types WHERE family_id = ?',
       [familyId]
     );
     
@@ -567,7 +567,7 @@ const initDefaultTypes = async (req, res) => {
     for (const type of defaultTypes) {
       await pool.query(
         `INSERT INTO sport_types (family_id, name, icon, color, calories_per_min, is_preset)
-         VALUES ($1, $2, $3, $4, $5, true)`,
+         VALUES (?, ?, ?, ?, ?, true)`,
         [familyId, type.name, type.icon, type.color, type.caloriesPerMin]
       );
     }
