@@ -216,10 +216,15 @@ const updatePreferences = async (req, res) => {
   // 尝试使用数据库
   if (query) {
     try {
-      const result = await query(
-        `UPDATE users SET preferences = ? WHERE id = ?
-         RETURNING id, nickname, avatar_url, preferences`,
+      await query(
+        `UPDATE users SET preferences = ? WHERE id = ?`,
         [JSON.stringify(preferences), userId]
+      );
+
+      // 查询更新后的用户信息
+      const result = await query(
+        `SELECT id, nickname, avatar_url, preferences FROM users WHERE id = ?`,
+        [userId]
       );
 
       const user = result.rows[0];
@@ -228,7 +233,7 @@ const updatePreferences = async (req, res) => {
           id: user.id,
           nickname: user.nickname,
           avatarUrl: user.avatar_url,
-          preferences: user.preferences
+          preferences: typeof user.preferences === 'string' ? JSON.parse(user.preferences) : user.preferences
         }
       });
     } catch (dbError) {

@@ -68,7 +68,7 @@ const userApi = {
     return app.request({
       url: '/users/preferences',
       method: 'PUT',
-      data: preferences
+      data: { preferences }
     });
   }
 };
