@@ -297,7 +297,7 @@ const getWeekStats = async (req, res) => {
       `SELECT DISTINCT DATE_FORMAT(record_date, '%Y-%m-%d') as date
        FROM sport_records 
        WHERE user_id = ? AND family_id = ? AND record_date >= ?
-       ORDER BY record_date`,
+       ORDER BY date`,
       [userId, familyId, monday.toISOString().split('T')[0]]
     );
     
