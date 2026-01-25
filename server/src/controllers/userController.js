@@ -109,22 +109,21 @@ const updateProfile = async (req, res) => {
     try {
       const updates = [];
       const values = [];
-      let paramIndex = 1;
 
       if (nickname !== undefined) {
-        updates.push(`nickname = $${paramIndex++}`);
+        updates.push(`nickname = ?`);
         values.push(nickname);
       }
       if (avatarUrl !== undefined) {
-        updates.push(`avatar_url = $${paramIndex++}`);
+        updates.push(`avatar_url = ?`);
         values.push(avatarUrl);
       }
       if (gender !== undefined) {
-        updates.push(`gender = $${paramIndex++}`);
+        updates.push(`gender = ?`);
         values.push(gender);
       }
       if (birthday !== undefined) {
-        updates.push(`birthday = $${paramIndex++}`);
+        updates.push(`birthday = ?`);
         values.push(birthday);
       }
 
@@ -134,10 +133,15 @@ const updateProfile = async (req, res) => {
 
       values.push(userId);
 
-      const result = await query(
-        `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}
-         RETURNING id, nickname, avatar_url, gender, birthday, preferences`,
+      await query(
+        `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
         values
+      );
+      
+      // 查询更新后的用户信息
+      const result = await query(
+        `SELECT id, nickname, avatar_url, gender, birthday, preferences FROM users WHERE id = ?`,
+        [userId]
       );
 
       const user = result.rows[0];
