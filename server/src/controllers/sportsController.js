@@ -1,4 +1,5 @@
 // controllers/sportsController.js - 运动打卡控制器
+// 更新时间: 2026-01-25 15:08
 const crypto = require('crypto');
 
 let pool;
