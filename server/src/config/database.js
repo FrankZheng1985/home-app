@@ -74,9 +74,15 @@ const getClient = async () => {
   const connection = await pool.getConnection();
   
   // 包装成兼容 pg 的接口
+  // 注意：MySQL 的 execute() 不支持事务命令（BEGIN/COMMIT/ROLLBACK）
+  // 所以对于事务命令使用 query()，其他命令使用 execute()
   return {
     query: async (sql, params) => {
-      const [rows] = await connection.execute(sql, params);
+      // 事务命令使用 query()，其他使用 execute()
+      const isTransactionCmd = /^(BEGIN|COMMIT|ROLLBACK|START\s+TRANSACTION)/i.test(sql.trim());
+      const [rows] = isTransactionCmd 
+        ? await connection.query(sql)
+        : await connection.query(sql, params);  // 全部使用 query() 更兼容
       return {
         rows: Array.isArray(rows) ? rows : [],
         rowCount: Array.isArray(rows) ? rows.length : rows.affectedRows
