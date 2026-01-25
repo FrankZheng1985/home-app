@@ -24,6 +24,7 @@ jobs:
             cd /var/www/family-assistant
             echo "开始拉取最新代码..."
             git fetch origin --force
+            git checkout main
             git reset --hard origin/main
             echo "进入 server 目录安装依赖..."
             cd server
