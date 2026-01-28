@@ -66,6 +66,13 @@ Page({
     
     if (!loggedIn) return;
     
+    // 如果没有家庭信息，先加载家庭信息
+    if (!this.data.familyInfo) {
+      this.loadFamilyInfo();
+      return;
+    }
+    
+    // 有家庭信息，加载数据
     this.loadChoreTypes();
     this.loadPendingCount();
     if (this.data.activeTab === 'history') {
