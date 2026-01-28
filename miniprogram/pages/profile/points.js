@@ -11,7 +11,8 @@ Page({
       availablePoints: 0,
       thisMonth: 0,
       redeemedTotal: 0,
-      rank: '-'
+      rank: '-',
+      pointsValue: 0.5
     },
     // 月度统计
     selectedMonth: '',
@@ -29,12 +30,23 @@ Page({
     hasMore: true,
     page: 1,
     pageSize: 20,
-    // 结算弹窗
+    // 结算弹窗（管理员用）
     showSettleModal: false,
     settleMember: null,
     settleAmount: '',
     settleRemark: '',
-    isSettling: false
+    isSettling: false,
+    // 兑现申请弹窗（用户用）
+    showRedeemApplyModal: false,
+    applyPoints: '',
+    applyAmount: '0.00',
+    applyRemark: '',
+    isApplying: false,
+    pendingApplyPoints: 0, // 待审核的申请积分
+    // 我的兑现申请
+    myRedeemRequests: [],
+    // 待审核数量（管理员用）
+    pendingRedeemCount: 0
   },
 
   onLoad() {
@@ -103,10 +115,14 @@ Page({
         // 获取月度统计
         await this.loadMonthStats();
 
-        // 如果是管理员，获取家庭成员列表
+        // 如果是管理员，获取家庭成员列表和待审核数量
         if (isAdmin) {
           await this.loadFamilyMembers();
+          await this.loadPendingRedeemCount();
         }
+
+        // 获取我的兑现申请
+        await this.loadMyRedeemRequests();
 
         // 获取积分记录
         this.setData({ page: 1, hasMore: true, transactions: [] });
@@ -126,15 +142,14 @@ Page({
       const res = await pointsApi.getSummary(this.data.familyInfo.id);
       const data = res.data || {};
       
-      // 计算可用积分 = 总获得 - 已兑现
-      const availablePoints = (data.totalPoints || 0) - (data.redeemedTotal || 0);
-      
+      // 可用积分已由后端计算
       this.setData({
         summary: {
-          availablePoints: availablePoints,
+          availablePoints: data.availablePoints || 0,
           thisMonth: data.thisMonth || 0,
           redeemedTotal: data.redeemedTotal || 0,
-          rank: data.rank || '-'
+          rank: data.rank || '-',
+          pointsValue: data.pointsValue || 0.5
         }
       });
     } catch (error) {
@@ -318,5 +333,177 @@ Page({
     } finally {
       this.setData({ isSettling: false });
     }
+  },
+
+  // ============ 兑现申请功能（用户用） ============
+
+  // 加载我的兑现申请
+  async loadMyRedeemRequests() {
+    try {
+      const { familyInfo } = this.data;
+      if (!familyInfo) return;
+      
+      const res = await pointsApi.getRedeemRequests({
+        familyId: familyInfo.id,
+        page: 1,
+        pageSize: 5
+      });
+      
+      let requests = res.data || [];
+      
+      // 格式化时间
+      requests = requests.map(item => ({
+        ...item,
+        createdAtText: formatRelativeTime(item.createdAt)
+      }));
+      
+      // 计算待审核的积分总数
+      const pendingApplyPoints = requests
+        .filter(r => r.status === 'pending')
+        .reduce((sum, r) => sum + r.points, 0);
+      
+      this.setData({
+        myRedeemRequests: requests,
+        pendingApplyPoints
+      });
+    } catch (error) {
+      console.error('获取兑现申请失败:', error);
+    }
+  },
+
+  // 获取待审核数量（管理员）
+  async loadPendingRedeemCount() {
+    try {
+      const { familyInfo } = this.data;
+      if (!familyInfo) return;
+      
+      const res = await pointsApi.getPendingRedeemCount(familyInfo.id);
+      this.setData({
+        pendingRedeemCount: res.data?.count || 0
+      });
+    } catch (error) {
+      console.error('获取待审核数量失败:', error);
+    }
+  },
+
+  // 显示申请兑现弹窗
+  showRedeemApplyModal() {
+    this.setData({
+      showRedeemApplyModal: true,
+      applyPoints: '',
+      applyAmount: '0.00',
+      applyRemark: ''
+    });
+  },
+
+  // 关闭申请兑现弹窗
+  closeRedeemApplyModal() {
+    this.setData({
+      showRedeemApplyModal: false,
+      applyPoints: '',
+      applyAmount: '0.00',
+      applyRemark: ''
+    });
+  },
+
+  // 输入申请积分
+  onApplyPointsInput(e) {
+    let value = parseInt(e.detail.value) || '';
+    const max = this.data.summary.availablePoints - this.data.pendingApplyPoints;
+    if (value > max) value = max;
+    
+    const pointsValue = this.data.summary.pointsValue || 0.5;
+    const amount = value ? (value * pointsValue).toFixed(2) : '0.00';
+    
+    this.setData({ 
+      applyPoints: value,
+      applyAmount: amount
+    });
+  },
+
+  // 输入申请备注
+  onApplyRemarkInput(e) {
+    this.setData({ applyRemark: e.detail.value });
+  },
+
+  // 快速设置申请金额
+  setQuickApplyAmount(e) {
+    let amount = parseInt(e.currentTarget.dataset.amount);
+    const max = this.data.summary.availablePoints - this.data.pendingApplyPoints;
+    if (amount > max) amount = max;
+    
+    const pointsValue = this.data.summary.pointsValue || 0.5;
+    const applyAmount = amount ? (amount * pointsValue).toFixed(2) : '0.00';
+    
+    this.setData({ 
+      applyPoints: amount,
+      applyAmount
+    });
+  },
+
+  // 设置全部金额
+  setFullApplyAmount() {
+    const max = this.data.summary.availablePoints - this.data.pendingApplyPoints;
+    const pointsValue = this.data.summary.pointsValue || 0.5;
+    const applyAmount = max ? (max * pointsValue).toFixed(2) : '0.00';
+    
+    this.setData({ 
+      applyPoints: max,
+      applyAmount
+    });
+  },
+
+  // 提交兑现申请
+  async submitRedeemApply() {
+    const { applyPoints, applyRemark, familyInfo } = this.data;
+    
+    if (!applyPoints || applyPoints <= 0) {
+      showError('请输入有效的兑现积分');
+      return;
+    }
+
+    const max = this.data.summary.availablePoints - this.data.pendingApplyPoints;
+    if (applyPoints > max) {
+      showError(`可申请积分不足，当前可申请：${max}`);
+      return;
+    }
+
+    try {
+      this.setData({ isApplying: true });
+      showLoading('提交中...');
+
+      await pointsApi.submitRedeemRequest({
+        familyId: familyInfo.id,
+        points: applyPoints,
+        remark: applyRemark || ''
+      });
+
+      hideLoading();
+      showSuccess('申请已提交，等待家长审核');
+      
+      this.closeRedeemApplyModal();
+      
+      // 重新加载数据
+      await this.loadData();
+    } catch (error) {
+      hideLoading();
+      showError(error.message || '提交申请失败');
+    } finally {
+      this.setData({ isApplying: false });
+    }
+  },
+
+  // 查看全部兑现申请
+  viewAllRedeemRequests() {
+    wx.navigateTo({
+      url: '/pages/profile/redeem-records'
+    });
+  },
+
+  // 跳转到兑现审核页面（管理员）
+  goToRedeemReview() {
+    wx.navigateTo({
+      url: '/pages/profile/redeem-review'
+    });
   }
 });

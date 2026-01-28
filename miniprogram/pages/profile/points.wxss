@@ -582,3 +582,198 @@
 .confirm-btn::after {
   border: none;
 }
+
+/* ============ 兑现申请相关样式 ============ */
+
+/* 申请兑现按钮 */
+.redeem-apply-btn {
+  margin-top: 20rpx;
+  padding: 16rpx 40rpx;
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+  font-size: 28rpx !important;
+  font-weight: 600 !important;
+  border: 2rpx solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 40rpx !important;
+  display: inline-block;
+}
+
+.redeem-apply-btn::after {
+  border: none;
+}
+
+/* 待审核提示 */
+.pending-notice {
+  margin: 0 30rpx 20rpx;
+  padding: 24rpx 30rpx;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 107, 0.3);
+}
+
+.notice-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.notice-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.notice-arrow {
+  font-size: 36rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 我的兑现申请 */
+.redeem-requests-list {
+  padding: 0 20rpx;
+}
+
+.redeem-request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.redeem-request-item:last-child {
+  border-bottom: none;
+}
+
+.request-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.request-points {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2D3436;
+}
+
+.request-amount {
+  font-size: 24rpx;
+  color: #636E72;
+  margin-top: 4rpx;
+}
+
+.request-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.request-status {
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.request-status.pending {
+  background: #FFF3E0;
+  color: #FF9800;
+}
+
+.request-status.approved {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+
+.request-status.rejected {
+  background: #FFEBEE;
+  color: #F44336;
+}
+
+.request-time {
+  font-size: 22rpx;
+  color: #B2BEC3;
+  margin-top: 6rpx;
+}
+
+/* 查看全部 */
+.view-all {
+  display: flex;
+  align-items: center;
+  font-size: 26rpx;
+  color: #FF8E53;
+}
+
+.view-all .arrow {
+  font-size: 28rpx;
+  margin-left: 4rpx;
+}
+
+/* 申请弹窗信息 */
+.apply-info {
+  display: flex;
+  background: #FFF5E6;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.apply-available,
+.apply-rate {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.apply-info .label {
+  font-size: 24rpx;
+  color: #636E72;
+  margin-bottom: 8rpx;
+}
+
+.apply-info .value {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #FF8E53;
+}
+
+/* 预计金额 */
+.apply-amount-preview {
+  margin-top: 16rpx;
+  padding: 16rpx 20rpx;
+  background: #F8F9FA;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #636E72;
+  text-align: center;
+}
+
+.apply-amount-preview .amount {
+  color: #FF8E53;
+  font-weight: 600;
+  font-size: 32rpx;
+}
+
+/* 提示 */
+.apply-tips {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx;
+  background: #E3F2FD;
+  border-radius: 12rpx;
+  margin-top: 20rpx;
+}
+
+.tip-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.tip-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1976D2;
+  line-height: 1.5;
+}

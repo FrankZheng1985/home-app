@@ -7,6 +7,10 @@
       <view class="summary-main">
         <text class="total-label">可用积分</text>
         <text class="total-points">{{summary.availablePoints || 0}}</text>
+        <!-- 申请兑现按钮 -->
+        <button class="redeem-apply-btn" bindtap="showRedeemApplyModal" wx:if="{{summary.availablePoints > 0}}">
+          申请兑现
+        </button>
       </view>
       <view class="summary-stats">
         <view class="stat-item">
@@ -26,6 +30,38 @@
       </view>
     </view>
     <view class="coin-icon">💰</view>
+  </view>
+
+  <!-- 待审核提示（管理员可见） -->
+  <view class="pending-notice" wx:if="{{isAdmin && pendingRedeemCount > 0}}" bindtap="goToRedeemReview">
+    <text class="notice-icon">🔔</text>
+    <text class="notice-text">有 {{pendingRedeemCount}} 个兑现申请待审核</text>
+    <text class="notice-arrow">›</text>
+  </view>
+
+  <!-- 我的兑现申请 -->
+  <view class="section-card" wx:if="{{myRedeemRequests.length > 0}}">
+    <view class="section-header-row">
+      <text class="section-title">📝 我的兑现申请</text>
+      <view class="view-all" bindtap="viewAllRedeemRequests">
+        <text>查看全部</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+    <view class="redeem-requests-list">
+      <view class="redeem-request-item" wx:for="{{myRedeemRequests}}" wx:key="id">
+        <view class="request-left">
+          <view class="request-points">{{item.points}} 积分</view>
+          <view class="request-amount">≈ ¥{{item.amount}}</view>
+        </view>
+        <view class="request-right">
+          <view class="request-status {{item.status}}">
+            {{item.status === 'pending' ? '待审核' : (item.status === 'approved' ? '已通过' : '已拒绝')}}
+          </view>
+          <view class="request-time">{{item.createdAtText}}</view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <!-- 月度统计 -->
@@ -139,7 +175,7 @@
     </view>
   </view>
 
-  <!-- 结算弹窗 -->
+  <!-- 结算弹窗（管理员用） -->
   <view class="modal-overlay {{showSettleModal ? 'show' : ''}}" bindtap="closeSettleModal">
     <view class="modal-container" catchtap="preventClose">
       <view class="modal-header">
@@ -187,6 +223,73 @@
           disabled="{{!settleAmount || settleAmount <= 0 || isSettling}}"
         >
           {{isSettling ? '处理中...' : '确认结算'}}
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 申请兑现弹窗（用户用） -->
+  <view class="modal-overlay {{showRedeemApplyModal ? 'show' : ''}}" bindtap="closeRedeemApplyModal">
+    <view class="modal-container" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">🎁 申请兑现</text>
+        <view class="modal-close" bindtap="closeRedeemApplyModal">×</view>
+      </view>
+      <view class="modal-body">
+        <view class="apply-info">
+          <view class="apply-available">
+            <text class="label">可兑现积分</text>
+            <text class="value">{{summary.availablePoints - pendingApplyPoints}}</text>
+          </view>
+          <view class="apply-rate">
+            <text class="label">积分价值</text>
+            <text class="value">{{summary.pointsValue || 0.5}} 元/积分</text>
+          </view>
+        </view>
+        
+        <view class="settle-form">
+          <view class="form-label">兑现积分</view>
+          <input 
+            class="settle-input" 
+            type="number" 
+            placeholder="请输入要兑现的积分数量"
+            value="{{applyPoints}}"
+            bindinput="onApplyPointsInput"
+          />
+          
+          <view class="apply-amount-preview" wx:if="{{applyPoints > 0}}">
+            预计可兑现金额：<text class="amount">¥{{applyAmount}}</text>
+          </view>
+          
+          <view class="quick-amounts">
+            <view class="quick-btn" data-amount="100" bindtap="setQuickApplyAmount">100</view>
+            <view class="quick-btn" data-amount="500" bindtap="setQuickApplyAmount">500</view>
+            <view class="quick-btn" data-amount="1000" bindtap="setQuickApplyAmount">1000</view>
+            <view class="quick-btn full" bindtap="setFullApplyAmount">全部</view>
+          </view>
+          
+          <view class="form-label">备注（选填）</view>
+          <input 
+            class="settle-input" 
+            placeholder="如：申请兑现本月积分"
+            value="{{applyRemark}}"
+            bindinput="onApplyRemarkInput"
+          />
+        </view>
+        
+        <view class="apply-tips">
+          <text class="tip-icon">💡</text>
+          <text class="tip-text">提交申请后，家长审核通过后会线下支付现金给你</text>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="cancel-btn" bindtap="closeRedeemApplyModal">取消</button>
+        <button 
+          class="confirm-btn" 
+          bindtap="submitRedeemApply"
+          disabled="{{!applyPoints || applyPoints <= 0 || isApplying}}"
+        >
+          {{isApplying ? '提交中...' : '提交申请'}}
         </button>
       </view>
     </view>

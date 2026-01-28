@@ -1,0 +1,145 @@
+<!--pages/profile/redeem-review.wxml - 积分兑现审核页面-->
+<view class="review-page">
+  <!-- 筛选标签 -->
+  <view class="filter-tabs-bar">
+    <view class="filter-tab {{filterStatus === 'pending' ? 'active' : ''}}" 
+          data-status="pending" bindtap="switchFilter">
+      待审核
+    </view>
+    <view class="filter-tab {{filterStatus === 'approved' ? 'active' : ''}}" 
+          data-status="approved" bindtap="switchFilter">
+      已通过
+    </view>
+    <view class="filter-tab {{filterStatus === 'rejected' ? 'active' : ''}}" 
+          data-status="rejected" bindtap="switchFilter">
+      已拒绝
+    </view>
+    <view class="filter-tab {{filterStatus === 'all' ? 'active' : ''}}" 
+          data-status="all" bindtap="switchFilter">
+      全部
+    </view>
+  </view>
+
+  <!-- 申请列表 -->
+  <view class="requests-list" wx:if="{{requests.length > 0}}">
+    <view class="request-card" wx:for="{{requests}}" wx:key="id">
+      <view class="request-header">
+        <view class="user-info">
+          <image class="user-avatar" src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
+          <text class="user-name">{{item.user.nickname}}</text>
+        </view>
+        <view class="request-status {{item.status}}">
+          {{item.status === 'pending' ? '待审核' : (item.status === 'approved' ? '已通过' : '已拒绝')}}
+        </view>
+      </view>
+      
+      <view class="request-body">
+        <view class="request-main">
+          <text class="points-label">申请兑现</text>
+          <text class="points-value">{{item.points}} 积分</text>
+          <text class="amount-value">≈ ¥{{item.amount}}</text>
+        </view>
+        <view class="request-remark" wx:if="{{item.remark}}">
+          <text class="remark-label">备注：</text>
+          <text class="remark-text">{{item.remark}}</text>
+        </view>
+        <view class="request-reject" wx:if="{{item.status === 'rejected' && item.rejectReason}}">
+          <text class="reject-label">拒绝原因：</text>
+          <text class="reject-text">{{item.rejectReason}}</text>
+        </view>
+      </view>
+      
+      <view class="request-footer">
+        <text class="request-time">申请时间：{{item.createdAtText}}</text>
+        <text class="reviewed-time" wx:if="{{item.reviewedAtText}}">
+          审核时间：{{item.reviewedAtText}}
+        </text>
+      </view>
+      
+      <!-- 待审核的显示操作按钮 -->
+      <view class="request-actions" wx:if="{{item.status === 'pending'}}">
+        <button class="action-btn reject" data-request="{{item}}" bindtap="showReviewModal">
+          审核
+        </button>
+      </view>
+    </view>
+
+    <view class="load-more" wx:if="{{hasMore}}">
+      <text>{{isLoading ? '加载中...' : '上拉加载更多'}}</text>
+    </view>
+    <view class="no-more" wx:if="{{!hasMore}}">
+      <text>没有更多了</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <view class="empty-icon animate-float">📋</view>
+    <view class="empty-title">暂无兑现申请</view>
+    <view class="empty-desc">
+      {{filterStatus === 'pending' ? '当前没有待审核的申请' : '暂无相关申请记录'}}
+    </view>
+  </view>
+
+  <!-- 审核弹窗 -->
+  <view class="modal-overlay {{showReviewModal ? 'show' : ''}}" bindtap="closeReviewModal">
+    <view class="modal-container" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">📝 审核兑现申请</text>
+        <view class="modal-close" bindtap="closeReviewModal">×</view>
+      </view>
+      <view class="modal-body" wx:if="{{currentRequest}}">
+        <view class="review-info">
+          <view class="info-row">
+            <text class="info-label">申请人</text>
+            <text class="info-value">{{currentRequest.user.nickname}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">兑现积分</text>
+            <text class="info-value highlight">{{currentRequest.points}} 积分</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">对应金额</text>
+            <text class="info-value highlight">¥{{currentRequest.amount}}</text>
+          </view>
+          <view class="info-row" wx:if="{{currentRequest.remark}}">
+            <text class="info-label">备注</text>
+            <text class="info-value">{{currentRequest.remark}}</text>
+          </view>
+        </view>
+        
+        <view class="review-tips">
+          <text class="tip-icon">💡</text>
+          <text class="tip-text">通过后请线下支付现金给申请人，积分将自动扣除</text>
+        </view>
+        
+        <view class="reject-reason-section">
+          <view class="form-label">拒绝原因（拒绝时必填）</view>
+          <textarea 
+            class="reject-input" 
+            placeholder="如需拒绝，请填写原因..."
+            value="{{rejectReason}}"
+            bindinput="onRejectReasonInput"
+            maxlength="200"
+          ></textarea>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button 
+          class="reject-btn" 
+          bindtap="rejectRequest"
+          disabled="{{isReviewing}}"
+        >
+          拒绝
+        </button>
+        <button 
+          class="approve-btn" 
+          bindtap="approveRequest"
+          disabled="{{isReviewing}}"
+        >
+          {{isReviewing ? '处理中...' : '通过并扣分'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

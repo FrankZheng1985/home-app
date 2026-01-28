@@ -1,0 +1,397 @@
+/* pages/profile/redeem-review.wxss - 积分兑现审核页面 */
+
+.review-page {
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding-bottom: 40rpx;
+}
+
+/* 筛选标签栏 */
+.filter-tabs-bar {
+  display: flex;
+  background: #ffffff;
+  padding: 20rpx 30rpx;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.filter-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #636E72;
+  border-radius: 8rpx;
+  transition: all 0.3s;
+}
+
+.filter-tab.active {
+  background: linear-gradient(135deg, #FFD93D 0%, #FF8E53 100%);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* 申请列表 */
+.requests-list {
+  padding: 20rpx 30rpx;
+}
+
+.request-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+}
+
+.user-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2D3436;
+}
+
+.request-status {
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.request-status.pending {
+  background: #FFF3E0;
+  color: #FF9800;
+}
+
+.request-status.approved {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+
+.request-status.rejected {
+  background: #FFEBEE;
+  color: #F44336;
+}
+
+.request-body {
+  padding: 20rpx 0;
+  border-top: 1rpx solid #F0F0F0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.request-main {
+  display: flex;
+  align-items: baseline;
+  gap: 16rpx;
+}
+
+.points-label {
+  font-size: 26rpx;
+  color: #636E72;
+}
+
+.points-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #FF8E53;
+}
+
+.amount-value {
+  font-size: 28rpx;
+  color: #636E72;
+}
+
+.request-remark {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+}
+
+.remark-label {
+  color: #636E72;
+}
+
+.remark-text {
+  color: #2D3436;
+}
+
+.request-reject {
+  margin-top: 16rpx;
+  padding: 16rpx;
+  background: #FFF5F5;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+}
+
+.reject-label {
+  color: #F44336;
+}
+
+.reject-text {
+  color: #F44336;
+}
+
+.request-footer {
+  padding-top: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.request-time,
+.reviewed-time {
+  font-size: 24rpx;
+  color: #B2BEC3;
+}
+
+.request-actions {
+  margin-top: 20rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 16rpx 40rpx;
+  font-size: 28rpx;
+  border-radius: 40rpx;
+  border: none;
+}
+
+.action-btn.reject {
+  background: linear-gradient(135deg, #FFD93D 0%, #FF8E53 100%) !important;
+  color: #ffffff !important;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 60rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #2D3436;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 28rpx;
+  color: #636E72;
+  text-align: center;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20rpx); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 加载更多 */
+.load-more,
+.no-more {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 26rpx;
+  color: #B2BEC3;
+}
+
+/* 弹窗 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 40rpx 40rpx 0 0;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.modal-overlay.show .modal-container {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #2D3436;
+}
+
+.modal-close {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: #B2BEC3;
+}
+
+.modal-body {
+  padding: 30rpx;
+}
+
+.review-info {
+  background: #F8F9FA;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+}
+
+.info-label {
+  font-size: 28rpx;
+  color: #636E72;
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: #2D3436;
+}
+
+.info-value.highlight {
+  color: #FF8E53;
+  font-weight: 600;
+}
+
+.review-tips {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx;
+  background: #E3F2FD;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.tip-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.tip-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #1976D2;
+  line-height: 1.5;
+}
+
+.reject-reason-section {
+  margin-top: 20rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #2D3436;
+  margin-bottom: 12rpx;
+}
+
+.reject-input {
+  width: 100%;
+  height: 160rpx;
+  padding: 20rpx;
+  background: #F8F9FA;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 30rpx 40rpx;
+}
+
+.reject-btn,
+.approve-btn {
+  flex: 1;
+  height: 88rpx;
+  font-size: 30rpx !important;
+  font-weight: 600 !important;
+  border: none !important;
+  border-radius: 20rpx !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.reject-btn {
+  background: #F5F5F5 !important;
+  color: #F44336 !important;
+}
+
+.approve-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%) !important;
+  color: #ffffff !important;
+}
+
+.reject-btn[disabled],
+.approve-btn[disabled] {
+  opacity: 0.6;
+}
+
+.reject-btn::after,
+.approve-btn::after {
+  border: none;
+}

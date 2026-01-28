@@ -9,6 +9,7 @@
     "pages/chores/chores",
     "pages/rewards/rewards",
     "pages/moments/moments",
+    "pages/moments/comments",
     "pages/sports/sports",
     "pages/profile/profile",
     "pages/profile/edit",
@@ -17,6 +18,7 @@
     "pages/profile/feedback",
     "pages/profile/about",
     "pages/profile/agreement",
+    "pages/profile/redeem-review",
     "pages/savings/savings"
   ],
   "window": {

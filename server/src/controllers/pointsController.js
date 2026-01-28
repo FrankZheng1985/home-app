@@ -686,11 +686,363 @@ const getRanking = async (req, res) => {
   }
 };
 
+/**
+ * 用户提交兑现申请
+ */
+const submitRedeemRequest = async (req, res) => {
+  const { familyId, points, remark } = req.body;
+  const userId = req.user.id;
+
+  if (!familyId || !points || points <= 0) {
+    return res.status(400).json({ error: '参数错误' });
+  }
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 验证用户是否为家庭成员
+      const memberCheck = await query(
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
+        [familyId, userId]
+      );
+
+      if (memberCheck.rows.length === 0) {
+        return res.status(403).json({ error: '您不是该家庭成员' });
+      }
+
+      // 检查用户可用积分
+      const pointsCheck = await query(
+        `SELECT 
+          COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) as total_earned,
+          COALESCE(SUM(CASE WHEN type = 'redeem' THEN ABS(points) ELSE 0 END), 0) as total_redeemed
+         FROM point_transactions 
+         WHERE family_id = ? AND user_id = ?`,
+        [familyId, userId]
+      );
+
+      const totalEarned = parseInt(pointsCheck.rows[0].total_earned);
+      const totalRedeemed = parseInt(pointsCheck.rows[0].total_redeemed);
+      const availablePoints = totalEarned - totalRedeemed;
+
+      // 检查是否有待审核的申请（避免重复申请）
+      const pendingCheck = await query(
+        `SELECT COALESCE(SUM(points), 0) as pending_points
+         FROM point_redeem_requests 
+         WHERE family_id = ? AND user_id = ? AND status = 'pending'`,
+        [familyId, userId]
+      );
+      const pendingPoints = parseInt(pendingCheck.rows[0].pending_points) || 0;
+
+      if (points > availablePoints - pendingPoints) {
+        return res.status(400).json({ 
+          error: `可用积分不足，当前可申请：${availablePoints - pendingPoints}` 
+        });
+      }
+
+      // 获取积分价值
+      const familyResult = await query(
+        'SELECT points_value FROM families WHERE id = ?',
+        [familyId]
+      );
+      const pointsValue = parseFloat(familyResult.rows[0]?.points_value || 0.5);
+      const amount = (points * pointsValue).toFixed(2);
+
+      // 创建申请记录
+      const requestId = uuidv4();
+      await query(
+        `INSERT INTO point_redeem_requests 
+         (id, user_id, family_id, points, amount, status, remark, created_at)
+         VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW())`,
+        [requestId, userId, familyId, points, amount, remark || '']
+      );
+
+      return res.json({
+        data: {
+          id: requestId,
+          points,
+          amount,
+          message: '申请已提交，等待审核'
+        }
+      });
+    } catch (dbError) {
+      console.error('提交兑现申请错误:', dbError);
+      return res.status(500).json({ error: '提交申请失败' });
+    }
+  }
+
+  return res.status(500).json({ error: '数据库未连接' });
+};
+
+/**
+ * 获取兑现申请列表
+ */
+const getRedeemRequests = async (req, res) => {
+  const { familyId, status, page = 1, pageSize = 20 } = req.query;
+  const userId = req.user.id;
+
+  if (!familyId) {
+    return res.status(400).json({ error: '缺少家庭ID' });
+  }
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 验证用户是否为家庭成员并获取角色
+      const memberCheck = await query(
+        'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
+        [familyId, userId]
+      );
+
+      if (memberCheck.rows.length === 0) {
+        return res.status(403).json({ error: '您不是该家庭成员' });
+      }
+
+      const role = memberCheck.rows[0].role;
+      const isAdmin = role === 'creator' || role === 'admin';
+
+      // 构建查询条件
+      let whereClause = 'r.family_id = ?';
+      const values = [familyId];
+
+      // 普通用户只能看自己的申请
+      if (!isAdmin) {
+        whereClause += ' AND r.user_id = ?';
+        values.push(userId);
+      }
+
+      // 状态筛选
+      if (status) {
+        whereClause += ' AND r.status = ?';
+        values.push(status);
+      }
+
+      const offset = (parseInt(page) - 1) * parseInt(pageSize);
+      values.push(parseInt(pageSize), offset);
+
+      const result = await query(
+        `SELECT r.*, 
+                u.nickname as user_nickname, u.avatar_url as user_avatar,
+                ru.nickname as reviewer_nickname
+         FROM point_redeem_requests r
+         JOIN users u ON r.user_id = u.id
+         LEFT JOIN users ru ON r.reviewed_by = ru.id
+         WHERE ${whereClause}
+         ORDER BY r.created_at DESC
+         LIMIT ? OFFSET ?`,
+        values
+      );
+
+      // 获取总数
+      const countValues = values.slice(0, -2); // 移除 LIMIT 和 OFFSET 的参数
+      const countResult = await query(
+        `SELECT COUNT(*) as total FROM point_redeem_requests r WHERE ${whereClause.replace(/ AND r\.user_id = \?/, isAdmin ? '' : ' AND r.user_id = ?')}`,
+        countValues.slice(0, isAdmin ? 1 : 2)
+      );
+
+      return res.json({
+        data: result.rows.map(row => ({
+          id: row.id,
+          userId: row.user_id,
+          user: {
+            nickname: row.user_nickname,
+            avatarUrl: row.user_avatar
+          },
+          points: row.points,
+          amount: parseFloat(row.amount),
+          status: row.status,
+          remark: row.remark,
+          rejectReason: row.reject_reason,
+          reviewedBy: row.reviewed_by,
+          reviewerNickname: row.reviewer_nickname,
+          reviewedAt: row.reviewed_at,
+          createdAt: row.created_at
+        })),
+        total: parseInt(countResult.rows[0].total),
+        page: parseInt(page),
+        pageSize: parseInt(pageSize)
+      });
+    } catch (dbError) {
+      console.error('获取兑现申请列表错误:', dbError);
+      return res.status(500).json({ error: '获取申请列表失败' });
+    }
+  }
+
+  return res.status(500).json({ error: '数据库未连接' });
+};
+
+/**
+ * 审核兑现申请
+ */
+const reviewRedeemRequest = async (req, res) => {
+  const { requestId, action, rejectReason } = req.body;
+  const userId = req.user.id;
+
+  if (!requestId || !action || !['approve', 'reject'].includes(action)) {
+    return res.status(400).json({ error: '参数错误' });
+  }
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 获取申请信息
+      const requestResult = await query(
+        'SELECT * FROM point_redeem_requests WHERE id = ?',
+        [requestId]
+      );
+
+      if (requestResult.rows.length === 0) {
+        return res.status(404).json({ error: '申请不存在' });
+      }
+
+      const request = requestResult.rows[0];
+
+      if (request.status !== 'pending') {
+        return res.status(400).json({ error: '该申请已被处理' });
+      }
+
+      // 验证操作者是否为管理员
+      const adminCheck = await query(
+        'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
+        [request.family_id, userId]
+      );
+
+      if (adminCheck.rows.length === 0) {
+        return res.status(403).json({ error: '您不是该家庭成员' });
+      }
+
+      const role = adminCheck.rows[0].role;
+      if (role !== 'creator' && role !== 'admin') {
+        return res.status(403).json({ error: '只有管理员才能审核申请' });
+      }
+
+      if (action === 'approve') {
+        // 再次检查可用积分
+        const pointsCheck = await query(
+          `SELECT 
+            COALESCE(SUM(CASE WHEN type = 'earn' THEN points ELSE 0 END), 0) as total_earned,
+            COALESCE(SUM(CASE WHEN type = 'redeem' THEN ABS(points) ELSE 0 END), 0) as total_redeemed
+           FROM point_transactions 
+           WHERE family_id = ? AND user_id = ?`,
+          [request.family_id, request.user_id]
+        );
+
+        const totalEarned = parseInt(pointsCheck.rows[0].total_earned);
+        const totalRedeemed = parseInt(pointsCheck.rows[0].total_redeemed);
+        const availablePoints = totalEarned - totalRedeemed;
+
+        if (request.points > availablePoints) {
+          return res.status(400).json({ error: `用户可用积分不足，当前可用：${availablePoints}` });
+        }
+
+        // 创建积分扣减记录
+        const transactionId = uuidv4();
+        await query(
+          `INSERT INTO point_transactions (id, family_id, user_id, points, type, description, created_at)
+           VALUES (?, ?, ?, ?, 'redeem', ?, NOW())`,
+          [transactionId, request.family_id, request.user_id, request.points, `积分兑现 - ¥${request.amount}`]
+        );
+
+        // 更新申请状态
+        await query(
+          `UPDATE point_redeem_requests 
+           SET status = 'approved', reviewed_by = ?, reviewed_at = NOW()
+           WHERE id = ?`,
+          [userId, requestId]
+        );
+
+        return res.json({
+          data: {
+            message: '已通过申请，积分已扣减',
+            points: request.points,
+            amount: parseFloat(request.amount)
+          }
+        });
+      } else {
+        // 拒绝申请
+        if (!rejectReason) {
+          return res.status(400).json({ error: '请填写拒绝原因' });
+        }
+
+        await query(
+          `UPDATE point_redeem_requests 
+           SET status = 'rejected', reject_reason = ?, reviewed_by = ?, reviewed_at = NOW()
+           WHERE id = ?`,
+          [rejectReason, userId, requestId]
+        );
+
+        return res.json({
+          data: {
+            message: '已拒绝申请'
+          }
+        });
+      }
+    } catch (dbError) {
+      console.error('审核兑现申请错误:', dbError);
+      return res.status(500).json({ error: '审核失败' });
+    }
+  }
+
+  return res.status(500).json({ error: '数据库未连接' });
+};
+
+/**
+ * 获取待审核兑现申请数量
+ */
+const getPendingRedeemCount = async (req, res) => {
+  const { familyId } = req.query;
+  const userId = req.user.id;
+
+  if (!familyId) {
+    return res.status(400).json({ error: '缺少家庭ID' });
+  }
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 验证用户是否为管理员
+      const memberCheck = await query(
+        'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
+        [familyId, userId]
+      );
+
+      if (memberCheck.rows.length === 0) {
+        return res.status(403).json({ error: '您不是该家庭成员' });
+      }
+
+      const role = memberCheck.rows[0].role;
+      if (role !== 'creator' && role !== 'admin') {
+        return res.json({ data: { count: 0 } });
+      }
+
+      const result = await query(
+        `SELECT COUNT(*) as count FROM point_redeem_requests 
+         WHERE family_id = ? AND status = 'pending'`,
+        [familyId]
+      );
+
+      return res.json({
+        data: {
+          count: parseInt(result.rows[0].count)
+        }
+      });
+    } catch (dbError) {
+      console.error('获取待审核数量错误:', dbError);
+      return res.status(500).json({ error: '获取失败' });
+    }
+  }
+
+  return res.json({ data: { count: 0 } });
+};
+
 module.exports = {
   getSummary,
   getTransactions,
   getRanking,
   getMonthStats,
   getMembersPoints,
-  redeemPoints
+  redeemPoints,
+  submitRedeemRequest,
+  getRedeemRequests,
+  reviewRedeemRequest,
+  getPendingRedeemCount
 };
