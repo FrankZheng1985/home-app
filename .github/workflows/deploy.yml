@@ -47,14 +47,8 @@ jobs:
             cd server
             npm install --production --silent
             
-            # 重启服务（使用绝对路径作为备选）
+            # 重启服务
             echo "重启服务..."
-            if command -v pm2 &> /dev/null; then
-              pm2 restart family-api
-            elif [ -f "$HOME/.local/bin/pm2" ]; then
-              $HOME/.local/bin/pm2 restart family-api
-            else
-              /usr/local/bin/pm2 restart family-api || $(which pm2) restart family-api
-            fi
+            /opt/nodejs/bin/pm2 restart family-api
             
             echo "========== 部署完成 $(date) =========="
