@@ -848,12 +848,19 @@ const getRedeemRequests = async (req, res) => {
         values.push(userId);
       }
 
-      // 状态筛选
-      if (status) {
+      // 状态筛选（忽略 undefined 字符串）
+      if (status && status !== 'undefined') {
         whereClause += ' AND r.status = ?';
         values.push(status);
       }
 
+      // 先获取总数
+      const countResult = await query(
+        `SELECT COUNT(*) as total FROM point_redeem_requests r WHERE ${whereClause}`,
+        [...values]
+      );
+
+      // 添加分页参数
       const offset = (parseInt(page) - 1) * parseInt(pageSize);
       values.push(parseInt(pageSize), offset);
 
@@ -868,13 +875,6 @@ const getRedeemRequests = async (req, res) => {
          ORDER BY r.created_at DESC
          LIMIT ? OFFSET ?`,
         values
-      );
-
-      // 获取总数
-      const countValues = values.slice(0, -2); // 移除 LIMIT 和 OFFSET 的参数
-      const countResult = await query(
-        `SELECT COUNT(*) as total FROM point_redeem_requests r WHERE ${whereClause.replace(/ AND r\.user_id = \?/, isAdmin ? '' : ' AND r.user_id = ?')}`,
-        countValues.slice(0, isAdmin ? 1 : 2)
       );
 
       return res.json({
