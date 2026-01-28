@@ -364,7 +364,7 @@ const syncSteps = async (req, res) => {
   try {
     const userId = req.user.id;
     const familyId = req.user.familyId;
-    const { encryptedData, iv } = req.body;
+    const { code, encryptedData, iv } = req.body;
     
     if (!familyId) {
       return res.status(400).json({ success: false, message: '请先加入家庭' });
@@ -374,12 +374,32 @@ const syncSteps = async (req, res) => {
       return res.status(400).json({ success: false, message: '缺少加密数据' });
     }
     
-    // 获取用户的 session_key
     if (!authService) {
       return res.status(500).json({ success: false, message: '认证服务未初始化' });
     }
     
-    const sessionKey = await authService.getSessionKey(userId);
+    let sessionKey = null;
+    
+    // 如果前端传了 code，实时获取最新的 session_key（推荐方式）
+    if (code) {
+      try {
+        const wxResult = await authService.getWxOpenId(code);
+        sessionKey = wxResult.sessionKey;
+        // 同时更新数据库中的 session_key
+        if (sessionKey) {
+          await authService.updateSessionKey(userId, sessionKey);
+        }
+        console.log('使用实时获取的 session_key');
+      } catch (wxError) {
+        console.warn('实时获取 session_key 失败:', wxError.message);
+      }
+    }
+    
+    // 如果实时获取失败，尝试使用数据库中保存的 session_key
+    if (!sessionKey) {
+      sessionKey = await authService.getSessionKey(userId);
+      console.log('使用数据库中的 session_key');
+    }
     
     let todaySteps = 0;
     
@@ -393,7 +413,8 @@ const syncSteps = async (req, res) => {
         todaySteps = todayData.step || 0;
         console.log('微信运动数据解密成功，今日步数:', todaySteps);
       } else {
-        console.log('解密数据格式不正确，使用0');
+        console.log('解密数据格式不正确或解密失败');
+        return res.status(400).json({ success: false, message: '数据解密失败，请退出登录后重新登录再试' });
       }
     } else {
       console.log('未找到session_key，请重新登录');

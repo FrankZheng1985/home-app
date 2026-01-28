@@ -280,13 +280,22 @@ Page({
         }
       }
       
+      // 先获取最新的登录 code（用于实时获取 session_key）
+      const loginRes = await new Promise((resolve, reject) => {
+        wx.login({
+          success: resolve,
+          fail: reject
+        });
+      });
+      
       // 获取微信运动数据
       const werunRes = await wx.getWeRunData();
       console.log('获取微信运动数据成功');
       
       if (werunRes.encryptedData) {
-        // 发送到后端解密
+        // 发送到后端解密（包含 code 用于实时获取 session_key）
         const stepsRes = await api.sportsApi.syncSteps({
+          code: loginRes.code,
           encryptedData: werunRes.encryptedData,
           iv: werunRes.iv
         });
