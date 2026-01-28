@@ -35,6 +35,12 @@ Page({
   },
 
   onShow() {
+    // 更新自定义TabBar选中状态
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 0 });
+      this.getTabBar().updateTabBar();
+    }
+    
     // 页面显示时检查登录状态
     const loggedIn = isLoggedIn();
     const wasLoggedIn = this.data.isLoggedIn;

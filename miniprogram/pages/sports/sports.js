@@ -66,6 +66,16 @@ Page({
   },
 
   onShow() {
+    // 更新自定义TabBar选中状态（运动页面只对普通成员显示在TabBar中）
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      const app = getApp();
+      // 普通成员时运动是第3个tab(索引2)，管理员TabBar没有运动
+      if (!app.globalData.isAdmin) {
+        this.getTabBar().setData({ selected: 2 });
+      }
+      this.getTabBar().updateTabBar();
+    }
+    
     // 先检查登录状态
     const loggedIn = isLoggedIn();
     this.setData({ isLoggedIn: loggedIn });

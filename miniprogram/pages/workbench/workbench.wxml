@@ -1,0 +1,166 @@
+<!--pages/workbench/workbench.wxml-->
+<view class="workbench-page">
+  <!-- 加载状态 -->
+  <view wx:if="{{isLoading}}" class="loading-wrapper">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 未登录提示 -->
+  <view wx:elif="{{!isLoggedIn}}" class="not-logged-in">
+    <view class="empty-icon animate-float">🔐</view>
+    <text class="empty-title">请先登录</text>
+    <text class="empty-desc">登录后可使用工作台功能</text>
+    <button class="login-btn" bindtap="goToLogin">去登录</button>
+  </view>
+
+  <!-- 无家庭提示 -->
+  <view wx:elif="{{!familyInfo}}" class="no-family">
+    <view class="empty-icon animate-float">🏠</view>
+    <text class="empty-title">请先加入家庭</text>
+    <text class="empty-desc">加入或创建一个家庭后，才能使用工作台</text>
+  </view>
+
+  <!-- 非管理员提示 -->
+  <view wx:elif="{{!isAdmin}}" class="not-admin">
+    <view class="empty-icon animate-float">👤</view>
+    <text class="empty-title">权限不足</text>
+    <text class="empty-desc">工作台仅对管理员开放</text>
+  </view>
+
+  <!-- 管理员工作台 -->
+  <block wx:else>
+    <!-- 头部 -->
+    <view class="workbench-header">
+      <view class="header-bg"></view>
+      <view class="header-content">
+        <view class="welcome-section">
+          <view class="welcome-text">
+            <text class="greeting">{{userInfo.nickname || '管理员'}}，你好</text>
+            <view class="role-badge {{isCreator ? 'creator' : 'admin'}}">
+              <text class="role-icon">{{isCreator ? '👑' : '⭐'}}</text>
+              <text class="role-text">{{isCreator ? '创建人' : '管理员'}}</text>
+            </view>
+          </view>
+          <image 
+            class="user-avatar" 
+            src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}"
+            mode="aspectFill"
+          ></image>
+        </view>
+        
+        <!-- 待处理统计 -->
+        <view class="pending-summary">
+          <view class="summary-icon">📋</view>
+          <view class="summary-info">
+            <text class="summary-title">待处理事项</text>
+            <text class="summary-count">{{totalPending}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 待审核卡片区域 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">📝 待审核</text>
+      </view>
+      
+      <view class="pending-cards">
+        <view class="pending-card" bindtap="goToChoreReview">
+          <view class="pending-icon-wrap chore-bg">
+            <text class="pending-emoji">🧹</text>
+          </view>
+          <view class="pending-info">
+            <text class="pending-name">家务审核</text>
+            <text class="pending-desc">待审核的家务记录</text>
+          </view>
+          <view class="pending-badge" wx:if="{{pendingCounts.chores > 0}}">
+            <text>{{pendingCounts.chores > 99 ? '99+' : pendingCounts.chores}}</text>
+          </view>
+          <text class="pending-arrow">›</text>
+        </view>
+        
+        <view class="pending-card" bindtap="goToSavingsReview">
+          <view class="pending-icon-wrap savings-bg">
+            <text class="pending-emoji">🏦</text>
+          </view>
+          <view class="pending-info">
+            <text class="pending-name">储蓄审核</text>
+            <text class="pending-desc">待审核的存款申请</text>
+          </view>
+          <view class="pending-badge" wx:if="{{pendingCounts.savings > 0}}">
+            <text>{{pendingCounts.savings > 99 ? '99+' : pendingCounts.savings}}</text>
+          </view>
+          <text class="pending-arrow">›</text>
+        </view>
+        
+        <view class="pending-card" bindtap="goToRedeemReview">
+          <view class="pending-icon-wrap redeem-bg">
+            <text class="pending-emoji">💰</text>
+          </view>
+          <view class="pending-info">
+            <text class="pending-name">兑换审核</text>
+            <text class="pending-desc">待审核的积分兑换</text>
+          </view>
+          <view class="pending-badge" wx:if="{{pendingCounts.redeem > 0}}">
+            <text>{{pendingCounts.redeem > 99 ? '99+' : pendingCounts.redeem}}</text>
+          </view>
+          <text class="pending-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快捷操作 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">⚡ 快捷操作</text>
+      </view>
+      
+      <view class="quick-actions">
+        <view class="action-card" bindtap="goToMemberManage">
+          <view class="action-icon-wrap member-bg">
+            <text class="action-emoji">👥</text>
+          </view>
+          <text class="action-name">成员管理</text>
+          <text class="action-desc">{{memberCount}}位成员</text>
+        </view>
+        
+        <view class="action-card" bindtap="goToRewards">
+          <view class="action-icon-wrap reward-bg">
+            <text class="action-emoji">🎁</text>
+          </view>
+          <text class="action-name">奖励设置</text>
+          <text class="action-desc">管理奖励规则</text>
+        </view>
+        
+        <view class="action-card" bindtap="goToPoints">
+          <view class="action-icon-wrap points-bg">
+            <text class="action-emoji">📊</text>
+          </view>
+          <text class="action-name">积分明细</text>
+          <text class="action-desc">查看积分记录</text>
+        </view>
+        
+        <view class="action-card" bindtap="goToSports">
+          <view class="action-icon-wrap sports-bg">
+            <text class="action-emoji">🏃</text>
+          </view>
+          <text class="action-name">运动打卡</text>
+          <text class="action-desc">管理运动记录</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 管理提示 -->
+    <view class="tips-section">
+      <view class="tips-card">
+        <text class="tips-icon">💡</text>
+        <view class="tips-content">
+          <text class="tips-title">管理员提示</text>
+          <text class="tips-text">及时审核家务和储蓄申请，让家庭成员获得积分奖励</text>
+        </view>
+      </view>
+    </view>
+  </block>
+</view>

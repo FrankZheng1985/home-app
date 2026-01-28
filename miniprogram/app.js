@@ -43,6 +43,10 @@ App({
     userInfo: null,
     familyInfo: null,
     token: null,
+    // 角色状态
+    isAdmin: false,       // 是否管理员（creator 或 admin）
+    isCreator: false,     // 是否创建人
+    familyRole: null,     // 'creator' | 'admin' | 'member'
     // ============================================
     // 后端服务地址配置
     // ============================================
@@ -108,7 +112,35 @@ App({
     this.globalData.token = null;
     this.globalData.userInfo = null;
     this.globalData.familyInfo = null;
+    this.globalData.isAdmin = false;
+    this.globalData.isCreator = false;
+    this.globalData.familyRole = null;
     wx.clearStorageSync();
+  },
+
+  /**
+   * 更新角色状态
+   * @param {string} role - 用户角色 'creator' | 'admin' | 'member'
+   */
+  updateRoleState(role) {
+    this.globalData.familyRole = role;
+    this.globalData.isCreator = role === 'creator';
+    this.globalData.isAdmin = role === 'creator' || role === 'admin';
+    
+    // 通知所有页面的TabBar更新
+    this.updateAllTabBars();
+  },
+
+  /**
+   * 更新所有页面的TabBar显示
+   */
+  updateAllTabBars() {
+    const pages = getCurrentPages();
+    pages.forEach(page => {
+      if (typeof page.getTabBar === 'function' && page.getTabBar()) {
+        page.getTabBar().updateTabBar();
+      }
+    });
   },
 
   /**

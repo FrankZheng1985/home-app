@@ -1,0 +1,26 @@
+<!--custom-tab-bar/index.wxml-->
+<view class="tab-bar">
+  <view 
+    wx:for="{{list}}" 
+    wx:key="index" 
+    class="tab-bar-item" 
+    data-path="{{item.pagePath}}" 
+    data-index="{{index}}" 
+    bindtap="switchTab"
+  >
+    <!-- 使用emoji图标（工作台暂时使用） -->
+    <view wx:if="{{item.useEmoji}}" class="tab-bar-emoji {{selected === index ? 'active' : ''}}">
+      {{item.emoji}}
+    </view>
+    <!-- 使用图片图标 -->
+    <image 
+      wx:else
+      class="tab-bar-icon" 
+      src="{{selected === index ? item.selectedIconPath : item.iconPath}}"
+    ></image>
+    <view 
+      class="tab-bar-text" 
+      style="color: {{selected === index ? selectedColor : color}}"
+    >{{item.text}}</view>
+  </view>
+</view>

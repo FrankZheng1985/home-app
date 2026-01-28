@@ -11,6 +11,7 @@
     "pages/moments/moments",
     "pages/moments/comments",
     "pages/sports/sports",
+    "pages/workbench/workbench",
     "pages/profile/profile",
     "pages/profile/edit",
     "pages/profile/preferences",
@@ -28,6 +29,7 @@
     "navigationBarTextStyle": "white"
   },
   "tabBar": {
+    "custom": true,
     "color": "#999999",
     "selectedColor": "#4A90D9",
     "backgroundColor": "#ffffff",
@@ -50,6 +52,12 @@
         "text": "运动",
         "iconPath": "assets/icons/sports.png",
         "selectedIconPath": "assets/icons/sports-active.png"
+      },
+      {
+        "pagePath": "pages/workbench/workbench",
+        "text": "工作台",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
       },
       {
         "pagePath": "pages/moments/moments",

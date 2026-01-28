@@ -25,6 +25,12 @@ Page({
   },
 
   onShow() {
+    // 更新自定义TabBar选中状态
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 4 });
+      this.getTabBar().updateTabBar();
+    }
+    
     const loggedIn = isLoggedIn();
     this.setData({ isLoggedIn: loggedIn });
     
@@ -123,11 +129,8 @@ Page({
 
     if (!confirmed) return;
 
-    // 清除本地存储
-    wx.clearStorageSync();
-    app.globalData.userInfo = null;
-    app.globalData.familyInfo = null;
-    app.globalData.token = null;
+    // 清除本地存储和全局状态
+    app.clearLoginState();
 
     showSuccess('已退出登录');
     
