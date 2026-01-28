@@ -117,7 +117,7 @@ app.listen(PORT, '0.0.0.0', () => {
   
   console.log('');
   console.log('='.repeat(50));
-  console.log(`  🏠 家庭小助手 API 服务器`);
+  console.log(`  🏠 家庭小助手 API 服务器 (Auto Deploy)`);
   console.log('='.repeat(50));
   console.log(`  📍 本地访问: http://localhost:${PORT}`);
   console.log(`  📍 局域网访问: http://192.168.31.226:${PORT}`);
