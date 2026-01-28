@@ -104,14 +104,28 @@ Page({
   // 加载家庭信息
   async loadFamilyInfo() {
     try {
-      // 首先检查用户信息中的 familyId（最可靠的判断）
-      const userInfo = wx.getStorageSync('userInfo');
-      if (!userInfo || !userInfo.familyId) {
-        console.log('用户信息显示未加入家庭');
-        // 清理本地存储中的旧家庭信息
-        wx.removeStorageSync('familyInfo');
-        app.globalData.familyInfo = null;
-        
+      // 优先从全局状态获取家庭信息
+      let familyInfo = app.globalData.familyInfo;
+      
+      // 如果全局没有，尝试从本地存储获取
+      if (!familyInfo) {
+        familyInfo = wx.getStorageSync('familyInfo');
+      }
+      
+      // 如果本地也没有，从API获取
+      if (!familyInfo) {
+        console.log('[家务页] 从API获取家庭信息');
+        const familiesRes = await familyApi.getMyFamilies();
+        if (familiesRes.data && familiesRes.data.length > 0) {
+          familyInfo = familiesRes.data[0];
+          // 同步到本地存储和全局状态
+          wx.setStorageSync('familyInfo', familyInfo);
+          app.globalData.familyInfo = familyInfo;
+        }
+      }
+      
+      if (!familyInfo) {
+        console.log('[家务页] 用户未加入家庭');
         this.setData({
           familyInfo: null,
           isAdmin: false,
@@ -123,51 +137,45 @@ Page({
         return;
       }
       
-      const familiesRes = await familyApi.getMyFamilies();
-      if (familiesRes.data && familiesRes.data.length > 0) {
-        const family = familiesRes.data[0];
-        
-        // 同步更新本地存储
-        wx.setStorageSync('familyInfo', family);
-        app.globalData.familyInfo = family;
-        
-        const currentUserId = wx.getStorageSync('userInfo')?.id;
-        
-        // 判断是否为管理员
-        let isAdmin = false;
-        if (family.members) {
-          const currentMember = family.members.find(m => m.id === currentUserId || m.userId === currentUserId);
-          if (currentMember) {
-            isAdmin = currentMember.role === 'creator' || currentMember.role === 'admin';
-          }
+      // 获取当前用户ID
+      const currentUserId = wx.getStorageSync('userInfo')?.id;
+      
+      // 判断是否为管理员（优先使用全局状态）
+      let isAdmin = app.globalData.isAdmin || false;
+      
+      // 如果全局状态没有，从成员列表判断
+      if (!isAdmin && familyInfo.members) {
+        const currentMember = familyInfo.members.find(m => m.id === currentUserId || m.userId === currentUserId);
+        if (currentMember) {
+          isAdmin = currentMember.role === 'creator' || currentMember.role === 'admin';
+          // 更新全局状态
+          app.globalData.isAdmin = isAdmin;
+          app.globalData.familyRole = currentMember.role;
         }
-        
-        this.setData({ 
-          familyInfo: family,
-          isAdmin
-        });
-        
-        // 家庭信息加载完成后，加载家务类型
-        await this.loadChoreTypes();
-        
-        // 加载待审核数量
-        this.loadPendingCount();
-      } else {
-        // 清理本地存储中的旧家庭信息
-        wx.removeStorageSync('familyInfo');
-        app.globalData.familyInfo = null;
-        
-        this.setData({
-          familyInfo: null,
-          isAdmin: false,
-          choreTypes: [],
-          choreRecords: [],
-          pendingRecords: [],
-          pendingCount: 0
-        });
       }
+      
+      console.log('[家务页] 家庭信息加载成功, isAdmin:', isAdmin);
+      
+      this.setData({ 
+        familyInfo,
+        isAdmin
+      });
+      
+      // 家庭信息加载完成后，加载家务类型
+      await this.loadChoreTypes();
+      
+      // 加载待审核数量
+      this.loadPendingCount();
+      
     } catch (error) {
-      console.error('加载家庭信息失败:', error);
+      console.error('[家务页] 加载家庭信息失败:', error);
+      
+      // 出错时尝试使用缓存数据
+      const cachedFamily = wx.getStorageSync('familyInfo');
+      if (cachedFamily) {
+        this.setData({ familyInfo: cachedFamily });
+        await this.loadChoreTypes();
+      }
     }
   },
 
@@ -188,11 +196,17 @@ Page({
 
   // 加载家务类型
   async loadChoreTypes() {
-    if (!this.data.familyInfo) return;
+    if (!this.data.familyInfo) {
+      console.log('[家务页] 无家庭信息，跳过加载家务类型');
+      return;
+    }
     
     try {
+      console.log('[家务页] 加载家务类型, familyId:', this.data.familyInfo.id);
       const res = await choreApi.getTypes(this.data.familyInfo.id);
       const types = res.data || [];
+      
+      console.log('[家务页] 获取到家务类型数量:', types.length);
       
       // 保存全部类型，并应用当前分类筛选
       this.setData({ 
@@ -205,7 +219,7 @@ Page({
         this.filterChoreTypes(this.data.currentCategory);
       }
     } catch (error) {
-      console.error('加载家务类型失败:', error);
+      console.error('[家务页] 加载家务类型失败:', error);
     }
   },
 
