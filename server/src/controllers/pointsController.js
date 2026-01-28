@@ -747,23 +747,61 @@ const submitRedeemRequest = async (req, res) => {
       const pointsValue = parseFloat(familyResult.rows[0]?.points_value || 0.5);
       const amount = (points * pointsValue).toFixed(2);
 
+      // 检查用户是否是管理员
+      const roleCheck = await query(
+        'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
+        [familyId, userId]
+      );
+      const userRole = roleCheck.rows[0]?.role;
+      const isAdmin = userRole === 'creator' || userRole === 'admin';
+
       // 创建申请记录
       const requestId = uuidv4();
-      await query(
-        `INSERT INTO point_redeem_requests 
-         (id, user_id, family_id, points, amount, status, remark, created_at)
-         VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW())`,
-        [requestId, userId, familyId, points, amount, remark || '']
-      );
+      
+      if (isAdmin) {
+        // 管理员的申请自动通过
+        await query(
+          `INSERT INTO point_redeem_requests 
+           (id, user_id, family_id, points, amount, status, remark, reviewed_by, reviewed_at, created_at)
+           VALUES (?, ?, ?, ?, ?, 'approved', ?, ?, NOW(), NOW())`,
+          [requestId, userId, familyId, points, amount, remark || '', userId]
+        );
 
-      return res.json({
-        data: {
-          id: requestId,
-          points,
-          amount,
-          message: '申请已提交，等待审核'
-        }
-      });
+        // 直接创建积分扣减记录
+        const transactionId = uuidv4();
+        await query(
+          `INSERT INTO point_transactions (id, family_id, user_id, points, type, description, created_at)
+           VALUES (?, ?, ?, ?, 'redeem', ?, NOW())`,
+          [transactionId, familyId, userId, points, `积分兑现 - ¥${amount}`]
+        );
+
+        return res.json({
+          data: {
+            id: requestId,
+            points,
+            amount,
+            message: '兑现成功，积分已扣减',
+            autoApproved: true
+          }
+        });
+      } else {
+        // 普通成员需要等待审核
+        await query(
+          `INSERT INTO point_redeem_requests 
+           (id, user_id, family_id, points, amount, status, remark, created_at)
+           VALUES (?, ?, ?, ?, ?, 'pending', ?, NOW())`,
+          [requestId, userId, familyId, points, amount, remark || '']
+        );
+
+        return res.json({
+          data: {
+            id: requestId,
+            points,
+            amount,
+            message: '申请已提交，等待审核'
+          }
+        });
+      }
     } catch (dbError) {
       console.error('提交兑现申请错误:', dbError);
       return res.status(500).json({ error: '提交申请失败' });

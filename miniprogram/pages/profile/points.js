@@ -472,14 +472,20 @@ Page({
       this.setData({ isApplying: true });
       showLoading('提交中...');
 
-      await pointsApi.submitRedeemRequest({
+      const result = await pointsApi.submitRedeemRequest({
         familyId: familyInfo.id,
         points: applyPoints,
         remark: applyRemark || ''
       });
 
       hideLoading();
-      showSuccess('申请已提交，等待家长审核');
+      
+      // 管理员自动通过，显示不同提示
+      if (result.data?.autoApproved) {
+        showSuccess('兑现成功，积分已扣减');
+      } else {
+        showSuccess('申请已提交，等待家长审核');
+      }
       
       this.closeRedeemApplyModal();
       
