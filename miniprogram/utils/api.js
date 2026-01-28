@@ -336,7 +336,16 @@ const pointsApi = {
  * 动态相关接口
  */
 const postApi = {
-  // 获取动态列表
+  // 获取家庭活动记录（系统自动生成，非UGC）
+  getActivityList: (params) => {
+    return app.request({
+      url: '/posts/activities',
+      method: 'GET',
+      data: params
+    });
+  },
+  
+  // 获取动态列表（旧版UGC，保留兼容）
   getList: (params) => {
     return app.request({
       url: '/posts',
@@ -345,7 +354,7 @@ const postApi = {
     });
   },
   
-  // 发布动态
+  // 发布动态（旧版UGC，保留兼容）
   create: (data) => {
     return app.request({
       url: '/posts',

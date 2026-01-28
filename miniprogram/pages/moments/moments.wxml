@@ -1,15 +1,15 @@
-<!--pages/moments/moments.wxml - 精美设计版 (支持图片上传)-->
-<view class="moments-page">
+<!--pages/moments/moments.wxml - 家庭活动记录（系统自动生成，非UGC）-->
+<view class="activity-page">
   <!-- 未登录 - 显示功能介绍 -->
-  <view class="guest-moments-page" wx:if="{{!isLoggedIn}}">
+  <view class="guest-activity-page" wx:if="{{!isLoggedIn}}">
     <!-- 头部 -->
     <view class="guest-header-card">
       <view class="header-bg"></view>
       <view class="header-content">
         <view class="guest-title-row">
           <view class="guest-title-info">
-            <text class="guest-page-title">💬 家庭动态</text>
-            <text class="guest-page-desc">分享生活点滴，记录美好时光</text>
+            <text class="guest-page-title">📋 家庭活动记录</text>
+            <text class="guest-page-desc">记录家人的每一次努力</text>
           </view>
           <view class="guest-login-mini" bindtap="goToLogin">
             <text class="login-text">登录</text>
@@ -20,33 +20,32 @@
 
     <!-- 功能介绍 -->
     <view class="guest-content-section">
-      <!-- 模拟动态卡片 -->
+      <!-- 模拟活动卡片 -->
       <view class="section-header">
-        <text class="section-title">📝 动态预览</text>
+        <text class="section-title">📝 活动预览</text>
       </view>
       
-      <view class="demo-post-card">
-        <view class="demo-post-header">
-          <view class="demo-avatar">👨</view>
-          <view class="demo-info">
-            <text class="demo-name">家庭成员</text>
+      <view class="demo-activity-card">
+        <view class="demo-activity-icon">🧹</view>
+        <view class="demo-activity-content">
+          <view class="demo-activity-header">
+            <text class="demo-name">小明</text>
             <text class="demo-time">刚刚</text>
           </view>
+          <text class="demo-title">完成了家务【洗碗】</text>
+          <text class="demo-desc">获得 10 积分</text>
         </view>
-        <text class="demo-content">今天和家人一起做了家务，感觉很开心！🎉</text>
-        <view class="demo-images">
-          <view class="demo-image">📷</view>
-          <view class="demo-image">📷</view>
-        </view>
-        <view class="demo-actions">
-          <view class="demo-action">
-            <text>❤️</text>
-            <text class="action-text">点赞</text>
+      </view>
+
+      <view class="demo-activity-card">
+        <view class="demo-activity-icon">🏃</view>
+        <view class="demo-activity-content">
+          <view class="demo-activity-header">
+            <text class="demo-name">妈妈</text>
+            <text class="demo-time">30分钟前</text>
           </view>
-          <view class="demo-action">
-            <text>↗️</text>
-            <text class="action-text">分享</text>
-          </view>
+          <text class="demo-title">完成了【跑步】运动</text>
+          <text class="demo-desc">30分钟，消耗200千卡</text>
         </view>
       </view>
       
@@ -57,24 +56,31 @@
       
       <view class="feature-list">
         <view class="feature-card">
-          <text class="feature-emoji">🔒</text>
+          <text class="feature-emoji">🧹</text>
           <view class="feature-text">
-            <text class="feature-title">家庭私密圈</text>
-            <text class="feature-desc">只有家庭成员可以查看和互动</text>
+            <text class="feature-title">家务记录</text>
+            <text class="feature-desc">自动记录家务完成情况</text>
           </view>
         </view>
         <view class="feature-card">
-          <text class="feature-emoji">📸</text>
+          <text class="feature-emoji">🏃</text>
           <view class="feature-text">
-            <text class="feature-title">图片分享</text>
-            <text class="feature-desc">支持上传多张图片，记录美好瞬间</text>
+            <text class="feature-title">运动打卡</text>
+            <text class="feature-desc">追踪家人运动成果</text>
           </view>
         </view>
         <view class="feature-card">
-          <text class="feature-emoji">🙈</text>
+          <text class="feature-emoji">💰</text>
           <view class="feature-text">
-            <text class="feature-title">匿名发布</text>
-            <text class="feature-desc">支持匿名发表心情，保护隐私</text>
+            <text class="feature-title">储蓄动态</text>
+            <text class="feature-desc">记录存款变化，培养理财习惯</text>
+          </view>
+        </view>
+        <view class="feature-card">
+          <text class="feature-emoji">🎁</text>
+          <view class="feature-text">
+            <text class="feature-title">积分变动</text>
+            <text class="feature-desc">清晰展示积分获取和消费</text>
           </view>
         </view>
       </view>
@@ -83,20 +89,20 @@
       <view class="guest-login-section">
         <button class="login-btn-primary" bindtap="goToLogin">
           <text class="btn-icon">💚</text>
-          <text class="btn-text">登录查看家庭动态</text>
+          <text class="btn-text">登录查看家庭活动</text>
         </button>
-        <text class="login-tip">登录后可以发布和查看家庭动态</text>
+        <text class="login-tip">登录后可以查看家庭成员的活动记录</text>
       </view>
     </view>
   </view>
 
   <block wx:else>
   <!-- 渐变头部 -->
-  <view class="moments-header">
+  <view class="activity-header">
     <view class="header-bg"></view>
     <view class="header-content">
-      <text class="header-title">💬 家庭动态</text>
-      <text class="header-subtitle">分享生活点滴，记录美好时光</text>
+      <text class="header-title">📋 家庭活动记录</text>
+      <text class="header-subtitle">记录家人的每一次努力</text>
     </view>
   </view>
 
@@ -104,95 +110,62 @@
   <view class="empty-state" wx:if="{{!familyInfo}}">
     <view class="empty-icon animate-float">🏠</view>
     <text class="empty-title">请先加入家庭</text>
-    <text class="empty-desc">加入家庭后，才能查看和发布动态哦</text>
+    <text class="empty-desc">加入家庭后，才能查看活动记录哦</text>
   </view>
 
-  <view class="moments-content" wx:else>
-    <!-- 发布入口 -->
-    <view class="publish-entry" bindtap="openPublishModal">
-      <view class="publish-avatar-wrap">
-        <image class="publish-avatar" src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
-      </view>
-      <view class="publish-placeholder">
-        <text>✏️ 分享一下今天的心情...</text>
-      </view>
-      <view class="publish-btn-icon">
-        <text>📷</text>
+  <view class="activity-content" wx:else>
+    <!-- 筛选标签 -->
+    <view class="filter-tabs">
+      <view 
+        class="filter-tab {{filterType === item.key ? 'active' : ''}}" 
+        wx:for="{{filterTypes}}" 
+        wx:key="key"
+        data-type="{{item.key}}"
+        bindtap="onFilterChange"
+      >
+        <text class="tab-icon">{{item.icon}}</text>
+        <text class="tab-name">{{item.name}}</text>
       </view>
     </view>
 
-    <!-- 动态列表 -->
-    <view class="posts-list" wx:if="{{posts.length > 0}}">
-      <view class="post-card" wx:for="{{posts}}" wx:key="id">
-        <!-- 作者信息 -->
-        <view class="post-header">
-          <view class="post-author">
-            <view class="author-avatar-wrap">
+    <!-- 活动列表 -->
+    <view class="activity-list" wx:if="{{activities.length > 0}}">
+      <view 
+        class="activity-card {{item.type}}" 
+        wx:for="{{activities}}" 
+        wx:key="id"
+        data-type="{{item.type}}"
+        bindtap="goToModule"
+      >
+        <!-- 活动图标 -->
+        <view class="activity-icon-wrap">
+          <text class="activity-icon">{{item.icon}}</text>
+        </view>
+        
+        <!-- 活动内容 -->
+        <view class="activity-main">
+          <view class="activity-header">
+            <view class="activity-user">
               <image 
-                class="author-avatar" 
-                src="{{item.isAnonymous ? '/assets/images/default-avatar.png' : (item.user.avatarUrl || item.user.avatar_url || '/assets/images/default-avatar.png')}}"
+                class="user-avatar" 
+                src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"
               ></image>
-              <view class="anonymous-mask" wx:if="{{item.isAnonymous}}">
-                <text>🙈</text>
-              </view>
+              <text class="user-name">{{item.user.nickname}}</text>
             </view>
-            <view class="author-info">
-              <text class="author-name">{{item.isAnonymous ? '匿名家人' : item.user.nickname}}</text>
-              <text class="post-time">{{item.createdAtText}}</text>
-            </view>
+            <text class="activity-time">{{item.createdAtText}}</text>
           </view>
           
-          <!-- 更多操作（发布人可删除） -->
-          <view 
-            class="post-more" 
-            wx:if="{{item.isOwner || item.userId === currentUserId || (item.user && item.user.id === currentUserId)}}"
-            data-id="{{item.id}}"
-            data-index="{{index}}"
-            bindtap="showPostActions"
-          >
-            <text class="more-icon">•••</text>
+          <view class="activity-body">
+            <text class="activity-title">{{item.title}}</text>
+            <text class="activity-desc" wx:if="{{item.description}}">{{item.description}}</text>
+            <text class="activity-note" wx:if="{{item.note}}">备注：{{item.note}}</text>
           </view>
         </view>
-
-        <!-- 内容 -->
-        <view class="post-body">
-          <text class="post-content">{{item.content}}</text>
-          
-          <!-- 图片网格 -->
-          <view class="post-images {{item.images.length === 1 ? 'single' : (item.images.length === 2 ? 'double' : (item.images.length === 4 ? 'quad' : 'grid'))}}" 
-                wx:if="{{item.images && item.images.length > 0}}">
-            <image 
-              wx:for="{{item.images}}" 
-              wx:for-item="img"
-              wx:key="*this"
-              class="post-image" 
-              src="{{img}}" 
-              mode="aspectFill"
-              data-urls="{{item.images}}"
-              data-current="{{img}}"
-              bindtap="previewImage"
-            ></image>
-          </view>
+        
+        <!-- 右箭头 -->
+        <view class="activity-arrow">
+          <text class="arrow-icon">›</text>
         </view>
-
-        <!-- 互动区（已移除评论功能，个人主体小程序不支持） -->
-        <view class="post-footer">
-          <view 
-            class="action-btn {{item.isLiked ? 'liked' : ''}}" 
-            data-id="{{item.id}}"
-            data-index="{{index}}"
-            bindtap="toggleLike"
-          >
-            <text class="action-icon">{{item.isLiked ? '❤️' : '🤍'}}</text>
-            <text class="action-text">{{item.likesCount || '点赞'}}</text>
-          </view>
-          <view class="action-btn" bindtap="sharePost" data-id="{{item.id}}" data-content="{{item.content}}">
-            <text class="action-icon">↗️</text>
-            <text class="action-text">分享</text>
-          </view>
-        </view>
-
-        <!-- 评论功能已隐藏（个人主体小程序暂不支持） -->
       </view>
 
       <!-- 加载状态 -->
@@ -209,111 +182,23 @@
 
     <!-- 空状态 -->
     <view class="empty-state" wx:else>
-      <view class="empty-icon animate-float">📢</view>
-      <text class="empty-title">还没有动态</text>
-      <text class="empty-desc">快来发布第一条动态，分享你的心情吧！</text>
-    </view>
-  </view>
-
-  <!-- FAB 发布按钮 -->
-  <view class="fab" bindtap="openPublishModal" wx:if="{{familyInfo}}">
-    <text class="fab-icon">✏️</text>
-  </view>
-
-  <!-- 发布弹窗 -->
-  <view class="modal-overlay {{showPublishModal ? 'show' : ''}}" bindtap="closePublishModal">
-    <view class="modal-container publish-modal" catchtap="preventClose">
-      <!-- 头部 -->
-      <view class="modal-header">
-        <text class="header-cancel" bindtap="closePublishModal">取消</text>
-        <text class="header-title">发布动态</text>
-        <button 
-          class="header-publish {{(hasContent || selectedImages.length > 0) ? 'active' : ''}}" 
-          bindtap="publishPost"
-          disabled="{{(!hasContent && selectedImages.length === 0) || isPublishing}}"
-        >
-          {{isPublishing ? '发布中...' : '发布'}}
-        </button>
-      </view>
+      <view class="empty-icon animate-float">📭</view>
+      <text class="empty-title">还没有活动记录</text>
+      <text class="empty-desc">快去完成家务、运动打卡或存钱吧！</text>
       
-      <!-- 内容编辑 -->
-      <view class="modal-body">
-        <textarea 
-          class="content-editor" 
-          placeholder="分享你的心情或想法..."
-          value="{{postContent}}"
-          bindinput="onContentInput"
-          maxlength="500"
-          auto-focus
-        ></textarea>
-        <text class="content-count">{{postContent.length || 0}}/500</text>
-        
-        <!-- 图片预览区 -->
-        <view class="images-section">
-          <view class="selected-images">
-            <!-- 已选图片 -->
-            <view class="image-item" wx:for="{{selectedImages}}" wx:key="index">
-              <image class="preview-image" src="{{item}}" mode="aspectFill" bindtap="previewSelectedImage" data-index="{{index}}"></image>
-              <view class="remove-btn" catchtap="removeImage" data-index="{{index}}">
-                <text>×</text>
-              </view>
-            </view>
-            
-            <!-- 添加图片按钮 -->
-            <view class="add-image-btn" wx:if="{{selectedImages.length < 9}}" bindtap="showImageSourceMenu">
-              <text class="add-icon">+</text>
-              <text class="add-text">{{selectedImages.length > 0 ? '' : '添加图片'}}</text>
-            </view>
-          </view>
-          <text class="images-tip" wx:if="{{selectedImages.length > 0}}">{{selectedImages.length}}/9 张图片</text>
+      <view class="quick-actions">
+        <view class="quick-action" bindtap="goToModule" data-type="chore">
+          <text class="action-icon">🧹</text>
+          <text class="action-text">做家务</text>
         </view>
-      </view>
-      
-      <!-- 选项 -->
-      <view class="modal-options">
-        <view class="option-row" bindtap="toggleAnonymous">
-          <view class="option-left">
-            <text class="option-icon">{{isAnonymous ? '🙈' : '👤'}}</text>
-            <view class="option-info">
-              <text class="option-title">{{isAnonymous ? '匿名发布' : '实名发布'}}</text>
-              <text class="option-desc">{{isAnonymous ? '家人看不到你的身份' : '显示你的头像和昵称'}}</text>
-            </view>
-          </view>
-          <view class="toggle-switch {{isAnonymous ? 'on' : ''}}">
-            <view class="toggle-thumb"></view>
-          </view>
+        <view class="quick-action" bindtap="goToModule" data-type="sport">
+          <text class="action-icon">🏃</text>
+          <text class="action-text">去运动</text>
         </view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 图片来源选择菜单 -->
-  <view class="action-sheet-overlay {{showImageSourceSheet ? 'show' : ''}}" bindtap="hideImageSourceMenu">
-    <view class="action-sheet image-source-sheet" catchtap="preventClose">
-      <view class="sheet-title">选择图片来源</view>
-      <view class="sheet-item" bindtap="takePhoto">
-        <text class="sheet-icon">📷</text>
-        <text class="sheet-text">拍照</text>
-      </view>
-      <view class="sheet-item" bindtap="chooseFromAlbum">
-        <text class="sheet-icon">🖼️</text>
-        <text class="sheet-text">从相册选择</text>
-      </view>
-      <view class="sheet-item cancel" bindtap="hideImageSourceMenu">
-        <text class="sheet-text">取消</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 操作菜单 -->
-  <view class="action-sheet-overlay {{showActionSheet ? 'show' : ''}}" bindtap="hideActionSheet">
-    <view class="action-sheet" catchtap="preventClose">
-      <view class="sheet-item delete" bindtap="deleteCurrentPost">
-        <text class="sheet-icon">🗑️</text>
-        <text class="sheet-text">删除动态</text>
-      </view>
-      <view class="sheet-item cancel" bindtap="hideActionSheet">
-        <text class="sheet-text">取消</text>
+        <view class="quick-action" bindtap="goToModule" data-type="savings">
+          <text class="action-icon">💰</text>
+          <text class="action-text">去存钱</text>
+        </view>
       </view>
     </view>
   </view>

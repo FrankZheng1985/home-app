@@ -641,6 +641,280 @@ const deleteComment = async (req, res) => {
   }
 };
 
+/**
+ * 获取家庭活动记录（系统自动生成，非UGC）
+ * 聚合家务完成、积分变动、储蓄记录、运动打卡等
+ */
+const getActivityList = async (req, res) => {
+  const { familyId, limit = 20, offset = 0 } = req.query;
+
+  if (!familyId) {
+    return res.status(400).json({ error: '缺少家庭ID' });
+  }
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 验证用户是否为家庭成员
+      const memberCheck = await query(
+        'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
+        [familyId, req.user.id]
+      );
+
+      if (memberCheck.rows.length === 0) {
+        return res.status(403).json({ error: '您不是该家庭成员' });
+      }
+
+      // 1. 获取家务完成记录
+      const choreRecords = await query(
+        `SELECT 
+          cr.id,
+          'chore' as type,
+          cr.user_id,
+          u.nickname,
+          u.avatar_url,
+          ct.name as chore_name,
+          cr.points_earned as points,
+          cr.note,
+          cr.completed_at as created_at
+        FROM chore_records cr
+        JOIN users u ON cr.user_id = u.id
+        JOIN chore_types ct ON cr.chore_type_id = ct.id
+        WHERE cr.family_id = ?
+        ORDER BY cr.completed_at DESC
+        LIMIT 50`,
+        [familyId]
+      );
+
+      // 2. 获取积分交易记录（排除家务获取的积分，避免重复）
+      const pointRecords = await query(
+        `SELECT 
+          pt.id,
+          'points' as type,
+          pt.user_id,
+          u.nickname,
+          u.avatar_url,
+          pt.points,
+          pt.type as points_type,
+          pt.description,
+          pt.created_at
+        FROM point_transactions pt
+        JOIN users u ON pt.user_id = u.id
+        WHERE pt.family_id = ? AND pt.type != 'earn'
+        ORDER BY pt.created_at DESC
+        LIMIT 50`,
+        [familyId]
+      );
+
+      // 3. 获取储蓄交易记录
+      const savingsRecords = await query(
+        `SELECT 
+          st.id,
+          'savings' as type,
+          sa.user_id,
+          u.nickname,
+          u.avatar_url,
+          st.type as savings_type,
+          st.amount,
+          st.description,
+          st.created_at
+        FROM savings_transactions st
+        JOIN savings_accounts sa ON st.account_id = sa.id
+        JOIN users u ON sa.user_id = u.id
+        WHERE sa.family_id = ?
+        ORDER BY st.created_at DESC
+        LIMIT 50`,
+        [familyId]
+      );
+
+      // 4. 获取运动记录
+      const sportRecords = await query(
+        `SELECT 
+          sr.id,
+          'sport' as type,
+          sr.user_id,
+          u.nickname,
+          u.avatar_url,
+          sr.sport_type,
+          sr.icon,
+          sr.duration,
+          sr.calories,
+          sr.created_at
+        FROM sport_records sr
+        JOIN users u ON sr.user_id = u.id
+        WHERE sr.family_id = ?
+        ORDER BY sr.created_at DESC
+        LIMIT 50`,
+        [familyId]
+      );
+
+      // 合并并格式化所有记录
+      const allActivities = [];
+
+      // 格式化家务记录
+      for (const record of choreRecords.rows) {
+        allActivities.push({
+          id: record.id,
+          type: 'chore',
+          icon: '🧹',
+          title: `完成了家务【${record.chore_name}】`,
+          description: `获得 ${record.points} 积分`,
+          note: record.note,
+          userId: record.user_id,
+          user: {
+            nickname: record.nickname,
+            avatarUrl: record.avatar_url
+          },
+          createdAt: record.created_at
+        });
+      }
+
+      // 格式化积分记录
+      for (const record of pointRecords.rows) {
+        let title = '';
+        let icon = '🎁';
+        if (record.points_type === 'spend') {
+          title = `消费了 ${Math.abs(record.points)} 积分`;
+          icon = '💸';
+        } else if (record.points_type === 'adjust') {
+          title = record.points > 0 ? `获得奖励 ${record.points} 积分` : `扣除 ${Math.abs(record.points)} 积分`;
+          icon = record.points > 0 ? '🎁' : '📉';
+        }
+        
+        allActivities.push({
+          id: record.id,
+          type: 'points',
+          icon,
+          title,
+          description: record.description || '',
+          userId: record.user_id,
+          user: {
+            nickname: record.nickname,
+            avatarUrl: record.avatar_url
+          },
+          createdAt: record.created_at
+        });
+      }
+
+      // 格式化储蓄记录
+      for (const record of savingsRecords.rows) {
+        let title = '';
+        let icon = '💰';
+        if (record.savings_type === 'deposit') {
+          title = `存入了 ${record.amount} 元`;
+          icon = '💰';
+        } else if (record.savings_type === 'withdraw') {
+          title = `取出了 ${record.amount} 元`;
+          icon = '💸';
+        } else if (record.savings_type === 'interest') {
+          title = `获得利息 ${record.amount} 元`;
+          icon = '📈';
+        }
+        
+        allActivities.push({
+          id: record.id,
+          type: 'savings',
+          icon,
+          title,
+          description: record.description || '',
+          userId: record.user_id,
+          user: {
+            nickname: record.nickname,
+            avatarUrl: record.avatar_url
+          },
+          createdAt: record.created_at
+        });
+      }
+
+      // 格式化运动记录
+      for (const record of sportRecords.rows) {
+        allActivities.push({
+          id: record.id,
+          type: 'sport',
+          icon: record.icon || '🏃',
+          title: `完成了【${record.sport_type}】运动`,
+          description: `${record.duration}分钟，消耗${record.calories}千卡`,
+          userId: record.user_id,
+          user: {
+            nickname: record.nickname,
+            avatarUrl: record.avatar_url
+          },
+          createdAt: record.created_at
+        });
+      }
+
+      // 按时间倒序排序
+      allActivities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      // 分页
+      const paginatedActivities = allActivities.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+
+      return res.json({
+        data: paginatedActivities,
+        total: allActivities.length,
+        hasMore: parseInt(offset) + parseInt(limit) < allActivities.length
+      });
+    } catch (dbError) {
+      console.warn('数据库查询失败，使用模拟数据:', dbError.message);
+    }
+  }
+
+  // 使用模拟数据（开发模式）
+  try {
+    const mockActivities = [
+      {
+        id: '1',
+        type: 'chore',
+        icon: '🧹',
+        title: '完成了家务【洗碗】',
+        description: '获得 10 积分',
+        userId: 'mock-user-1',
+        user: { nickname: '小明', avatarUrl: '' },
+        createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString() // 5分钟前
+      },
+      {
+        id: '2',
+        type: 'sport',
+        icon: '🏃',
+        title: '完成了【跑步】运动',
+        description: '30分钟，消耗200千卡',
+        userId: 'mock-user-2',
+        user: { nickname: '妈妈', avatarUrl: '' },
+        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString() // 30分钟前
+      },
+      {
+        id: '3',
+        type: 'savings',
+        icon: '💰',
+        title: '存入了 100 元',
+        description: '旅行基金',
+        userId: 'mock-user-1',
+        user: { nickname: '小明', avatarUrl: '' },
+        createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString() // 1小时前
+      },
+      {
+        id: '4',
+        type: 'points',
+        icon: '🎁',
+        title: '获得奖励 20 积分',
+        description: '表现优秀奖励',
+        userId: 'mock-user-1',
+        user: { nickname: '小明', avatarUrl: '' },
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() // 2小时前
+      }
+    ];
+
+    return res.json({
+      data: mockActivities.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
+      total: mockActivities.length,
+      hasMore: parseInt(offset) + parseInt(limit) < mockActivities.length
+    });
+  } catch (error) {
+    console.error('获取活动记录错误:', error);
+    return res.status(500).json({ error: '获取活动记录失败' });
+  }
+};
+
 module.exports = {
   getList,
   create,
@@ -649,5 +923,6 @@ module.exports = {
   getComments,
   addComment,
   getDetail,
-  deleteComment
+  deleteComment,
+  getActivityList
 };

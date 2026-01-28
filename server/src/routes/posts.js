@@ -6,7 +6,10 @@ const postController = require('../controllers/postController');
 const { authenticate, isFamilyMember } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 
-// 获取动态列表
+// 获取家庭活动记录（系统自动生成，非UGC）
+router.get('/activities', authenticate, asyncHandler(postController.getActivityList));
+
+// 获取动态列表（旧版UGC，保留兼容）
 router.get('/', authenticate, asyncHandler(postController.getList));
 
 // 发布动态（文字或图片至少有一个）
