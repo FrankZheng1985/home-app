@@ -166,11 +166,12 @@
           <text class="menu-arrow">›</text>
         </view>
         
+        <!-- 奖励设置：管理员在工作台有入口，这里只对普通成员显示 -->
         <view 
           class="menu-item" 
           bindtap="onMenuTap"
           data-url="/pages/rewards/rewards"
-          wx:if="{{familyInfo}}"
+          wx:if="{{familyInfo && !isAdmin}}"
         >
           <view class="menu-icon-wrap icon-reward">
             <text class="menu-emoji">🎁</text>

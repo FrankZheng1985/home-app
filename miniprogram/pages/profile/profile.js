@@ -7,6 +7,7 @@ Page({
   data: {
     userInfo: null,
     familyInfo: null,
+    isAdmin: false,     // 是否管理员
     pointsSummary: {
       totalPoints: 0,
       thisMonth: 0
@@ -37,6 +38,9 @@ Page({
     if (loggedIn) {
       this.loadUserInfo();
       this.loadFamilyInfo();
+      
+      // 同步全局管理员状态
+      this.setData({ isAdmin: app.globalData.isAdmin || false });
     }
   },
   

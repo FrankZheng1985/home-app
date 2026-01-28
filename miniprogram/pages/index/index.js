@@ -9,6 +9,7 @@ Page({
     userInfo: null,
     hasFamily: false,
     familyInfo: null,
+    isAdmin: false,         // 是否管理员
     todayChores: [],
     pointsSummary: {
       totalPoints: 0,
@@ -119,11 +120,16 @@ Page({
           
           if (currentMember) {
             const role = currentMember.role;
+            const isAdmin = role === 'creator' || role === 'admin';
+            
             app.globalData.familyRole = role;
             app.globalData.isCreator = role === 'creator';
-            app.globalData.isAdmin = role === 'creator' || role === 'admin';
+            app.globalData.isAdmin = isAdmin;
             
-            console.log('[首页] 用户角色:', role, 'isAdmin:', app.globalData.isAdmin);
+            // 更新页面状态
+            this.setData({ isAdmin });
+            
+            console.log('[首页] 用户角色:', role, 'isAdmin:', isAdmin);
             
             // 更新TabBar显示
             if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -295,6 +301,13 @@ Page({
   goToRewards() {
     this.checkLoginAndGo(() => {
       wx.navigateTo({ url: '/pages/rewards/rewards' });
+    });
+  },
+
+  // 运动打卡
+  goToSports() {
+    this.checkLoginAndGo(() => {
+      wx.switchTab({ url: '/pages/sports/sports' });
     });
   }
 });

@@ -387,6 +387,10 @@
   background: linear-gradient(135deg, rgba(17, 153, 142, 0.18) 0%, rgba(56, 239, 125, 0.18) 100%);
 }
 
+.action-sport {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.18) 0%, rgba(255, 142, 83, 0.18) 100%);
+}
+
 .action-emoji {
   font-size: 44rpx;
   filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.1));

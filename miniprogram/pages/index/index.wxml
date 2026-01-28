@@ -196,14 +196,32 @@
           <text class="action-name">我的存款</text>
           <text class="action-desc">复利让钱生钱</text>
         </view>
-        <view class="action-card" bindtap="goToRewards">
+        <!-- 管理员显示运动打卡（因为TabBar没有运动入口） -->
+        <view class="action-card" bindtap="goToSports" wx:if="{{isAdmin}}">
+          <view class="action-icon-wrap action-sport">
+            <text class="action-emoji">🏃</text>
+          </view>
+          <text class="action-name">运动打卡</text>
+          <text class="action-desc">健康生活好习惯</text>
+        </view>
+        <!-- 普通成员显示奖励设置 -->
+        <view class="action-card" bindtap="goToRewards" wx:if="{{!isAdmin}}">
           <view class="action-icon-wrap action-reward">
             <text class="action-emoji">🎁</text>
           </view>
           <text class="action-name">奖励设置</text>
           <text class="action-desc">管理家务奖励</text>
         </view>
-        <view class="action-card" bindtap="goToFamily">
+        <!-- 管理员显示积分明细 -->
+        <view class="action-card" bindtap="goToPointsDetail" wx:if="{{isAdmin}}">
+          <view class="action-icon-wrap action-points">
+            <text class="action-emoji">📊</text>
+          </view>
+          <text class="action-name">积分明细</text>
+          <text class="action-desc">查看积分记录</text>
+        </view>
+        <!-- 普通成员显示家庭管理 -->
+        <view class="action-card" bindtap="goToFamily" wx:if="{{!isAdmin}}">
           <view class="action-icon-wrap action-family">
             <text class="action-emoji">👥</text>
           </view>
