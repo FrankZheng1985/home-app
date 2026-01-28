@@ -96,9 +96,23 @@ Page({
         const familyInfo = familiesRes.data[0];
         const currentUserId = wx.getStorageSync('userInfo')?.id;
         
-        // 判断是否为管理员
+        // 判断是否为管理员（多种判断方式）
         let isAdmin = false;
-        if (familyInfo.members) {
+        
+        // 方式1：检查 myRole 字段
+        if (familyInfo.myRole) {
+          isAdmin = familyInfo.myRole === 'creator' || familyInfo.myRole === 'admin';
+        }
+        // 方式2：检查 role 字段
+        else if (familyInfo.role) {
+          isAdmin = familyInfo.role === 'creator' || familyInfo.role === 'admin';
+        }
+        // 方式3：检查是否为创建者
+        else if (familyInfo.creatorId === currentUserId) {
+          isAdmin = true;
+        }
+        // 方式4：从 members 中查找
+        else if (familyInfo.members) {
           const currentMember = familyInfo.members.find(m => 
             m.id === currentUserId || m.userId === currentUserId
           );
@@ -107,6 +121,7 @@ Page({
           }
         }
         
+        console.log('管理员判断:', { currentUserId, isAdmin, familyInfo });
         this.setData({ familyInfo, isAdmin });
 
         // 获取积分概览

@@ -777,3 +777,41 @@
   color: #1976D2;
   line-height: 1.5;
 }
+
+/* 管理员快捷入口 */
+.admin-actions {
+  margin: 0 30rpx 20rpx;
+}
+
+.admin-action-btn {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.action-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.action-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: #2D3436;
+  font-weight: 500;
+}
+
+.action-badge {
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  background: #FF6B6B;
+  border-radius: 18rpx;
+  font-size: 24rpx;
+  color: #ffffff;
+  text-align: center;
+  line-height: 36rpx;
+}

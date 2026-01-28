@@ -39,6 +39,15 @@
     <text class="notice-arrow">›</text>
   </view>
 
+  <!-- 管理员快捷入口 -->
+  <view class="admin-actions" wx:if="{{isAdmin}}">
+    <view class="admin-action-btn" bindtap="goToRedeemReview">
+      <text class="action-icon">📋</text>
+      <text class="action-text">审核兑现申请</text>
+      <view class="action-badge" wx:if="{{pendingRedeemCount > 0}}">{{pendingRedeemCount}}</view>
+    </view>
+  </view>
+
   <!-- 我的兑现申请 -->
   <view class="section-card" wx:if="{{myRedeemRequests.length > 0}}">
     <view class="section-header-row">
