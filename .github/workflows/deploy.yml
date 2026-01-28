@@ -20,15 +20,41 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT }}
+          command_timeout: 5m
           script: |
+            # 加载 Node.js 环境（nvm 或系统安装）
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="$PATH:/usr/local/bin:$HOME/.local/bin"
+            
             cd /var/www/family-assistant
-            echo "开始拉取最新代码..."
-            git fetch origin --force
+            echo "========== 开始部署 $(date) =========="
+            
+            # Git fetch 带重试机制（最多3次）
+            echo "正在拉取最新代码..."
+            for i in 1 2 3; do
+              git fetch origin --force && break
+              echo "第 $i 次 fetch 失败，等待 5 秒后重试..."
+              sleep 5
+            done
+            
             git checkout main
             git reset --hard origin/main
-            echo "进入 server 目录安装依赖..."
+            echo "当前版本: $(git log --oneline -1)"
+            
+            # 安装依赖
+            echo "安装依赖..."
             cd server
-            npm install --production
+            npm install --production --silent
+            
+            # 重启服务（使用绝对路径作为备选）
             echo "重启服务..."
-            pm2 restart family-api
-            echo "部署完成！$(date)"
+            if command -v pm2 &> /dev/null; then
+              pm2 restart family-api
+            elif [ -f "$HOME/.local/bin/pm2" ]; then
+              $HOME/.local/bin/pm2 restart family-api
+            else
+              /usr/local/bin/pm2 restart family-api || $(which pm2) restart family-api
+            fi
+            
+            echo "========== 部署完成 $(date) =========="
