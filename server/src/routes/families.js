@@ -23,6 +23,12 @@ router.post('/join', authenticate, [
 // 获取家庭信息
 router.get('/:familyId', authenticate, isFamilyMember, asyncHandler(familyController.getInfo));
 
+// 更新家庭信息（名称等）- 仅管理员
+router.put('/:familyId', authenticate, isAdmin, [
+  body('name').notEmpty().withMessage('家庭名称不能为空')
+    .isLength({ max: 20 }).withMessage('家庭名称不能超过20个字符')
+], asyncHandler(familyController.updateFamily));
+
 // 获取家庭成员列表
 router.get('/:familyId/members', authenticate, isFamilyMember, asyncHandler(familyController.getMembers));
 

@@ -168,6 +168,15 @@ const familyApi = {
       method: 'PUT',
       data: { pointsValue }
     });
+  },
+  
+  // 更新家庭名称
+  updateName: (familyId, name) => {
+    return app.request({
+      url: `/families/${familyId}`,
+      method: 'PUT',
+      data: { name }
+    });
   }
 };
 

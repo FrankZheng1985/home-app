@@ -541,6 +541,73 @@ const generateQRCode = async (req, res) => {
 };
 
 /**
+ * 更新家庭信息（名称等）
+ */
+const updateFamily = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { familyId } = req.params;
+  const { name } = req.body;
+
+  // 尝试使用数据库
+  if (query) {
+    try {
+      // 检查家庭是否存在
+      const familyCheck = await query(
+        'SELECT id FROM families WHERE id = ?',
+        [familyId]
+      );
+
+      if (familyCheck.rows.length === 0) {
+        return res.status(404).json({ error: '家庭不存在' });
+      }
+
+      // 更新家庭名称
+      await query(
+        'UPDATE families SET name = ? WHERE id = ?',
+        [name, familyId]
+      );
+
+      return res.json({
+        data: {
+          id: familyId,
+          name,
+          message: '更新成功'
+        }
+      });
+    } catch (dbError) {
+      console.error('数据库操作失败:', dbError.message);
+      return res.status(500).json({ error: '更新家庭信息失败' });
+    }
+  }
+
+  // 使用模拟数据（开发模式）
+  try {
+    const family = mockFamilies.get(familyId);
+    if (!family) {
+      return res.status(404).json({ error: '家庭不存在' });
+    }
+
+    family.name = name;
+    mockFamilies.set(familyId, family);
+
+    return res.json({
+      data: {
+        id: familyId,
+        name,
+        message: '更新成功'
+      }
+    });
+  } catch (error) {
+    console.error('更新家庭信息错误:', error);
+    return res.status(500).json({ error: '更新家庭信息失败' });
+  }
+};
+
+/**
  * 更新积分价值
  */
 const updatePointsValue = async (req, res) => {
@@ -580,6 +647,7 @@ module.exports = {
   removeMember,
   leave,
   generateQRCode,
-  updatePointsValue
+  updatePointsValue,
+  updateFamily
 };
 

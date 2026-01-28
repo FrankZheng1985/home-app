@@ -31,6 +31,10 @@
           <view class="action-icon">📨</view>
           <text class="action-text">邀请成员</text>
         </view>
+        <view class="quick-action" bindtap="showEditName" wx:if="{{isAdmin}}">
+          <view class="action-icon">✏️</view>
+          <text class="action-text">修改名称</text>
+        </view>
         <view class="quick-action" bindtap="goToRewards" wx:if="{{isAdmin}}">
           <view class="action-icon">⚙️</view>
           <text class="action-text">奖励设置</text>

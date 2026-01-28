@@ -286,6 +286,66 @@ Page({
     wx.navigateTo({ url: '/pages/rewards/rewards' });
   },
 
+  // 显示修改家庭名称弹窗
+  showEditName() {
+    if (!this.data.isAdmin) {
+      showError('只有管理员可以修改家庭名称');
+      return;
+    }
+    
+    const currentName = this.data.familyInfo?.name || '';
+    
+    wx.showModal({
+      title: '修改家庭名称',
+      editable: true,
+      placeholderText: '请输入新的家庭名称',
+      content: currentName,
+      success: async (res) => {
+        if (res.confirm && res.content) {
+          const newName = res.content.trim();
+          
+          if (!newName) {
+            showError('家庭名称不能为空');
+            return;
+          }
+          
+          if (newName.length > 20) {
+            showError('家庭名称不能超过20个字符');
+            return;
+          }
+          
+          if (newName === currentName) {
+            return; // 名称没有变化
+          }
+          
+          await this.updateFamilyName(newName);
+        }
+      }
+    });
+  },
+
+  // 更新家庭名称
+  async updateFamilyName(newName) {
+    try {
+      showLoading('保存中...');
+      await familyApi.updateName(this.data.familyInfo.id, newName);
+      hideLoading();
+      showSuccess('修改成功');
+      
+      // 更新本地数据
+      const familyInfo = { ...this.data.familyInfo, name: newName };
+      this.setData({ familyInfo });
+      
+      // 同步到本地存储和全局
+      wx.setStorageSync('familyInfo', familyInfo);
+      app.globalData.familyInfo = familyInfo;
+      
+    } catch (error) {
+      hideLoading();
+      showError(error.message || '修改失败');
+    }
+  },
+
   // ================ 权限管理 ================
 
   // 显示权限管理弹窗
