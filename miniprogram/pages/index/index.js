@@ -111,6 +111,29 @@ Page({
           familyInfo
         });
 
+        // 获取家庭成员列表，确定当前用户角色
+        try {
+          const membersRes = await familyApi.getMembers(familyInfo.id);
+          const members = membersRes.data || [];
+          const currentMember = members.find(m => m.userId === userInfo.id);
+          
+          if (currentMember) {
+            const role = currentMember.role;
+            app.globalData.familyRole = role;
+            app.globalData.isCreator = role === 'creator';
+            app.globalData.isAdmin = role === 'creator' || role === 'admin';
+            
+            console.log('[首页] 用户角色:', role, 'isAdmin:', app.globalData.isAdmin);
+            
+            // 更新TabBar显示
+            if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+              this.getTabBar().updateTabBar();
+            }
+          }
+        } catch (e) {
+          console.log('获取成员列表失败:', e);
+        }
+
         // 获取家务统计
         try {
           const choreStatsRes = await choreApi.getStatistics(familyInfo.id, { period: 'today' });
