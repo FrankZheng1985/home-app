@@ -716,7 +716,6 @@ const getActivityList = async (req, res) => {
           u.avatar_url,
           st.type as savings_type,
           st.amount,
-          st.description,
           st.created_at
         FROM savings_transactions st
         JOIN savings_accounts sa ON st.account_id = sa.id
