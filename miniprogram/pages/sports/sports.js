@@ -313,18 +313,25 @@ Page({
           this.setData({ todaySteps, stepsProgress });
           wx.showToast({ title: '同步成功', icon: 'success' });
         } else {
-          // 如果后端解密失败，提示重新登录
+          // 显示详细的错误信息
+          console.error('同步失败，服务器返回:', stepsRes);
           wx.showModal({
             title: '同步失败',
-            content: stepsRes.message || '请退出登录后重新登录，然后再试',
+            content: stepsRes.message || stepsRes.error || '未知错误，请稍后重试',
             showCancel: false
           });
         }
       }
     } catch (error) {
       wx.hideLoading();
-      console.log('同步步数失败:', error.message || error);
-      wx.showToast({ title: '同步失败', icon: 'none' });
+      console.error('同步步数异常:', error);
+      // 显示详细错误
+      const errorMsg = error.message || error.errMsg || JSON.stringify(error);
+      wx.showModal({
+        title: '同步异常',
+        content: errorMsg.substring(0, 200),
+        showCancel: false
+      });
     }
   },
 
