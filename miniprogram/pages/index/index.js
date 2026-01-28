@@ -275,11 +275,10 @@ Page({
     });
   },
 
-  // 查看动态详情
+  // 查看动态详情 - 跳转到动态列表
   goToMomentDetail(e) {
     this.checkLoginAndGo(() => {
-      const postId = e.currentTarget.dataset.id;
-      wx.navigateTo({ url: `/pages/moments/comments?postId=${postId}` });
+      wx.switchTab({ url: '/pages/moments/moments' });
     });
   },
 
