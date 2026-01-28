@@ -74,8 +74,9 @@ Page({
         // 检查是否需要注册（新用户）
         if (result.data.needRegister) {
           hideLoading();
-          // 保存openId供注册页使用
+          // 保存openId和sessionKey供注册页使用
           wx.setStorageSync('tempOpenId', result.data.openId);
+          wx.setStorageSync('tempSessionKey', result.data.sessionKey);
           showSuccess('欢迎新用户');
           setTimeout(() => {
             wx.redirectTo({ url: '/pages/register/register' });

@@ -60,7 +60,7 @@ const register = async (req, res) => {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({ errors: errors.array() });
   }
 
-  const { openId, nickname, avatarUrl, gender, birthday, preferences } = req.body;
+  const { openId, nickname, avatarUrl, gender, birthday, preferences, sessionKey } = req.body;
 
   try {
     // 创建用户
@@ -72,6 +72,11 @@ const register = async (req, res) => {
       birthday,
       preferences
     });
+
+    // 保存 session_key（用于后续微信运动数据解密）
+    if (sessionKey) {
+      await authService.updateSessionKey(user.id, sessionKey);
+    }
 
     // 生成token
     const token = authService.generateToken(user.id);

@@ -6,6 +6,7 @@ const { showLoading, hideLoading, showError, showSuccess } = require('../../util
 Page({
   data: {
     openId: '',
+    sessionKey: '',
     userInfo: {
       nickname: '',
       avatarUrl: '',
@@ -30,8 +31,9 @@ Page({
   },
 
   onLoad() {
-    // 获取临时存储的openId
+    // 获取临时存储的openId和sessionKey
     const tempOpenId = wx.getStorageSync('tempOpenId');
+    const tempSessionKey = wx.getStorageSync('tempSessionKey');
     if (!tempOpenId) {
       showError('登录信息已过期，请重新登录');
       setTimeout(() => {
@@ -40,7 +42,7 @@ Page({
       return;
     }
     
-    this.setData({ openId: tempOpenId });
+    this.setData({ openId: tempOpenId, sessionKey: tempSessionKey });
 
     // 如果有微信用户信息，预填
     const wxUserInfo = app.globalData.wxUserInfo;
@@ -123,9 +125,10 @@ Page({
       // 获取选中的喜好
       const preferences = this.getSelectedPreferences();
 
-      // 调用注册接口（仅发送必要信息）
+      // 调用注册接口（包含sessionKey用于微信运动数据解密）
       const result = await authApi.register({
         openId: openId,
+        sessionKey: this.data.sessionKey,
         nickname: userInfo.nickname.trim(),
         avatarUrl: userInfo.avatarUrl || '',
         gender: userInfo.gender || 0,
@@ -143,8 +146,9 @@ Page({
         app.globalData.token = token;
         app.globalData.userInfo = user;
         
-        // 清除临时openId
+        // 清除临时openId和sessionKey
         wx.removeStorageSync('tempOpenId');
+        wx.removeStorageSync('tempSessionKey');
 
         hideLoading();
         showSuccess('注册成功');
