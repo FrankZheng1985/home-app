@@ -99,8 +99,14 @@ const authenticate = async (req, res, next) => {
  */
 const isAdmin = async (req, res, next) => {
   try {
-    const { familyId } = req.params;
+    const familyId = req.params.familyId || req.body.familyId || req.query.familyId || req.user.familyId;
     const userId = req.user.id;
+    
+    if (!familyId) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createError(ERROR_CODES.FAMILY_ID_REQUIRED)
+      );
+    }
     
     const { isMember, isAdmin: admin } = await familyService.checkMemberRole(userId, familyId);
     

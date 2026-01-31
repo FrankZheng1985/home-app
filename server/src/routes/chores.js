@@ -10,7 +10,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 router.get('/types', authenticate, asyncHandler(choreController.getTypes));
 
 // 创建家务类型
-router.post('/types', authenticate, [
+router.post('/types', authenticate, isAdmin, [
   body('familyId').notEmpty().withMessage('家庭ID不能为空'),
   body('name').notEmpty().withMessage('家务名称不能为空')
     .isLength({ max: 20 }).withMessage('家务名称不能超过20个字符'),
@@ -18,13 +18,13 @@ router.post('/types', authenticate, [
 ], asyncHandler(choreController.createType));
 
 // 更新家务类型
-router.put('/types/:typeId', authenticate, [
+router.put('/types/:typeId', authenticate, isAdmin, [
   body('name').optional().isLength({ max: 20 }).withMessage('家务名称不能超过20个字符'),
   body('points').optional().isInt({ min: 1 }).withMessage('积分必须大于0')
 ], asyncHandler(choreController.updateType));
 
 // 删除家务类型
-router.delete('/types/:typeId', authenticate, asyncHandler(choreController.deleteType));
+router.delete('/types/:typeId', authenticate, isAdmin, asyncHandler(choreController.deleteType));
 
 // 提交家务记录
 router.post('/records', authenticate, [
