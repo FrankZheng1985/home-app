@@ -218,28 +218,6 @@ Page({
     wx.navigateTo({ url: '/pages/login/login' });
   },
 
-  // 预览家务功能（未登录）
-  previewChores() {
-    wx.switchTab({ url: '/pages/chores/chores' });
-  },
-
-  // 预览运动功能（未登录）
-  previewSports() {
-    wx.switchTab({ url: '/pages/sports/sports' });
-  },
-
-  // 预览奖励功能（未登录）
-  previewRewards() {
-    this.checkLoginAndGo(() => {
-      wx.navigateTo({ url: '/pages/rewards/rewards' });
-    });
-  },
-
-  // 预览动态功能（未登录）
-  previewMoments() {
-    wx.switchTab({ url: '/pages/moments/moments' });
-  },
-
   // 创建家庭
   goToCreateFamily() {
     this.checkLoginAndGo(() => {
@@ -271,7 +249,7 @@ Page({
   // 查看动态列表
   goToMoments() {
     this.checkLoginAndGo(() => {
-      wx.navigateTo({ url: '/pages/moments/moments' });
+      wx.switchTab({ url: '/pages/moments/moments' });
     });
   },
 
@@ -292,7 +270,7 @@ Page({
   // 查看动态详情 - 跳转到动态列表
   goToMomentDetail(e) {
     this.checkLoginAndGo(() => {
-      wx.navigateTo({ url: '/pages/moments/moments' });
+      wx.switchTab({ url: '/pages/moments/moments' });
     });
   },
 
@@ -320,7 +298,7 @@ Page({
   // 运动打卡
   goToSports() {
     this.checkLoginAndGo(() => {
-      wx.navigateTo({ url: '/pages/sports/sports' });
+      wx.switchTab({ url: '/pages/sports/sports' });
     });
   }
 });

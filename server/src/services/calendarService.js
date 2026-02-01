@@ -1,5 +1,5 @@
 // src/services/calendarService.js
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, validate: validateUuid } = require('uuid');
 const BaseService = require('./baseService');
 const familyService = require('./familyService');
 const logger = require('../utils/logger');
@@ -59,6 +59,9 @@ class CalendarService extends BaseService {
     
     await familyService.validateMembership(creatorId, familyId);
 
+    // 验证 categoryId 是否为有效的 UUID，如果不是则设为 null
+    const validCategoryId = (categoryId && validateUuid(categoryId)) ? categoryId : null;
+
     const eventId = uuidv4();
     if (this.isDatabaseAvailable()) {
       await this.insert('calendar_events', {
@@ -71,7 +74,7 @@ class CalendarService extends BaseService {
         end_time: endTime,
         is_all_day: isAllDay || false,
         location,
-        category_id: categoryId
+        category_id: validCategoryId
       });
     }
 
@@ -99,6 +102,9 @@ class CalendarService extends BaseService {
     
     await familyService.validateMembership(userId, familyId);
 
+    // 验证 categoryId 是否为有效的 UUID，如果不是则设为 null
+    const validCategoryId = (categoryId && validateUuid(categoryId)) ? categoryId : null;
+
     if (this.isDatabaseAvailable()) {
       await this.update('calendar_events', {
         title,
@@ -107,8 +113,8 @@ class CalendarService extends BaseService {
         end_time: endTime,
         is_all_day: isAllDay || false,
         location,
-        category_id: categoryId,
-        updated_at: CURRENT_TIMESTAMP
+        category_id: validCategoryId,
+        updated_at: new Date()
       }, { id: eventId, family_id: familyId });
     }
 

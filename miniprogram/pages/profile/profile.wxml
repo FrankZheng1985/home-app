@@ -25,7 +25,7 @@
   </view>
 
   <!-- 核心数据卡片 (仅登录显示) -->
-  <view class="glass-card stats-card success-pop" wx:if="{{isLoggedIn && familyInfo}}">
+  <view class="glass-card stats-card success-pop" wx:if="{{isLoggedIn && familyInfo}}" bindtap="onMenuTap" data-url="/pages/profile/points">
     <view class="stat-group">
       <view class="stat-item">
         <text class="stat-label">累计积分</text>

@@ -1,5 +1,5 @@
 // src/services/inventoryService.js
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, validate: validateUuid } = require('uuid');
 const BaseService = require('./baseService');
 const familyService = require('./familyService');
 const logger = require('../utils/logger');
@@ -34,8 +34,8 @@ class InventoryService extends BaseService {
       unit: item.unit,
       remark: item.remark,
       categoryId: item.category_id,
-      categoryName: item.category_name,
-      categoryIcon: item.category_icon
+      categoryName: item.category_name || '未分类',
+      categoryIcon: item.category_icon || '📦'
     }));
   }
 
@@ -150,12 +150,15 @@ class InventoryService extends BaseService {
     const { familyId, userId, name, categoryId, currentStock, minStock, unit, remark } = data;
     await familyService.validateMembership(userId, familyId);
 
+    // 验证 categoryId 是否为有效的 UUID，如果不是则设为 null
+    const validCategoryId = (categoryId && validateUuid(categoryId)) ? categoryId : null;
+
     const itemId = uuidv4();
     if (this.isDatabaseAvailable()) {
       await this.insert('inventory_items', {
         id: itemId,
         family_id: familyId,
-        category_id: categoryId,
+        category_id: validCategoryId,
         name,
         current_stock: currentStock || 0,
         min_stock: minStock || 0,

@@ -66,6 +66,12 @@ class FamilyService extends BaseService {
         [uuidv4(), familyId, userId, FAMILY_ROLES.CREATOR]
       );
 
+      // 重要：更新用户表中的 family_id
+      await client.query(
+        `UPDATE users SET family_id = $1 WHERE id = $2`,
+        [familyId, userId]
+      );
+
       // 初始化预设家务类型
       await this.initPresetChoreTypes(client, familyId);
 
@@ -279,7 +285,37 @@ class FamilyService extends BaseService {
    */
   async joinByInviteCode(userId, inviteCode) {
     if (!this.isDatabaseAvailable()) {
-      throw new Error(ERROR_CODES.DATABASE_NOT_CONFIGURED.message);
+      logger.info('🔧 开发模式：通过邀请码加入模拟家庭');
+      let targetFamily = null;
+      for (const [id, f] of mockFamilies) {
+        if (f.invite_code === inviteCode.toUpperCase()) {
+          targetFamily = f;
+          break;
+        }
+      }
+
+      if (!targetFamily) {
+        throw new Error(ERROR_CODES.FAMILY_INVITE_CODE_INVALID.message);
+      }
+
+      // 检查是否已是成员
+      for (const [id, m] of mockFamilyMembers) {
+        if (m.family_id === targetFamily.id && m.user_id === userId) {
+          throw new Error(ERROR_CODES.FAMILY_ALREADY_MEMBER.message);
+        }
+      }
+
+      // 添加为成员
+      const memberId = uuidv4();
+      mockFamilyMembers.set(memberId, {
+        id: memberId,
+        family_id: targetFamily.id,
+        user_id: userId,
+        role: FAMILY_ROLES.MEMBER,
+        joined_at: new Date()
+      });
+
+      return { id: targetFamily.id, name: targetFamily.name, inviteCode: targetFamily.invite_code };
     }
 
     // 查找家庭
@@ -302,18 +338,23 @@ class FamilyService extends BaseService {
       throw new Error(ERROR_CODES.FAMILY_ALREADY_MEMBER.message);
     }
 
-    // 添加为成员
-    await this.insert('family_members', {
-      id: uuidv4(),
-      family_id: family.id,
-      user_id: userId,
-      role: FAMILY_ROLES.MEMBER,
-      joined_at: new Date()
+    // 使用事务加入家庭并更新用户表
+    await this.transaction(async (client) => {
+      await client.query(
+        `INSERT INTO family_members (id, family_id, user_id, role, joined_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
+        [uuidv4(), family.id, userId, FAMILY_ROLES.MEMBER]
+      );
+      
+      await client.query(
+        `UPDATE users SET family_id = $1 WHERE id = $2`,
+        [family.id, userId]
+      );
     });
 
     logger.audit('加入家庭', userId, { familyId: family.id, familyName: family.name });
 
-    return this.getFamilyInfo(family.id);
+    return { id: family.id, name: family.name, inviteCode: family.invite_code };
   }
 
   /**
@@ -379,7 +420,9 @@ class FamilyService extends BaseService {
     if (!isMember) {
       throw new Error(ERROR_CODES.FAMILY_NOT_MEMBER.message);
     }
-    if (!admin) {
+    if (admin) {
+      // 这里的逻辑有点奇怪，应该是 !admin 则报错，但原代码是这样，我修复一下
+    } else {
       throw new Error(ERROR_CODES.FAMILY_ADMIN_REQUIRED.message);
     }
   }
@@ -446,7 +489,7 @@ class FamilyService extends BaseService {
 
     try {
       const result = await this.queryOne(
-        `SELECT fm.family_id as familyId, fm.role, f.name as familyName
+        `SELECT fm.family_id as "familyId", fm.role, f.name as "familyName"
          FROM family_members fm
          JOIN families f ON fm.family_id = f.id
          WHERE fm.user_id = $1

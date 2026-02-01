@@ -478,6 +478,9 @@ Page({
   // 阻止事件冒泡
   preventClose() {},
 
+  // 兼容 catchtap="true" 的写法
+  true() {},
+
   // 选择运动类型
   selectType(e) {
     const type = e.currentTarget.dataset.type;

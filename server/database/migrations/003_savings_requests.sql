@@ -1,26 +1,23 @@
 -- 存款审核功能
--- 存款需要管理员审核确认
--- MySQL 8.0
+-- PostgreSQL 版本
 
 -- 存款申请表
 CREATE TABLE IF NOT EXISTS savings_requests (
-    id VARCHAR(36) PRIMARY KEY,
-    account_id VARCHAR(36) NOT NULL,
-    user_id VARCHAR(36) NOT NULL COMMENT '申请人',
-    type VARCHAR(20) NOT NULL DEFAULT 'deposit' COMMENT 'deposit(存款申请), withdraw(取款申请)',
-    amount DECIMAL(12, 2) NOT NULL COMMENT '申请金额',
-    description TEXT COMMENT '备注说明',
-    status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending(待审核), approved(已通过), rejected(已拒绝)',
-    reviewed_by VARCHAR(36) COMMENT '审核人',
-    reviewed_at TIMESTAMP NULL COMMENT '审核时间',
-    reject_reason TEXT COMMENT '拒绝原因',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (account_id) REFERENCES savings_accounts(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (reviewed_by) REFERENCES users(id),
-    INDEX idx_savings_requests_account (account_id),
-    INDEX idx_savings_requests_user (user_id),
-    INDEX idx_savings_requests_status (status),
-    INDEX idx_savings_requests_created (created_at DESC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='存款/取款申请表，需管理员审核';
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    family_id UUID NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+    amount DECIMAL(15, 2) NOT NULL,
+    type VARCHAR(20) NOT NULL DEFAULT 'deposit', -- deposit, withdraw
+    description TEXT,
+    status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected
+    reject_reason TEXT,
+    reviewer_id UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 索引优化
+CREATE INDEX IF NOT EXISTS idx_savings_requests_user ON savings_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_savings_requests_family ON savings_requests(family_id);
+CREATE INDEX IF NOT EXISTS idx_savings_requests_status ON savings_requests(status);
+CREATE INDEX IF NOT EXISTS idx_savings_requests_created ON savings_requests(created_at DESC);

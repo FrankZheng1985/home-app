@@ -19,6 +19,7 @@
     "pages/profile/about",
     "pages/profile/agreement",
     "pages/profile/redeem-review",
+    "pages/profile/redeem-records",
     "pages/savings/savings",
     "pages/calendar/calendar",
     "pages/inventory/inventory"

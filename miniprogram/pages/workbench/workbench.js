@@ -167,14 +167,14 @@ Page({
 
   // 导航到运动打卡
   goToSports() {
-    wx.navigateTo({
+    wx.switchTab({
       url: '/pages/sports/sports'
     });
   },
 
   // 导航到物资管理
   goToInventory() {
-    wx.switchTab({
+    wx.navigateTo({
       url: '/pages/inventory/inventory'
     });
   },

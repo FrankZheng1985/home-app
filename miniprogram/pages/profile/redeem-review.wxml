@@ -46,5 +46,49 @@
     <view class="empty-tip" wx:if="{{requests.length === 0}}">暂无相关申请记录</view>
   </view>
 
+  <!-- 审核弹窗 -->
+  <view class="modal-mask {{showReviewModal ? 'show' : ''}}" bindtap="closeReviewModal">
+    <view class="modal-content glass-card {{showReviewModal ? 'show' : ''}}" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">审核兑现申请</text>
+        <view class="close-btn" bindtap="closeReviewModal">×</view>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="request-info-box">
+          <view class="info-row">
+            <text class="info-label">申请人</text>
+            <text class="info-value">{{currentRequest.user.nickname}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">申请积分</text>
+            <text class="info-value highlight">{{currentRequest.points}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">预计支付</text>
+            <text class="info-value amount">¥{{currentRequest.amount}}</text>
+          </view>
+          <view class="info-row" wx:if="{{currentRequest.remark}}">
+            <text class="info-label">备注</text>
+            <text class="info-value">{{currentRequest.remark}}</text>
+          </view>
+        </view>
+
+        <view class="form-item" wx:if="{{!isReviewing}}">
+          <text class="form-label">拒绝原因 (仅在拒绝时填写)</text>
+          <textarea class="form-textarea" placeholder="请输入拒绝原因..." value="{{rejectReason}}" bindinput="onRejectReasonInput" />
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer review-footer">
+        <view class="action-btn reject btn-active-feedback {{isReviewing ? 'disabled' : ''}}" bindtap="rejectRequest">拒绝</view>
+        <view class="primary-btn approve-btn btn-active-feedback {{isReviewing ? 'disabled' : ''}}" bindtap="approveRequest">
+          <text>{{isReviewing ? '处理中...' : '批准通过'}}</text>
+          <view class="btn-glow"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <view class="safe-bottom"></view>
 </view>

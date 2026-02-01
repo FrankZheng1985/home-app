@@ -98,6 +98,14 @@ Page({
         } catch (e) {
           console.log('获取积分概览失败:', e);
         }
+
+        // 获取完成家务数量
+        try {
+          const choreStatsRes = await choreApi.getStatistics(familyInfo.id);
+          this.setData({ choreCount: choreStatsRes.data?.totalChores || 0 });
+        } catch (e) {
+          console.log('获取家务统计失败:', e);
+        }
       } else {
         // 清理本地存储中的旧家庭信息
         wx.removeStorageSync('familyInfo');
@@ -121,7 +129,20 @@ Page({
   // 菜单点击
   onMenuTap(e) {
     const { url } = e.currentTarget.dataset;
-    wx.navigateTo({ url });
+    const tabPages = [
+      '/pages/index/index',
+      '/pages/chores/chores',
+      '/pages/sports/sports',
+      '/pages/workbench/workbench',
+      '/pages/moments/moments',
+      '/pages/profile/profile'
+    ];
+
+    if (tabPages.includes(url)) {
+      wx.switchTab({ url });
+    } else {
+      wx.navigateTo({ url });
+    }
   },
 
   // 退出登录

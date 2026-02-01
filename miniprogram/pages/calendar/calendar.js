@@ -58,6 +58,9 @@ Page({
     this.loadMonthEvents();
   },
 
+  // 兼容 catchtap="true" 的写法
+  true() {},
+
   // 初始化日历数据
   initCalendar() {
     const { currentYear, currentMonth } = this.data;
@@ -323,12 +326,14 @@ Page({
         wx.showToast({ title: '已删除', icon: 'success' });
         this.setData({ showDetailModal: false });
         this.loadMonthEvents();
+      } else {
+        wx.hideLoading();
+        wx.showToast({ title: res.error || '删除失败', icon: 'none' });
       }
     } catch (error) {
+      wx.hideLoading();
       console.error('删除日程失败:', error);
       wx.showToast({ title: '删除失败', icon: 'none' });
-    } finally {
-      wx.hideLoading();
     }
   },
 
@@ -363,12 +368,14 @@ Page({
         wx.showToast({ title: editMode === 'add' ? '添加成功' : '更新成功', icon: 'success' });
         this.setData({ showAddModal: false });
         this.loadMonthEvents();
+      } else {
+        wx.hideLoading();
+        wx.showToast({ title: res.error || '提交失败', icon: 'none' });
       }
     } catch (error) {
+      wx.hideLoading();
       console.error('提交日程失败:', error);
       wx.showToast({ title: '提交失败，请重试', icon: 'none' });
-    } finally {
-      wx.hideLoading();
     }
   }
 });

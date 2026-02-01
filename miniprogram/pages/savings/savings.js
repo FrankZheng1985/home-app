@@ -529,6 +529,9 @@ Page({
   // 阻止冒泡
   preventClose() {},
 
+  // 兼容 catchtap="true" 的写法
+  true() {},
+
   // 返回
   goBack() {
     wx.navigateBack();

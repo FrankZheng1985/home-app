@@ -42,6 +42,9 @@ Page({
     this.loadData();
   },
 
+  // 兼容 catchtap="true" 的写法
+  true() {},
+
   async loadCategories() {
     let familyId = wx.getStorageSync('familyId');
     if (!familyId) {
@@ -75,7 +78,10 @@ Page({
 
   async loadData() {
     const { currentTab } = this.data;
-    const familyId = wx.getStorageSync('familyId');
+    let familyId = wx.getStorageSync('familyId');
+    if (!familyId) {
+      familyId = wx.getStorageSync('familyInfo')?.id;
+    }
     if (!familyId) return;
 
     this.setData({ loading: true });
@@ -106,7 +112,10 @@ Page({
 
   async updateStock(e) {
     const { id, amount } = e.currentTarget.dataset;
-    const familyId = wx.getStorageSync('familyId');
+    let familyId = wx.getStorageSync('familyId');
+    if (!familyId) {
+      familyId = wx.getStorageSync('familyInfo')?.id;
+    }
     
     try {
       const res = await app.request({
@@ -167,7 +176,10 @@ Page({
 
   async addCategory() {
     const { newCategory } = this.data;
-    const familyId = wx.getStorageSync('familyId');
+    let familyId = wx.getStorageSync('familyId');
+    if (!familyId) {
+      familyId = wx.getStorageSync('familyInfo')?.id;
+    }
 
     if (!newCategory.name) {
       return wx.showToast({ title: '请输入分类名称', icon: 'none' });
@@ -185,18 +197,23 @@ Page({
         wx.showToast({ title: '添加成功', icon: 'success' });
         this.setData({ 'newCategory.name': '' });
         this.loadCategories();
+      } else {
+        wx.hideLoading();
+        wx.showToast({ title: res.error || '添加失败', icon: 'none' });
       }
     } catch (error) {
+      wx.hideLoading();
       console.error('添加分类失败:', error);
       wx.showToast({ title: '添加失败', icon: 'none' });
-    } finally {
-      wx.hideLoading();
     }
   },
 
   async deleteCategory(e) {
     const { id, name } = e.currentTarget.dataset;
-    const familyId = wx.getStorageSync('familyId');
+    let familyId = wx.getStorageSync('familyId');
+    if (!familyId) {
+      familyId = wx.getStorageSync('familyInfo')?.id;
+    }
 
     const confirm = await new Promise(resolve => {
       wx.showModal({
@@ -218,12 +235,14 @@ Page({
       if (res.success) {
         wx.showToast({ title: '已删除', icon: 'success' });
         this.loadCategories();
+      } else {
+        wx.hideLoading();
+        wx.showToast({ title: res.error || '删除失败', icon: 'none' });
       }
     } catch (error) {
+      wx.hideLoading();
       console.error('删除分类失败:', error);
       wx.showToast({ title: '删除失败', icon: 'none' });
-    } finally {
-      wx.hideLoading();
     }
   },
 
@@ -242,7 +261,10 @@ Page({
 
   async submitItem() {
     const { formData } = this.data;
-    const familyId = wx.getStorageSync('familyId');
+    let familyId = wx.getStorageSync('familyId');
+    if (!familyId) {
+      familyId = wx.getStorageSync('familyInfo')?.id;
+    }
 
     if (!formData.name) {
       return wx.showToast({ title: '请输入物资名称', icon: 'none' });
@@ -263,18 +285,23 @@ Page({
         wx.showToast({ title: '添加成功', icon: 'success' });
         this.setData({ showAddModal: false });
         this.loadData();
+      } else {
+        wx.hideLoading();
+        wx.showToast({ title: res.error || '添加失败', icon: 'none' });
       }
     } catch (error) {
+      wx.hideLoading();
       console.error('添加物资失败:', error);
       wx.showToast({ title: '添加失败', icon: 'none' });
-    } finally {
-      wx.hideLoading();
     }
   },
 
   async toggleBought(e) {
     const id = e.currentTarget.dataset.id;
-    const familyId = wx.getStorageSync('familyId');
+    let familyId = wx.getStorageSync('familyId');
+    if (!familyId) {
+      familyId = wx.getStorageSync('familyInfo')?.id;
+    }
 
     const confirm = await new Promise(resolve => {
       wx.showModal({
@@ -297,12 +324,14 @@ Page({
       if (res.success) {
         wx.showToast({ title: '已入库', icon: 'success' });
         this.loadData();
+      } else {
+        wx.hideLoading();
+        wx.showToast({ title: res.error || '操作失败', icon: 'none' });
       }
     } catch (error) {
+      wx.hideLoading();
       console.error('标记购买失败:', error);
       wx.showToast({ title: '操作失败', icon: 'none' });
-    } finally {
-      wx.hideLoading();
     }
   }
 });

@@ -29,7 +29,7 @@ const getProfile = async (req, res) => {
                 COALESCE(u.family_id, fm.family_id) as family_id, fm.role as family_role
          FROM users u
          LEFT JOIN family_members fm ON u.id = fm.user_id
-         WHERE u.id = ?
+         WHERE u.id = $1
          LIMIT 1`,
         [userId]
       );
@@ -109,21 +109,22 @@ const updateProfile = async (req, res) => {
     try {
       const updates = [];
       const values = [];
+      let paramIndex = 1;
 
       if (nickname !== undefined) {
-        updates.push(`nickname = ?`);
+        updates.push(`nickname = $${paramIndex++}`);
         values.push(nickname);
       }
       if (avatarUrl !== undefined) {
-        updates.push(`avatar_url = ?`);
+        updates.push(`avatar_url = $${paramIndex++}`);
         values.push(avatarUrl);
       }
       if (gender !== undefined) {
-        updates.push(`gender = ?`);
+        updates.push(`gender = $${paramIndex++}`);
         values.push(gender);
       }
       if (birthday !== undefined) {
-        updates.push(`birthday = ?`);
+        updates.push(`birthday = $${paramIndex++}`);
         values.push(birthday);
       }
 
@@ -132,15 +133,16 @@ const updateProfile = async (req, res) => {
       }
 
       values.push(userId);
+      const idParamIndex = paramIndex;
 
       await query(
-        `UPDATE users SET ${updates.join(', ')} WHERE id = ?`,
+        `UPDATE users SET ${updates.join(', ')} WHERE id = $${idParamIndex}`,
         values
       );
       
       // 查询更新后的用户信息
       const result = await query(
-        `SELECT id, nickname, avatar_url, gender, birthday, preferences FROM users WHERE id = ?`,
+        `SELECT id, nickname, avatar_url, gender, birthday, preferences FROM users WHERE id = $1`,
         [userId]
       );
 
@@ -217,13 +219,13 @@ const updatePreferences = async (req, res) => {
   if (query) {
     try {
       await query(
-        `UPDATE users SET preferences = ? WHERE id = ?`,
+        `UPDATE users SET preferences = $1 WHERE id = $2`,
         [JSON.stringify(preferences), userId]
       );
 
       // 查询更新后的用户信息
       const result = await query(
-        `SELECT id, nickname, avatar_url, preferences FROM users WHERE id = ?`,
+        `SELECT id, nickname, avatar_url, preferences FROM users WHERE id = $1`,
         [userId]
       );
 
@@ -285,7 +287,7 @@ const getPreferences = async (req, res) => {
   if (query) {
     try {
       const result = await query(
-        'SELECT preferences FROM users WHERE id = ?',
+        'SELECT preferences FROM users WHERE id = $1',
         [userId]
       );
 

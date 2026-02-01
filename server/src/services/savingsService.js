@@ -512,6 +512,159 @@ class SavingsService extends BaseService {
       pagination: { page: parseInt(page), pageSize: parseInt(pageSize), total: parseInt(countResult.total) }
     };
   }
+
+  /**
+   * 获取家庭所有成员的存款账户
+   */
+  async getFamilyAccounts(familyId, operatorId) {
+    await familyService.validateAdminRole(operatorId, familyId);
+
+    if (!this.isDatabaseAvailable()) {
+      const results = [];
+      const mockUsers = global.mockUsers || new Map();
+      
+      for (const [key, account] of mockSavingsAccounts) {
+        if (account.family_id === familyId) {
+          let user = null;
+          for (const [, u] of mockUsers) if (u.id === account.user_id) { user = u; break; }
+          
+          results.push({
+            ...account,
+            userNickname: user?.nickname || '用户',
+            userAvatar: user?.avatar_url || ''
+          });
+        }
+      }
+      return results;
+    }
+
+    const sql = `
+      SELECT sa.*, u.nickname as "userNickname", u.avatar_url as "userAvatar"
+      FROM savings_accounts sa
+      JOIN users u ON sa.user_id = u.id
+      WHERE sa.family_id = $1
+      ORDER BY sa.balance DESC
+    `;
+    return await this.queryMany(sql, [familyId]);
+  }
+
+  /**
+   * 结算利息
+   */
+  async settleInterest(accountId, operatorId) {
+    if (!this.isDatabaseAvailable()) {
+      let targetAccount = null;
+      let accountKey = null;
+      for (const [key, acc] of mockSavingsAccounts) {
+        if (acc.id === accountId) { targetAccount = acc; accountKey = key; break; }
+      }
+      if (!targetAccount) throw new Error('找不到账户');
+
+      const pending = this.calculatePendingInterest(
+        parseFloat(targetAccount.balance),
+        parseFloat(targetAccount.annual_rate) / 100,
+        targetAccount.last_interest_date
+      );
+
+      if (pending.interest <= 0) throw new Error('暂无可结算利息');
+
+      targetAccount.balance = parseFloat(targetAccount.balance) + pending.interest;
+      targetAccount.total_interest = parseFloat(targetAccount.total_interest) + pending.interest;
+      targetAccount.last_interest_date = new Date();
+      mockSavingsAccounts.set(accountKey, targetAccount);
+
+      const trans = mockSavingsTransactions.get(accountId) || [];
+      trans.unshift({
+        id: uuidv4(),
+        type: TRANSACTION_TYPE.INTEREST,
+        amount: pending.interest,
+        balanceAfter: targetAccount.balance,
+        description: `利息结算 (${pending.days}天)`,
+        createdAt: new Date()
+      });
+      mockSavingsTransactions.set(accountId, trans);
+
+      return { interest: pending.interest, newBalance: targetAccount.balance };
+    }
+
+    const account = await this.queryOne('SELECT * FROM savings_accounts WHERE id = $1', [accountId]);
+    if (!account) throw new Error(ERROR_CODES.SAVINGS_ACCOUNT_NOT_FOUND.message);
+
+    const pending = this.calculatePendingInterest(
+      parseFloat(account.balance),
+      parseFloat(account.annual_rate) / 100,
+      account.last_interest_date
+    );
+
+    if (pending.interest <= 0) throw new Error('暂无可结算利息');
+
+    const newBalance = parseFloat(account.balance) + pending.interest;
+    const newTotalInterest = parseFloat(account.total_interest) + pending.interest;
+
+    await this.transaction(async (client) => {
+      await client.query(
+        `UPDATE savings_accounts 
+         SET balance = $1, total_interest = $2, last_interest_date = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $3`,
+        [newBalance, newTotalInterest, accountId]
+      );
+
+      await client.query(
+        `INSERT INTO savings_transactions (id, account_id, type, amount, balance_after, description)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [uuidv4(), accountId, TRANSACTION_TYPE.INTEREST, pending.interest, newBalance, `利息结算 (${pending.days}天)`]
+      );
+    });
+
+    return { interest: pending.interest, newBalance };
+  }
+
+  /**
+   * 更新年利率
+   */
+  async updateRate(data) {
+    const { accountId, operatorId, annualRate } = data;
+    
+    if (!this.isDatabaseAvailable()) {
+      let targetAccount = null;
+      let accountKey = null;
+      for (const [key, acc] of mockSavingsAccounts) {
+        if (acc.id === accountId) { targetAccount = acc; accountKey = key; break; }
+      }
+      if (!targetAccount) throw new Error('找不到账户');
+
+      targetAccount.annual_rate = annualRate;
+      mockSavingsAccounts.set(accountKey, targetAccount);
+      return { annualRate };
+    }
+
+    const account = await this.queryOne('SELECT family_id FROM savings_accounts WHERE id = $1', [accountId]);
+    if (!account) throw new Error(ERROR_CODES.SAVINGS_ACCOUNT_NOT_FOUND.message);
+    
+    await familyService.validateAdminRole(operatorId, account.family_id);
+
+    await this.update('savings_accounts', { annual_rate: annualRate }, { id: accountId });
+    return { annualRate };
+  }
+
+  /**
+   * 获取待审核申请数量
+   */
+  async getPendingCount(familyId, userId) {
+    const { isAdmin } = await familyService.checkMemberRole(userId, familyId);
+    if (!isAdmin) return 0;
+
+    if (!this.isDatabaseAvailable()) {
+      const requests = mockSavingsRequests.get(familyId) || [];
+      return requests.filter(r => r.status === REVIEW_STATUS.PENDING).length;
+    }
+
+    const result = await this.queryOne(
+      'SELECT COUNT(*) as count FROM savings_requests WHERE family_id = $1 AND status = $2',
+      [familyId, REVIEW_STATUS.PENDING]
+    );
+    return parseInt(result?.count || 0);
+  }
 }
 
 module.exports = new SavingsService();

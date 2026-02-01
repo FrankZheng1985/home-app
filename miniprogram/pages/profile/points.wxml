@@ -54,6 +54,10 @@
   </view>
 
   <!-- 积分列表 -->
+  <view class="section-header">
+    <text class="section-title">收支明细</text>
+    <view class="history-link" bindtap="viewAllRedeemRequests">兑现记录 ›</view>
+  </view>
   <view class="transactions-list">
     <view class="transaction-item glass-card" wx:for="{{transactions}}" wx:key="id">
       <view class="trans-icon">{{item.type === 'earn' ? '📈' : (item.type === 'redeem' ? '🎁' : '📉')}}</view>
@@ -67,6 +71,63 @@
     </view>
     
     <view class="empty-tip" wx:if="{{transactions.length === 0}}">暂无积分记录</view>
+  </view>
+
+  <!-- 申请兑现弹窗 -->
+  <view class="modal-mask {{showRedeemApplyModal ? 'show' : ''}}" bindtap="closeRedeemApplyModal">
+    <view class="modal-content glass-card {{showRedeemApplyModal ? 'show' : ''}}" catchtap="preventClose">
+      <view class="modal-header">
+        <text class="modal-title">申请兑现积分</text>
+        <view class="close-btn" bindtap="closeRedeemApplyModal">×</view>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="points-info-box">
+          <view class="info-row">
+            <text class="info-label">可用积分</text>
+            <text class="info-value">{{summary.availablePoints - pendingApplyPoints}}</text>
+          </view>
+          <view class="info-row">
+            <text class="info-label">积分价值</text>
+            <text class="info-value">1 积分 = {{summary.pointsValue}} 元</text>
+          </view>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">兑现积分</text>
+          <view class="input-wrap">
+            <input 
+              class="form-input" 
+              type="number" 
+              placeholder="输入要兑现的积分数量" 
+              value="{{applyPoints}}" 
+              bindinput="onApplyPointsInput" 
+            />
+            <text class="all-link" bindtap="setFullApplyAmount">全部</text>
+          </view>
+          <text class="amount-tip">预计可得金额：<text class="highlight">¥{{applyAmount}}</text></text>
+        </view>
+
+        <view class="quick-amounts">
+          <view class="quick-item" data-amount="100" bindtap="setQuickApplyAmount">100</view>
+          <view class="quick-item" data-amount="200" bindtap="setQuickApplyAmount">200</view>
+          <view class="quick-item" data-amount="500" bindtap="setQuickApplyAmount">500</view>
+          <view class="quick-item" data-amount="1000" bindtap="setQuickApplyAmount">1000</view>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">备注 (可选)</text>
+          <textarea class="form-textarea" placeholder="填写用途或其他说明..." value="{{applyRemark}}" bindinput="onApplyRemarkInput" />
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <view class="primary-btn submit-btn btn-active-feedback {{isApplying ? 'disabled' : ''}}" bindtap="submitRedeemApply">
+          <text>{{isApplying ? '提交中...' : '确认申请'}}</text>
+          <view class="btn-glow"></view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <view class="safe-bottom"></view>

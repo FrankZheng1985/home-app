@@ -1,0 +1,41 @@
+<!--pages/profile/redeem-records.wxml-->
+<view class="page-container">
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">兑现记录</view>
+      <view class="hero-subtitle">Redemption History</view>
+    </view>
+  </view>
+
+  <view class="requests-list">
+    <view class="request-item glass-card success-pop" wx:for="{{requests}}" wx:key="id">
+      <view class="request-header">
+        <view class="request-info">
+          <text class="points-val">{{item.points}} 积分</text>
+          <text class="time-text">{{item.createdAtText}}</text>
+        </view>
+        <view class="status-badge {{item.status}}">
+          {{item.status === 'pending' ? '审核中' : (item.status === 'approved' ? '已发放' : '已拒绝')}}
+        </view>
+      </view>
+      <view class="request-body">
+        <view class="amount-row">
+          <text class="label">兑换金额</text>
+          <text class="val">¥{{item.amount}}</text>
+        </view>
+        <text class="remark" wx:if="{{item.remark}}">备注：{{item.remark}}</text>
+        <view class="reject-box" wx:if="{{item.status === 'rejected' && item.rejectReason}}">
+          <text class="reject-label">拒绝原因：</text>
+          <text class="reject-val">{{item.rejectReason}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-tip" wx:if="{{requests.length === 0}}">
+      暂无兑现记录
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+</view>
