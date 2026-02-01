@@ -19,7 +19,9 @@
     "pages/profile/about",
     "pages/profile/agreement",
     "pages/profile/redeem-review",
-    "pages/savings/savings"
+    "pages/savings/savings",
+    "pages/calendar/calendar",
+    "pages/inventory/inventory"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -1,5 +1,5 @@
 // src/services/userService.js
-// 用户服务层 - 处理用户相关业务逻辑 (MySQL 版本)
+// 用户服务层 - 处理用户相关业务逻辑 (PostgreSQL 版本)
 
 const BaseService = require('./baseService');
 const logger = require('../utils/logger');
@@ -37,7 +37,7 @@ class UserService extends BaseService {
 
     const user = await this.queryOne(
       `SELECT id, nickname, avatar_url, gender, birthday, preferences, created_at 
-       FROM users WHERE id = ?`,
+       FROM users WHERE id = $1`,
       [userId]
     );
 
@@ -94,8 +94,6 @@ class UserService extends BaseService {
       throw new Error(ERROR_CODES.USER_NOT_FOUND.message);
     }
 
-    updates.updated_at = new Date();
-
     await this.update('users', updates, { id: userId });
     logger.audit('更新用户信息', userId, { fields: Object.keys(updates) });
 
@@ -120,7 +118,7 @@ class UserService extends BaseService {
     }
 
     const user = await this.queryOne(
-      'SELECT preferences FROM users WHERE id = ?',
+      'SELECT preferences FROM users WHERE id = $1',
       [userId]
     );
 
@@ -128,9 +126,7 @@ class UserService extends BaseService {
       throw new Error(ERROR_CODES.USER_NOT_FOUND.message);
     }
 
-    return typeof user.preferences === 'string' 
-      ? JSON.parse(user.preferences) 
-      : (user.preferences || {});
+    return user.preferences || {};
   }
 
   /**
@@ -159,8 +155,7 @@ class UserService extends BaseService {
     }
 
     await this.update('users', {
-      preferences: JSON.stringify(mergedPrefs),
-      updated_at: new Date()
+      preferences: mergedPrefs
     }, { id: userId });
 
     logger.audit('更新用户偏好设置', userId, { preferences });
@@ -179,9 +174,7 @@ class UserService extends BaseService {
       avatarUrl: user.avatar_url,
       gender: user.gender,
       birthday: user.birthday,
-      preferences: typeof user.preferences === 'string' 
-        ? JSON.parse(user.preferences) 
-        : (user.preferences || {}),
+      preferences: user.preferences || {},
       createdAt: user.created_at
     };
   }

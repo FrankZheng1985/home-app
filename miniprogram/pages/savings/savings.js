@@ -41,7 +41,8 @@ Page({
     displayedInterest: 0,
     
     // 待审核数量
-    pendingCount: 0
+    pendingCount: 0,
+    statusBarHeight: app.globalData.statusBarHeight || 20
   },
 
   onLoad() {
@@ -49,6 +50,9 @@ Page({
       wx.reLaunch({ url: '/pages/login/login' });
       return;
     }
+    this.setData({
+      statusBarHeight: app.globalData.statusBarHeight
+    });
     this.loadData();
   },
 

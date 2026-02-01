@@ -51,8 +51,8 @@ App({
     // 后端服务地址配置
     // ============================================
     // 📍 本地开发测试：使用下面这组
-    backendUrl: 'https://api.family-app.com.cn',
-    baseUrl: 'https://api.family-app.com.cn/api',
+    backendUrl: 'http://localhost:3000',
+    baseUrl: 'http://localhost:3000/api',
     // --------------------------------------------
     // 🚀 提交审核/发布：使用下面这组（注释掉上面的，取消注释下面的）
     // backendUrl: 'https://api.family-app.com.cn',
@@ -94,6 +94,7 @@ App({
             wx.redirectTo({ url: '/pages/login/login' });
             reject({ message: '登录已过期，请重新登录' });
           } else {
+            console.error('请求失败详情:', res.data);
             reject(res.data || { message: '请求失败' });
           }
         },

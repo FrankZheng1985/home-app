@@ -1,445 +1,191 @@
-<!--pages/sports/sports.wxml - 运动打卡页面-->
-<view class="sports-page">
-  <!-- 未登录 - 可浏览运动类型 -->
-  <view class="guest-sports-page" wx:if="{{!isLoggedIn}}">
-    <!-- 头部 -->
-    <view class="guest-header-card">
-      <view class="header-bg"></view>
-      <view class="header-content">
-        <view class="guest-title-row">
-          <view class="guest-title-info">
-            <text class="guest-page-title">🏃 运动打卡</text>
-            <text class="guest-page-desc">记录运动数据，培养健康习惯</text>
-          </view>
-          <view class="guest-login-mini" bindtap="goToLogin">
-            <text class="login-text">登录</text>
-          </view>
+<!--pages/sports/sports.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="steps-main">
+        <text class="steps-label">今日步数</text>
+        <view class="steps-value-row">
+          <text class="steps-value">{{todaySteps}}</text>
+          <text class="steps-unit">步</text>
         </view>
-        
-        <!-- 功能预览 -->
-        <view class="guest-stats-preview">
-          <view class="preview-stat">
-            <text class="preview-icon">👟</text>
-            <text class="preview-label">步数同步</text>
-          </view>
-          <view class="preview-stat">
-            <text class="preview-icon">🔥</text>
-            <text class="preview-label">卡路里</text>
-          </view>
-          <view class="preview-stat">
-            <text class="preview-icon">📅</text>
-            <text class="preview-label">打卡日历</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 运动类型展示 -->
-    <view class="guest-content-section">
-      <view class="section-header">
-        <text class="section-title">🏋️ 支持的运动类型</text>
-        <text class="section-tip">登录后可自定义</text>
-      </view>
-      
-      <view class="sport-types-preview">
-        <view class="sport-type-card" wx:for="{{defaultSportTypes}}" wx:key="id">
-          <view class="sport-type-icon" style="background: {{item.color}}">
-            <text>{{item.icon}}</text>
-          </view>
-          <view class="sport-type-info">
-            <text class="sport-type-name">{{item.name}}</text>
-            <text class="sport-type-cal">约 {{item.caloriesPerMin}} 千卡/分钟</text>
-          </view>
-        </view>
-      </view>
-      
-      <!-- 功能说明 -->
-      <view class="section-header">
-        <text class="section-title">✨ 功能亮点</text>
-      </view>
-      
-      <view class="feature-list">
-        <view class="feature-card">
-          <text class="feature-icon">📱</text>
-          <view class="feature-text">
-            <text class="feature-title">微信运动同步</text>
-            <text class="feature-desc">自动同步微信步数数据</text>
-          </view>
-        </view>
-        <view class="feature-card">
-          <text class="feature-icon">🎯</text>
-          <view class="feature-text">
-            <text class="feature-title">每日目标</text>
-            <text class="feature-desc">设定步数目标，达成获得积分</text>
-          </view>
-        </view>
-        <view class="feature-card">
-          <text class="feature-icon">📊</text>
-          <view class="feature-text">
-            <text class="feature-title">数据统计</text>
-            <text class="feature-desc">查看运动历史和连续打卡天数</text>
-          </view>
-        </view>
-      </view>
-      
-      <!-- 登录提示 -->
-      <view class="guest-login-section">
-        <button class="login-btn-primary" bindtap="goToLogin">
-          <text class="btn-icon">💚</text>
-          <text class="btn-text">登录开始运动打卡</text>
-        </button>
+        <view class="sync-btn-mini btn-active-feedback" bindtap="doSyncSteps">同步数据</view>
       </view>
     </view>
   </view>
 
-  <block wx:else>
-  <!-- 加载中 -->
-  <view class="loading-container" wx:if="{{isLoading}}">
-    <view class="loading-icon">⏳</view>
-    <text class="loading-text">加载中...</text>
-  </view>
-
-  <!-- 未加入家庭提示 -->
-  <view class="no-family-container" wx:elif="{{!hasFamily}}">
-    <view class="no-family-icon">🏠</view>
-    <text class="no-family-title">请先加入家庭</text>
-    <text class="no-family-desc">加入家庭后才能使用运动打卡功能</text>
-    <button class="join-family-btn" bindtap="goToFamily">去加入家庭</button>
-  </view>
-
-  <!-- 主内容（已加入家庭） -->
-  <block wx:else>
-  <!-- 头部统计卡片 -->
-  <view class="header-card">
-    <view class="header-bg"></view>
-    <view class="header-content">
-      <!-- 今日步数 -->
-      <view class="steps-section">
-        <view class="steps-icon">🏃</view>
-        <view class="steps-info">
-          <text class="steps-label">今日步数</text>
-          <view class="steps-row">
-            <text class="steps-value">{{todaySteps}}</text>
-            <text class="steps-unit">步</text>
-          </view>
-          <view class="steps-target">
-            <text>目标 {{stepsTarget}} 步</text>
-            <text class="steps-progress">{{stepsProgress}}%</text>
-          </view>
-        </view>
-        <view class="sync-btn" bindtap="doSyncSteps">
-          <text class="sync-icon">🔄</text>
-          <text class="sync-text">同步</text>
-        </view>
+  <!-- 运动统计卡片 (Glassmorphism Card) -->
+  <view class="glass-card stats-card success-pop">
+    <view class="stat-group">
+      <view class="stat-item">
+        <text class="stat-label">本周打卡</text>
+        <text class="stat-value">{{weekStats.totalDays || 0}}天</text>
       </view>
-      
-      <!-- 进度条 -->
-      <view class="progress-bar">
-        <view class="progress-fill" style="width: {{stepsProgress > 100 ? 100 : stepsProgress}}%"></view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">运动时长</text>
+        <text class="stat-value">{{weekStats.totalMinutes || 0}}min</text>
       </view>
-      
-      <!-- 统计数据 -->
-      <view class="stats-row">
-        <view class="stat-item">
-          <text class="stat-value">{{weekStats.totalDays || 0}}</text>
-          <text class="stat-label">本周打卡</text>
-        </view>
-        <view class="stat-divider"></view>
-        <view class="stat-item">
-          <text class="stat-value">{{weekStats.totalMinutes || 0}}</text>
-          <text class="stat-label">运动分钟</text>
-        </view>
-        <view class="stat-divider"></view>
-        <view class="stat-item">
-          <text class="stat-value">{{continuousDays || 0}}</text>
-          <text class="stat-label">连续打卡</text>
-        </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">连续天数</text>
+        <text class="stat-value">{{continuousDays || 0}}天</text>
       </view>
     </view>
   </view>
 
-  <!-- 步数兑换积分 -->
-  <view class="redeem-section">
-    <view class="redeem-card">
-      <view class="redeem-info">
-        <view class="redeem-icon">🎁</view>
-        <view class="redeem-text">
-          <text class="redeem-title">步数换积分</text>
-          <text class="redeem-rule">每日达到5000步可兑换50积分</text>
-        </view>
+  <!-- 步数兑换卡片 -->
+  <view class="glass-card redeem-card" wx:if="{{todaySteps >= 0}}">
+    <view class="redeem-info">
+      <view class="redeem-icon">🎁</view>
+      <view class="redeem-text">
+        <text class="redeem-title">步数换积分</text>
+        <text class="redeem-desc">每日5000步可领50积分</text>
       </view>
-      <view class="redeem-status">
-        <block wx:if="{{pointsRedeemed}}">
-          <view class="redeem-done">
-            <text class="done-icon">✅</text>
-            <text class="done-text">今日已兑换</text>
-          </view>
-        </block>
-        <block wx:elif="{{todaySteps >= 5000}}">
-          <button class="redeem-btn" bindtap="redeemPoints">
-            <text>兑换50积分</text>
-          </button>
-        </block>
-        <block wx:else>
-          <view class="redeem-progress">
-            <text class="progress-text">还差{{5000 - todaySteps}}步</text>
-          </view>
-        </block>
+    </view>
+    <view class="redeem-action">
+      <view class="redeem-btn btn-active-feedback {{todaySteps >= 5000 && !pointsRedeemed ? '' : 'disabled'}}" bindtap="{{todaySteps >= 5000 && !pointsRedeemed ? 'redeemPoints' : ''}}">
+        {{pointsRedeemed ? '已领取' : '领取'}}
       </view>
     </view>
   </view>
 
-  <!-- 打卡日历 -->
-  <view class="calendar-section">
-    <view class="section-header">
-      <text class="section-title">📅 本周打卡</text>
+  <!-- 今日运动记录 -->
+  <view class="section-header">
+    <text class="section-title">今日运动</text>
+    <view class="add-btn-mini btn-active-feedback" bindtap="showAddModal">记录</view>
+  </view>
+
+  <view class="checkin-list">
+    <view class="checkin-item glass-card" wx:for="{{todayRecords}}" wx:key="id">
+      <view class="checkin-icon">{{item.icon || '🏃'}}</view>
+      <view class="checkin-info">
+        <text class="checkin-name">{{item.sportType}}</text>
+        <text class="checkin-desc">{{item.duration}}分钟 · {{item.calories || 0}}千卡</text>
+      </view>
+      <text class="checkin-time">{{item.timeText}}</text>
     </view>
-    <view class="week-calendar">
-      <view 
-        class="calendar-day {{item.isToday ? 'today' : ''}} {{item.checked ? 'checked' : ''}}"
-        wx:for="{{weekDays}}" 
-        wx:key="date"
-      >
-        <text class="day-name">{{item.dayName}}</text>
-        <text class="day-date">{{item.day}}</text>
-        <view class="check-mark" wx:if="{{item.checked}}">✓</view>
+    <view class="empty-tip" wx:if="{{todayRecords.length === 0}}">今日暂无运动记录</view>
+  </view>
+
+  <!-- 运动历史 -->
+  <view class="section-title">运动历史</view>
+  <view class="history-list">
+    <view class="history-item glass-card" wx:for="{{historyRecords}}" wx:key="id">
+      <view class="history-date">
+        <text class="date-day">{{item.dayText}}</text>
+        <text class="date-month">{{item.weekdayText}}</text>
+      </view>
+      <view class="history-info">
+        <text class="history-name">{{item.sportType}}</text>
+        <text class="history-desc">{{item.duration}}min · {{item.calories}}kcal</text>
+      </view>
+      <view class="history-steps" wx:if="{{item.steps}}">
+        <text class="steps-num">{{item.steps}}</text>
+        <text class="steps-unit">步</text>
       </view>
     </view>
   </view>
 
-  <!-- 今日打卡 -->
-  <view class="checkin-section">
-    <view class="section-header">
-      <text class="section-title">💪 今日运动</text>
-      <view class="add-btn" bindtap="showAddModal">
-        <text>+ 记录</text>
-      </view>
-    </view>
-    
-    <!-- 已打卡记录 -->
-    <view class="checkin-list" wx:if="{{todayRecords.length > 0}}">
-      <view class="checkin-card" wx:for="{{todayRecords}}" wx:key="id">
-        <view class="checkin-icon" style="background: {{item.color || '#667eea'}}">
-          <text>{{item.icon || '🏃'}}</text>
-        </view>
-        <view class="checkin-info">
-          <text class="checkin-name">{{item.sportType}}</text>
-          <text class="checkin-detail">{{item.duration}}分钟 · {{item.calories || 0}}千卡</text>
-        </view>
-        <view class="checkin-time">{{item.timeText}}</view>
-      </view>
-    </view>
-    
-    <!-- 快速打卡 -->
-    <view class="quick-checkin" wx:else>
-      <text class="quick-tip">选择运动类型快速打卡</text>
-      <view class="sport-types">
-        <view 
-          class="sport-type-card" 
-          wx:for="{{sportTypes}}" 
-          wx:key="id"
-          data-type="{{item}}"
-          bindtap="quickCheckin"
-        >
-          <view class="type-icon" style="background: {{item.color}}">
-            <text>{{item.icon}}</text>
-          </view>
-          <text class="type-name">{{item.name}}</text>
-        </view>
-      </view>
-    </view>
-  </view>
+  <view class="safe-bottom"></view>
 
-  <!-- 运动类型管理 -->
-  <view class="types-section">
-    <view class="section-header">
-      <text class="section-title">🎯 运动类型</text>
-      <view class="manage-btn" bindtap="showTypeModal">
-        <text>管理</text>
-      </view>
-    </view>
-    <view class="types-list">
-      <view 
-        class="type-card" 
-        wx:for="{{sportTypes}}" 
-        wx:key="id"
-        data-type="{{item}}"
-        bindtap="selectSportType"
-      >
-        <view class="type-icon-medium" style="background: {{item.color}}">
-          <text>{{item.icon}}</text>
-        </view>
-        <view class="type-info">
-          <view class="type-header">
-            <text class="type-name-large">{{item.name}}</text>
-            <text class="type-cal-badge">{{item.caloriesPerMin}}千卡/分</text>
-          </view>
-          <text class="type-desc">{{item.description || '点击开始打卡'}}</text>
-        </view>
-        <view class="type-arrow">›</view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 历史记录 -->
-  <view class="history-section">
-    <view class="section-header">
-      <text class="section-title">📊 运动历史</text>
-    </view>
-    <view class="history-list" wx:if="{{historyRecords.length > 0}}">
-      <view class="history-item" wx:for="{{historyRecords}}" wx:key="id">
-        <view class="history-date">
-          <text class="date-day">{{item.dayText}}</text>
-          <text class="date-weekday">{{item.weekdayText}}</text>
-        </view>
-        <view class="history-content">
-          <view class="history-sport">
-            <text class="sport-icon">{{item.icon || '🏃'}}</text>
-            <text class="sport-name">{{item.sportType}}</text>
-          </view>
-          <view class="history-stats">
-            <text>{{item.duration}}分钟</text>
-            <text class="dot">·</text>
-            <text>{{item.calories || 0}}千卡</text>
-          </view>
-        </view>
-        <view class="history-steps" wx:if="{{item.steps}}">
-          <text class="steps-num">{{item.steps}}</text>
-          <text class="steps-text">步</text>
-        </view>
-      </view>
-    </view>
-    <view class="empty-history" wx:else>
-      <text class="empty-icon">🏃</text>
-      <text class="empty-text">还没有运动记录，开始你的第一次运动吧！</text>
-    </view>
-  </view>
-
-  <!-- 添加运动弹窗 -->
-  <view class="modal-overlay {{showAddModal ? 'show' : ''}}" bindtap="closeAddModal">
-    <view class="modal-container" catchtap="preventClose">
+  <!-- 记录运动弹窗 -->
+  <view class="modal-mask {{showAddModal ? 'show' : ''}}" bindtap="closeAddModal">
+    <view class="modal-content glass-card {{showAddModal ? 'show' : ''}}" catchtap="true">
       <view class="modal-header">
-        <text class="modal-title">🏃 记录运动</text>
-        <view class="modal-close" bindtap="closeAddModal">×</view>
+        <text class="modal-title">记录运动</text>
+        <view class="close-btn" bindtap="closeAddModal">×</view>
       </view>
-      <view class="modal-body">
-        <!-- 运动类型选择 -->
-        <view class="form-group">
-          <text class="form-label">运动类型</text>
-          <view class="type-selector">
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="form-item">
+          <text class="form-label">选择运动</text>
+          <view class="sport-type-grid">
             <view 
-              class="type-option {{selectedType && selectedType.id === item.id ? 'selected' : ''}}"
               wx:for="{{sportTypes}}" 
-              wx:key="id"
-              data-type="{{item}}"
+              wx:key="id" 
+              class="sport-type-item {{selectedType.id === item.id ? 'active' : ''}}"
               bindtap="selectType"
+              data-type="{{item}}"
             >
-              <text class="option-icon">{{item.icon}}</text>
-              <text class="option-name">{{item.name}}</text>
+              <text class="sport-icon">{{item.icon}}</text>
+              <text class="sport-name">{{item.name}}</text>
+            </view>
+            <view class="sport-type-item add-type" bindtap="showTypeModal">
+              <text class="sport-icon">⚙️</text>
+              <text class="sport-name">管理</text>
             </view>
           </view>
         </view>
-        
-        <!-- 运动时长 -->
-        <view class="form-group">
-          <text class="form-label">运动时长（分钟）</text>
-          <view class="duration-selector">
-            <view class="duration-btn" bindtap="decreaseDuration">-</view>
-            <input 
-              class="duration-input" 
-              type="number" 
-              value="{{duration}}" 
-              bindinput="onDurationInput"
-            />
-            <view class="duration-btn" bindtap="increaseDuration">+</view>
+
+        <view class="form-item">
+          <text class="form-label">运动时长 (分钟)</text>
+          <view class="duration-control">
+            <view class="dur-btn btn-active-feedback" bindtap="decreaseDuration">-</view>
+            <input class="dur-input" type="number" value="{{duration}}" bindinput="onDurationInput" />
+            <view class="dur-btn btn-active-feedback" bindtap="increaseDuration">+</view>
           </view>
           <view class="quick-durations">
-            <view class="quick-dur" data-dur="15" bindtap="setQuickDuration">15分钟</view>
-            <view class="quick-dur" data-dur="30" bindtap="setQuickDuration">30分钟</view>
-            <view class="quick-dur" data-dur="45" bindtap="setQuickDuration">45分钟</view>
-            <view class="quick-dur" data-dur="60" bindtap="setQuickDuration">60分钟</view>
+            <view class="dur-tag" bindtap="setQuickDuration" data-dur="15">15min</view>
+            <view class="dur-tag" bindtap="setQuickDuration" data-dur="30">30min</view>
+            <view class="dur-tag" bindtap="setQuickDuration" data-dur="45">45min</view>
+            <view class="dur-tag" bindtap="setQuickDuration" data-dur="60">60min</view>
           </view>
         </view>
-        
-        <!-- 备注 -->
-        <view class="form-group">
-          <text class="form-label">备注（选填）</text>
-          <textarea 
-            class="remark-input" 
-            placeholder="记录一下这次运动的感受..."
-            value="{{remark}}"
-            bindinput="onRemarkInput"
-            maxlength="200"
-          ></textarea>
+
+        <view class="form-item">
+          <text class="form-label">预估消耗</text>
+          <view class="calories-preview">
+            <text class="cal-num">{{estimatedCalories}}</text>
+            <text class="cal-unit">kcal</text>
+          </view>
         </view>
-        
-        <!-- 预估消耗 -->
-        <view class="calories-preview" wx:if="{{selectedType}}">
-          <text class="preview-label">预估消耗</text>
-          <text class="preview-value">{{estimatedCalories}} 千卡</text>
+
+        <view class="form-item">
+          <text class="form-label">备注 (可选)</text>
+          <textarea class="form-textarea" placeholder="记录一下今天的心情或状态吧" value="{{remark}}" bindinput="onRemarkInput" />
         </view>
-      </view>
+      </scroll-view>
+
       <view class="modal-footer">
-        <button class="cancel-btn" bindtap="closeAddModal">取消</button>
-        <button 
-          class="confirm-btn" 
-          bindtap="submitRecord"
-          disabled="{{!selectedType || duration <= 0 || isSubmitting}}"
-        >
-          {{isSubmitting ? '提交中...' : '完成打卡'}}
-        </button>
+        <view class="primary-btn submit-btn btn-active-feedback" bindtap="submitRecord">
+          <text>确认打卡</text>
+          <view class="btn-glow"></view>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- 管理运动类型弹窗 -->
-  <view class="modal-overlay {{showTypeModal ? 'show' : ''}}" bindtap="closeTypeModal">
-    <view class="modal-container type-modal" catchtap="preventClose">
+  <!-- 运动类型管理弹窗 -->
+  <view class="modal-mask {{showTypeModal ? 'show' : ''}}" bindtap="closeTypeModal">
+    <view class="modal-content glass-card {{showTypeModal ? 'show' : ''}}" catchtap="true">
       <view class="modal-header">
-        <text class="modal-title">🎯 管理运动类型</text>
-        <view class="modal-close" bindtap="closeTypeModal">×</view>
+        <text class="modal-title">运动项目管理</text>
+        <view class="close-btn" bindtap="closeTypeModal">×</view>
       </view>
-      <view class="modal-body">
-        <view class="type-list">
-          <view class="type-list-item" wx:for="{{sportTypes}}" wx:key="id">
-            <view class="type-icon-small" style="background: {{item.color}}">
-              <text>{{item.icon}}</text>
-            </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="type-manage-list">
+          <view class="type-manage-item" wx:for="{{sportTypes}}" wx:key="id">
+            <text class="type-icon">{{item.icon}}</text>
             <text class="type-name">{{item.name}}</text>
-            <text class="type-cal">{{item.caloriesPerMin}}千卡/分</text>
-            <view 
-              class="type-delete" 
-              wx:if="{{!item.isPreset}}"
-              data-id="{{item.id}}"
-              bindtap="deleteType"
-            >🗑️</view>
+            <text class="type-cal">{{item.caloriesPerMin}}kcal/min</text>
+            <view class="delete-icon" bindtap="deleteType" data-id="{{item.id}}" wx:if="{{!item.isPreset}}">×</view>
           </view>
         </view>
-        
-        <!-- 添加新类型 -->
+
         <view class="add-type-form">
-          <text class="form-subtitle">添加新运动类型</text>
-          <view class="add-type-row">
-            <input 
-              class="type-name-input" 
-              placeholder="运动名称"
-              value="{{newTypeName}}"
-              bindinput="onNewTypeNameInput"
-            />
-            <input 
-              class="type-cal-input" 
-              type="digit"
-              placeholder="千卡/分"
-              value="{{newTypeCalories}}"
-              bindinput="onNewTypeCaloriesInput"
-            />
-            <view class="add-type-btn" bindtap="addNewType">添加</view>
+          <text class="form-label">添加自定义运动</text>
+          <view class="form-row">
+            <input class="form-input" placeholder="运动名称" value="{{newTypeName}}" bindinput="onNewTypeNameInput" />
+            <input class="form-input" type="digit" placeholder="每分钟热量" value="{{newTypeCalories}}" bindinput="onNewTypeCaloriesInput" />
+          </view>
+          <view class="primary-btn add-btn btn-active-feedback" bindtap="addNewType">
+            <text>添加项目</text>
           </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
   </view>
-  </block>
-  </block>
 </view>
-

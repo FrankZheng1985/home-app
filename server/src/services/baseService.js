@@ -1,5 +1,5 @@
 // src/services/baseService.js
-// 基础服务类 - 提供通用数据库操作 (MySQL 版本)
+// 基础服务类 - 提供通用数据库操作 (PostgreSQL 版本)
 
 const logger = require('../utils/logger');
 
@@ -25,7 +25,7 @@ class BaseService {
    * @returns {boolean}
    */
   isDatabaseAvailable() {
-    return !!this.db && !!this.db.query;
+    return !!this.db && !!this.db.query && this.db.getIsConnected();
   }
 
   /**
@@ -74,35 +74,25 @@ class BaseService {
   }
 
   /**
-   * 插入记录并返回 (MySQL 版本)
+   * 插入记录并返回 (PostgreSQL 版本)
    * @param {string} table - 表名
    * @param {Object} data - 数据对象
-   * @param {string} [returning] - 返回字段 (MySQL 不支持 RETURNING，会单独查询)
+   * @param {string} [returning] - 返回字段
    * @returns {Promise<Object>}
    */
   async insert(table, data, returning = '*') {
     const keys = Object.keys(data);
     const values = Object.values(data);
-    const placeholders = keys.map(() => '?').join(', ');
+    const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
     const columns = keys.join(', ');
 
-    const sql = `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`;
-    await this.query(sql, values);
-    
-    // MySQL 不支持 RETURNING，需要单独查询插入的记录
-    // 如果有 id 字段，用它来查询
-    if (data.id) {
-      const selectSql = `SELECT ${returning} FROM ${table} WHERE id = ?`;
-      const result = await this.query(selectSql, [data.id]);
-      return result.rows[0];
-    }
-    
-    // 否则返回传入的数据
-    return data;
+    const sql = `INSERT INTO ${table} (${columns}) VALUES (${placeholders}) RETURNING ${returning}`;
+    const result = await this.query(sql, values);
+    return result.rows[0];
   }
 
   /**
-   * 更新记录 (MySQL 版本)
+   * 更新记录 (PostgreSQL 版本)
    * @param {string} table - 表名
    * @param {Object} data - 更新数据
    * @param {Object} where - 条件
@@ -112,8 +102,9 @@ class BaseService {
     const dataKeys = Object.keys(data);
     const whereKeys = Object.keys(where);
     
-    const setClauses = dataKeys.map(key => `${key} = ?`).join(', ');
-    const whereClauses = whereKeys.map(key => `${key} = ?`).join(' AND ');
+    let paramIndex = 1;
+    const setClauses = dataKeys.map(key => `${key} = $${paramIndex++}`).join(', ');
+    const whereClauses = whereKeys.map(key => `${key} = $${paramIndex++}`).join(' AND ');
     
     const values = [...Object.values(data), ...Object.values(where)];
     const sql = `UPDATE ${table} SET ${setClauses} WHERE ${whereClauses}`;
@@ -134,14 +125,14 @@ class BaseService {
   }
 
   /**
-   * 执行事务 (MySQL 版本)
+   * 执行事务 (PostgreSQL 版本)
    * @param {Function} callback - 事务回调函数，接收client参数
    * @returns {Promise<any>}
    */
   async transaction(callback) {
     const client = await this.getClient();
     try {
-      await client.query('START TRANSACTION');
+      await client.query('BEGIN');
       const result = await callback(client);
       await client.query('COMMIT');
       return result;

@@ -1,206 +1,47 @@
-<!--pages/moments/moments.wxml - 家庭活动记录（系统自动生成，非UGC）-->
-<view class="activity-page">
-  <!-- 未登录 - 显示功能介绍 -->
-  <view class="guest-activity-page" wx:if="{{!isLoggedIn}}">
-    <!-- 头部 -->
-    <view class="guest-header-card">
-      <view class="header-bg"></view>
-      <view class="header-content">
-        <view class="guest-title-row">
-          <view class="guest-title-info">
-            <text class="guest-page-title">📋 家庭活动记录</text>
-            <text class="guest-page-desc">记录家人的每一次努力</text>
-          </view>
-          <view class="guest-login-mini" bindtap="goToLogin">
-            <text class="login-text">登录</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 功能介绍 -->
-    <view class="guest-content-section">
-      <!-- 模拟活动卡片 -->
-      <view class="section-header">
-        <text class="section-title">📝 活动预览</text>
-      </view>
-      
-      <view class="demo-activity-card">
-        <view class="demo-activity-icon">🧹</view>
-        <view class="demo-activity-content">
-          <view class="demo-activity-header">
-            <text class="demo-name">小明</text>
-            <text class="demo-time">刚刚</text>
-          </view>
-          <text class="demo-title">完成了家务【洗碗】</text>
-          <text class="demo-desc">获得 10 积分</text>
-        </view>
-      </view>
-
-      <view class="demo-activity-card">
-        <view class="demo-activity-icon">🏃</view>
-        <view class="demo-activity-content">
-          <view class="demo-activity-header">
-            <text class="demo-name">妈妈</text>
-            <text class="demo-time">30分钟前</text>
-          </view>
-          <text class="demo-title">完成了【跑步】运动</text>
-          <text class="demo-desc">30分钟，消耗200千卡</text>
-        </view>
-      </view>
-      
-      <!-- 功能说明 -->
-      <view class="section-header">
-        <text class="section-title">✨ 功能亮点</text>
-      </view>
-      
-      <view class="feature-list">
-        <view class="feature-card">
-          <text class="feature-emoji">🧹</text>
-          <view class="feature-text">
-            <text class="feature-title">家务记录</text>
-            <text class="feature-desc">自动记录家务完成情况</text>
-          </view>
-        </view>
-        <view class="feature-card">
-          <text class="feature-emoji">🏃</text>
-          <view class="feature-text">
-            <text class="feature-title">运动打卡</text>
-            <text class="feature-desc">追踪家人运动成果</text>
-          </view>
-        </view>
-        <view class="feature-card">
-          <text class="feature-emoji">💰</text>
-          <view class="feature-text">
-            <text class="feature-title">储蓄动态</text>
-            <text class="feature-desc">记录存款变化，培养理财习惯</text>
-          </view>
-        </view>
-        <view class="feature-card">
-          <text class="feature-emoji">🎁</text>
-          <view class="feature-text">
-            <text class="feature-title">积分变动</text>
-            <text class="feature-desc">清晰展示积分获取和消费</text>
-          </view>
-        </view>
-      </view>
-      
-      <!-- 登录提示 -->
-      <view class="guest-login-section">
-        <button class="login-btn-primary" bindtap="goToLogin">
-          <text class="btn-icon">💚</text>
-          <text class="btn-text">登录查看家庭活动</text>
-        </button>
-        <text class="login-tip">登录后可以查看家庭成员的活动记录</text>
-      </view>
+<!--pages/moments/moments.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">家庭动态</view>
+      <view class="hero-subtitle">Family Activities</view>
     </view>
   </view>
 
-  <block wx:else>
-  <!-- 渐变头部 -->
-  <view class="activity-header">
-    <view class="header-bg"></view>
-    <view class="header-content">
-      <text class="header-title">📋 家庭活动记录</text>
-      <text class="header-subtitle">记录家人的每一次努力</text>
-    </view>
-  </view>
-
-  <!-- 无家庭提示 -->
-  <view class="empty-state" wx:if="{{!familyInfo}}">
-    <view class="empty-icon animate-float">🏠</view>
-    <text class="empty-title">请先加入家庭</text>
-    <text class="empty-desc">加入家庭后，才能查看活动记录哦</text>
-  </view>
-
-  <view class="activity-content" wx:else>
-    <!-- 筛选标签 -->
-    <view class="filter-tabs">
+  <!-- 筛选标签 (Glassmorphism Tabs) -->
+  <view class="filter-wrapper">
+    <scroll-view class="filter-scroll" scroll-x enable-flex>
       <view 
-        class="filter-tab {{filterType === item.key ? 'active' : ''}}" 
+        class="filter-item {{filterType === item.key ? 'active' : ''}}" 
         wx:for="{{filterTypes}}" 
         wx:key="key"
         data-type="{{item.key}}"
         bindtap="onFilterChange"
       >
-        <text class="tab-icon">{{item.icon}}</text>
-        <text class="tab-name">{{item.name}}</text>
+        <text class="filter-icon">{{item.icon}}</text>
+        <text class="filter-name">{{item.name}}</text>
       </view>
-    </view>
+    </scroll-view>
+  </view>
 
-    <!-- 活动列表 -->
-    <view class="activity-list" wx:if="{{activities.length > 0}}">
-      <view 
-        class="activity-card {{item.type}}" 
-        wx:for="{{activities}}" 
-        wx:key="id"
-        data-type="{{item.type}}"
-        bindtap="goToModule"
-      >
-        <!-- 活动图标 -->
-        <view class="activity-icon-wrap">
-          <text class="activity-icon">{{item.icon}}</text>
+  <!-- 活动列表 -->
+  <view class="activity-list">
+    <view class="activity-item glass-card success-pop" wx:for="{{activities}}" wx:key="id">
+      <view class="activity-header">
+        <image class="user-avatar" src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}" mode="aspectFill" />
+        <view class="user-info">
+          <text class="user-name">{{item.user.nickname}}</text>
+          <text class="activity-time">{{item.createdAtText}}</text>
         </view>
-        
-        <!-- 活动内容 -->
-        <view class="activity-main">
-          <view class="activity-header">
-            <view class="activity-user">
-              <image 
-                class="user-avatar" 
-                src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"
-              ></image>
-              <text class="user-name">{{item.user.nickname}}</text>
-            </view>
-            <text class="activity-time">{{item.createdAtText}}</text>
-          </view>
-          
-          <view class="activity-body">
-            <text class="activity-title">{{item.title}}</text>
-            <text class="activity-desc" wx:if="{{item.description}}">{{item.description}}</text>
-            <text class="activity-note" wx:if="{{item.note}}">备注：{{item.note}}</text>
-          </view>
-        </view>
-        
-        <!-- 右箭头 -->
-        <view class="activity-arrow">
-          <text class="arrow-icon">›</text>
-        </view>
+        <view class="activity-type-icon">{{item.icon}}</view>
       </view>
-
-      <!-- 加载状态 -->
-      <view class="list-footer">
-        <view class="loading-more" wx:if="{{isLoadingMore}}">
-          <view class="loading-dot"></view>
-          <view class="loading-dot"></view>
-          <view class="loading-dot"></view>
-        </view>
-        <text class="footer-text" wx:elif="{{hasMore}}">上拉加载更多</text>
-        <text class="footer-text" wx:else>— 已经到底了 —</text>
-      </view>
-    </view>
-
-    <!-- 空状态 -->
-    <view class="empty-state" wx:else>
-      <view class="empty-icon animate-float">📭</view>
-      <text class="empty-title">还没有活动记录</text>
-      <text class="empty-desc">快去完成家务、运动打卡或存钱吧！</text>
-      
-      <view class="quick-actions">
-        <view class="quick-action" bindtap="goToModule" data-type="chore">
-          <text class="action-icon">🧹</text>
-          <text class="action-text">做家务</text>
-        </view>
-        <view class="quick-action" bindtap="goToModule" data-type="sport">
-          <text class="action-icon">🏃</text>
-          <text class="action-text">去运动</text>
-        </view>
-        <view class="quick-action" bindtap="goToModule" data-type="savings">
-          <text class="action-icon">💰</text>
-          <text class="action-text">去存钱</text>
-        </view>
+      <view class="activity-body">
+        <text class="activity-title">{{item.title}}</text>
+        <text class="activity-desc" wx:if="{{item.description}}">{{item.description}}</text>
       </view>
     </view>
   </view>
-  </block>
+
+  <view class="safe-bottom"></view>
 </view>

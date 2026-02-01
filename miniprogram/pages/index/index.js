@@ -271,14 +271,28 @@ Page({
   // 查看动态列表
   goToMoments() {
     this.checkLoginAndGo(() => {
-      wx.switchTab({ url: '/pages/moments/moments' });
+      wx.navigateTo({ url: '/pages/moments/moments' });
+    });
+  },
+
+  // 查看日历
+  goToCalendar() {
+    this.checkLoginAndGo(() => {
+      wx.navigateTo({ url: '/pages/calendar/calendar' });
+    });
+  },
+
+  // 查看物资
+  goToInventory() {
+    this.checkLoginAndGo(() => {
+      wx.navigateTo({ url: '/pages/inventory/inventory' });
     });
   },
 
   // 查看动态详情 - 跳转到动态列表
   goToMomentDetail(e) {
     this.checkLoginAndGo(() => {
-      wx.switchTab({ url: '/pages/moments/moments' });
+      wx.navigateTo({ url: '/pages/moments/moments' });
     });
   },
 
@@ -306,7 +320,7 @@ Page({
   // 运动打卡
   goToSports() {
     this.checkLoginAndGo(() => {
-      wx.switchTab({ url: '/pages/sports/sports' });
+      wx.navigateTo({ url: '/pages/sports/sports' });
     });
   }
 });

@@ -93,9 +93,12 @@ const getRequests = async (req, res) => {
   }
 
   try {
-    // 此功能需要在savingsService中补充实现
-    // 暂时返回空数据
-    return res.json(createSuccess({ data: [], isAdmin: false }));
+    const result = await savingsService.getRequests(familyId, status, page, pageSize);
+    return res.json(createSuccess({ 
+      data: result.data, 
+      total: result.total,
+      isAdmin: req.user.isAdmin 
+    }));
   } catch (error) {
     logger.error('获取申请列表错误', error);
     return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
@@ -158,9 +161,9 @@ const deposit = async (req, res) => {
     });
     return res.json(createSuccess(result));
   } catch (error) {
-    logger.error('存款错误', error);
+    logger.error('存款操作失败:', error);
     return res.status(HTTP_STATUS.INTERNAL_ERROR).json(
-      createError(ERROR_CODES.SAVINGS_DEPOSIT_FAILED, error.message)
+      createError(ERROR_CODES.SAVINGS_DEPOSIT_FAILED, `存款失败: ${error.message}`)
     );
   }
 };

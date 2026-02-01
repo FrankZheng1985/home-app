@@ -1,52 +1,66 @@
-<!--pages/profile/preferences.wxml-->
-<view class="container preferences-container">
-  <view class="header-section">
-    <view class="header-icon">💝</view>
-    <view class="header-title">我的喜好</view>
-    <view class="header-desc text-muted">让家人更了解您的偏好</view>
-  </view>
-
-  <view class="form-section card">
-    <view class="form-group">
-      <view class="form-label">🍜 喜欢的食物</view>
-      <input 
-        class="form-input" 
-        placeholder="如：火锅、寿司、西餐..."
-        value="{{preferences.favoriteFood}}"
-        data-field="favoriteFood"
-        bindinput="onPreferenceInput"
-      />
-    </view>
-
-    <view class="form-group">
-      <view class="form-label">🎨 喜欢的颜色</view>
-      <input 
-        class="form-input" 
-        placeholder="如：蓝色、粉色..."
-        value="{{preferences.favoriteColor}}"
-        data-field="favoriteColor"
-        bindinput="onPreferenceInput"
-      />
-    </view>
-
-    <view class="form-group">
-      <view class="form-label">🎯 兴趣爱好</view>
-      <input 
-        class="form-input" 
-        placeholder="如：旅行、阅读、运动..."
-        value="{{preferences.hobbies}}"
-        data-field="hobbies"
-        bindinput="onPreferenceInput"
-      />
+<!--pages/profile/preferences.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-icon">💝</view>
+      <view class="hero-title">我的喜好</view>
+      <view class="hero-subtitle">Your Personal Preferences</view>
     </view>
   </view>
 
+  <!-- 表单卡片 -->
+  <view class="glass-card form-card success-pop">
+    <view class="form-group">
+      <text class="form-label">喜欢的食物</text>
+      <view class="input-wrapper">
+        <text class="input-icon">🍜</text>
+        <input 
+          class="form-input" 
+          placeholder="如：火锅、寿司、西餐..."
+          value="{{preferences.favoriteFood}}"
+          data-field="favoriteFood"
+          bindinput="onPreferenceInput"
+        />
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">喜欢的颜色</text>
+      <view class="input-wrapper">
+        <text class="input-icon">🎨</text>
+        <input 
+          class="form-input" 
+          placeholder="如：蓝色、粉色..."
+          value="{{preferences.favoriteColor}}"
+          data-field="favoriteColor"
+          bindinput="onPreferenceInput"
+        />
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">兴趣爱好</text>
+      <view class="input-wrapper">
+        <text class="input-icon">🎯</text>
+        <input 
+          class="form-input" 
+          placeholder="如：旅行、阅读、运动..."
+          value="{{preferences.hobbies}}"
+          data-field="hobbies"
+          bindinput="onPreferenceInput"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
   <view class="action-section">
-    <button 
-      class="btn-primary btn-block" 
-      bindtap="savePreferences"
-      loading="{{isSubmitting}}"
-      disabled="{{isSubmitting}}"
-    >保存</button>
+    <view class="primary-btn btn-active-feedback" bindtap="savePreferences">
+      <text>{{isSubmitting ? '正在保存...' : '保存设置'}}</text>
+    </view>
   </view>
+
+  <view class="safe-bottom"></view>
 </view>

@@ -1,10 +1,9 @@
-<!--pages/register/register.wxml - 精美设计版（审核合规版）-->
-<view class="register-page">
-  <!-- 渐变头部 -->
-  <view class="page-header">
-    <view class="header-bg"></view>
-    <view class="header-content">
-      <!-- 头像上传 -->
+<!--pages/register/register.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
       <button class="avatar-upload" open-type="chooseAvatar" bindchooseavatar="chooseAvatar">
         <view class="avatar-wrapper">
           <image 
@@ -12,105 +11,61 @@
             src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}" 
             mode="aspectFill"
           ></image>
-          <view class="avatar-ring"></view>
-          <view class="camera-badge">
-            <text>📷</text>
-          </view>
+          <view class="camera-badge">📷</view>
         </view>
       </button>
-      <text class="avatar-hint">点击更换头像（选填）</text>
+      <view class="hero-title">完善资料</view>
+      <view class="hero-subtitle">Complete Your Profile</view>
     </view>
   </view>
 
-  <!-- 数据用途说明 -->
-  <view class="privacy-notice">
-    <text class="notice-icon">🔒</text>
-    <text class="notice-text">您的信息仅用于家庭成员识别，不会对外公开</text>
-  </view>
-
-  <!-- 表单区域 -->
-  <view class="form-section">
-    <!-- 昵称 - 必填 -->
-    <view class="form-card">
-      <view class="form-group">
-        <view class="label-row">
-          <text class="form-label">昵称</text>
-          <text class="required-tag">必填</text>
-        </view>
-        <view class="input-wrapper">
-          <text class="input-icon">😊</text>
-          <input 
-            type="nickname"
-            class="form-input" 
-            placeholder="给自己起个名字吧"
-            value="{{userInfo.nickname}}"
-            bindinput="onNicknameInput"
-            maxlength="12"
-          />
-        </view>
-        <text class="field-hint">昵称将显示给家庭成员</text>
-      </view>
-
-      <!-- 性别选择 - 选填 -->
-      <view class="form-group">
-        <view class="label-row">
-          <text class="form-label">性别</text>
-          <text class="optional-tag">选填</text>
-        </view>
-        <view class="gender-options">
-          <view class="gender-option {{userInfo.gender === 1 ? 'active male' : ''}}" 
-                bindtap="selectGender" data-gender="1">
-            <text class="gender-emoji">👦</text>
-            <text class="gender-text">男生</text>
-          </view>
-          <view class="gender-option {{userInfo.gender === 2 ? 'active female' : ''}}" 
-                bindtap="selectGender" data-gender="2">
-            <text class="gender-emoji">👧</text>
-            <text class="gender-text">女生</text>
-          </view>
-          <view class="gender-option {{userInfo.gender === 0 ? 'active secret' : ''}}" 
-                bindtap="selectGender" data-gender="0">
-            <text class="gender-emoji">🤫</text>
-            <text class="gender-text">保密</text>
-          </view>
-        </view>
+  <!-- 表单卡片 -->
+  <view class="glass-card form-card success-pop">
+    <view class="form-group">
+      <text class="form-label">您的昵称</text>
+      <view class="input-wrapper">
+        <input 
+          type="nickname"
+          class="form-input" 
+          placeholder="给自己起个名字吧"
+          value="{{userInfo.nickname}}"
+          bindinput="onNicknameInput"
+          maxlength="12"
+        />
       </view>
     </view>
 
-    <!-- 喜好标签 - 选填 -->
-    <view class="preferences-card">
-      <view class="card-header">
-        <text class="card-title">💝 我的喜好</text>
-        <text class="optional-tag">选填</text>
-      </view>
-      <text class="card-desc">让家人更了解你，可以多选哦</text>
-      <view class="tags-container">
-        <view 
-          class="tag-item {{item.selected ? 'selected' : ''}}" 
-          wx:for="{{preferenceOptions}}" 
-          wx:key="id"
-          data-id="{{item.id}}"
-          bindtap="togglePreference"
-        >
-          <text class="tag-emoji">{{item.emoji}}</text>
-          <text class="tag-text">{{item.name}}</text>
-        </view>
+    <view class="form-group">
+      <text class="form-label">您的性别</text>
+      <view class="gender-options">
+        <view class="gender-item {{userInfo.gender === 1 ? 'active' : ''}}" bindtap="selectGender" data-gender="1">👦 男生</view>
+        <view class="gender-item {{userInfo.gender === 2 ? 'active' : ''}}" bindtap="selectGender" data-gender="2">👧 女生</view>
+        <view class="gender-item {{userInfo.gender === 0 ? 'active' : ''}}" bindtap="selectGender" data-gender="0">🤫 保密</view>
       </view>
     </view>
   </view>
 
-  <!-- 提交按钮 -->
-  <view class="action-section">
-    <button 
-      class="submit-btn {{userInfo.nickname ? 'active' : ''}}" 
-      bindtap="saveAndContinue"
-      loading="{{isSubmitting}}"
-      disabled="{{isSubmitting || !userInfo.nickname}}"
+  <!-- 喜好选择 -->
+  <view class="section-title">我的喜好</view>
+  <view class="tags-grid">
+    <view 
+      class="tag-item glass-card {{item.selected ? 'selected' : ''}}" 
+      wx:for="{{preferenceOptions}}" 
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="togglePreference"
     >
-      <text class="btn-text">保存并继续</text>
-    </button>
-    <view class="skip-link" bindtap="skipRegister">
-      <text>稍后完善 ›</text>
+      <text>{{item.emoji}} {{item.name}}</text>
     </view>
   </view>
+
+  <!-- 底部操作 -->
+  <view class="action-section">
+    <view class="primary-btn btn-active-feedback {{userInfo.nickname ? '' : 'disabled'}}" bindtap="{{userInfo.nickname ? 'saveAndContinue' : ''}}">
+      <text>{{isSubmitting ? '正在保存...' : '保存并继续'}}</text>
+    </view>
+    <view class="skip-link" bindtap="skipRegister">稍后完善 ›</view>
+  </view>
+
+  <view class="safe-bottom"></view>
 </view>

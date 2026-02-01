@@ -1,226 +1,90 @@
-<!--pages/profile/profile.wxml - Aurora 极光主题版-->
-<view class="profile-page">
-  <!-- 未登录 - 可浏览部分功能 -->
-  <view class="guest-profile-page" wx:if="{{!isLoggedIn}}">
-    <!-- 头部 -->
-    <view class="profile-header guest-mode">
-      <view class="header-bg">
-        <view class="header-glow"></view>
-      </view>
-      <view class="header-content">
-        <view class="user-section" bindtap="goToLogin">
-          <view class="avatar-wrapper">
-            <view class="guest-avatar">
-              <text class="guest-avatar-icon">👤</text>
-            </view>
-            <view class="avatar-ring"></view>
-          </view>
-          <view class="user-info">
-            <text class="user-name">点击登录</text>
-            <view class="user-family">
-              <text class="family-icon">🏠</text>
-              <text class="family-name">登录后体验更多功能</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 登录提示卡片 -->
-    <view class="guest-login-card">
-      <view class="login-card-icon">💚</view>
-      <view class="login-card-info">
-        <text class="login-card-title">微信一键登录</text>
-        <text class="login-card-desc">登录后可创建家庭、记录家务、获得积分</text>
-      </view>
-      <button class="login-card-btn" bindtap="goToLogin">登录</button>
-    </view>
-
-    <!-- 公开菜单 -->
-    <view class="profile-content">
-      <view class="menu-section">
-        <view class="menu-card">
-          <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/about">
-            <view class="menu-icon-wrap icon-about">
-              <text class="menu-emoji">ℹ️</text>
-            </view>
-            <text class="menu-title">关于我们</text>
-            <text class="menu-arrow">›</text>
-          </view>
-          
-          <view class="menu-item" bindtap="viewAgreement" data-type="user">
-            <view class="menu-icon-wrap icon-agreement">
-              <text class="menu-emoji">📄</text>
-            </view>
-            <text class="menu-title">用户协议</text>
-            <text class="menu-arrow">›</text>
-          </view>
-          
-          <view class="menu-item" bindtap="viewAgreement" data-type="privacy">
-            <view class="menu-icon-wrap icon-privacy">
-              <text class="menu-emoji">🔒</text>
-            </view>
-            <text class="menu-title">隐私政策</text>
-            <text class="menu-arrow">›</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 版本信息 -->
-      <view class="version-section">
-        <text class="version-text">家庭小助手 v1.0.0</text>
-        <text class="copyright">✨ Made with ❤️ for Family ✨</text>
-      </view>
-    </view>
-  </view>
-
-  <block wx:else>
-  <!-- 极光渐变头部 -->
+<!--pages/profile/profile.wxml - 3D极简科技版-->
+<view class="page-container profile-page">
+  <!-- 头部区域 -->
   <view class="profile-header">
-    <view class="header-bg">
-      <!-- 装饰光晕 -->
-      <view class="header-glow"></view>
-      <view class="header-glow-2"></view>
-    </view>
-    <view class="header-content">
-      <view class="user-section" bindtap="goToEdit">
+    <view class="header-bg-glow"></view>
+    <view class="header-content page-fade-in">
+      <view class="user-section" bindtap="{{isLoggedIn ? 'goToEdit' : 'goToLogin'}}">
         <view class="avatar-wrapper">
           <image 
             class="user-avatar" 
-            src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}"
+            src="{{isLoggedIn ? (userInfo.avatarUrl || '/assets/images/default-avatar.png') : '/assets/images/default-avatar.png'}}"
             mode="aspectFill"
           ></image>
           <view class="avatar-ring"></view>
-          <view class="edit-badge">
-            <text>✏️</text>
-          </view>
         </view>
         <view class="user-info">
-          <text class="user-name">{{userInfo.nickname || '点击设置昵称'}}</text>
+          <text class="user-name">{{isLoggedIn ? (userInfo.nickname || '设置昵称') : '点击登录'}}</text>
           <view class="user-family">
             <text class="family-icon">🏠</text>
-            <text class="family-name">{{familyInfo.name || '暂未加入家庭'}}</text>
+            <text class="family-name">{{isLoggedIn ? (familyInfo.name || '暂未加入家庭') : '开启智能家庭生活'}}</text>
           </view>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 悬浮数据卡片 -->
-  <view class="stats-card" wx:if="{{familyInfo}}">
-    <view class="stat-item" bindtap="onMenuTap" data-url="/pages/profile/points">
-      <text class="stat-value">{{pointsSummary.totalPoints || 0}}</text>
-      <text class="stat-label">累计积分</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item">
-      <text class="stat-value stat-success">{{pointsSummary.thisMonth || 0}}</text>
-      <text class="stat-label">本月获得</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item">
-      <text class="stat-value stat-warning">{{choreCount || 0}}</text>
-      <text class="stat-label">完成家务</text>
+  <!-- 核心数据卡片 (仅登录显示) -->
+  <view class="glass-card stats-card success-pop" wx:if="{{isLoggedIn && familyInfo}}">
+    <view class="stat-group">
+      <view class="stat-item">
+        <text class="stat-label">累计积分</text>
+        <text class="stat-value">{{pointsSummary.totalPoints || 0}}</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">完成家务</text>
+        <text class="stat-value">{{choreCount || 0}}</text>
+      </view>
     </view>
   </view>
 
-  <!-- 主内容区 -->
-  <view class="profile-content">
-    <!-- 菜单卡片 -->
-    <view class="menu-section">
-      <view class="menu-card">
-        <view 
-          class="menu-item" 
-          bindtap="onMenuTap"
-          data-url="/pages/profile/edit"
-        >
-          <view class="menu-icon-wrap icon-profile">
-            <text class="menu-emoji">👤</text>
-          </view>
-          <text class="menu-title">个人资料</text>
-          <text class="menu-arrow">›</text>
-        </view>
-        
-        <view 
-          class="menu-item" 
-          bindtap="onMenuTap"
-          data-url="/pages/profile/preferences"
-        >
-          <view class="menu-icon-wrap icon-preference">
-            <text class="menu-emoji">💝</text>
-          </view>
-          <text class="menu-title">我的喜好</text>
-          <text class="menu-arrow">›</text>
-        </view>
-        
-        <view 
-          class="menu-item" 
-          bindtap="onMenuTap"
-          data-url="/pages/profile/points"
-          wx:if="{{familyInfo}}"
-        >
-          <view class="menu-icon-wrap icon-points">
-            <text class="menu-emoji">💰</text>
-          </view>
-          <text class="menu-title">积分明细</text>
-          <text class="menu-arrow">›</text>
-        </view>
-        
-        <!-- 奖励设置：管理员在工作台有入口，这里只对普通成员显示 -->
-        <view 
-          class="menu-item" 
-          bindtap="onMenuTap"
-          data-url="/pages/rewards/rewards"
-          wx:if="{{familyInfo && !isAdmin}}"
-        >
-          <view class="menu-icon-wrap icon-reward">
-            <text class="menu-emoji">🎁</text>
-          </view>
-          <text class="menu-title">奖励设置</text>
-          <text class="menu-arrow">›</text>
-        </view>
+  <!-- 菜单列表 -->
+  <view class="menu-list">
+    <view class="glass-card menu-group">
+      <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/edit" wx:if="{{isLoggedIn}}">
+        <view class="menu-icon">👤</view>
+        <text class="menu-title">个人资料</text>
+        <text class="menu-arrow">›</text>
       </view>
-
-      <view class="menu-card">
-        <view 
-          class="menu-item" 
-          bindtap="onMenuTap"
-          data-url="/pages/profile/feedback"
-        >
-          <view class="menu-icon-wrap icon-feedback">
-            <text class="menu-emoji">💬</text>
-          </view>
-          <text class="menu-title">意见反馈</text>
-          <text class="menu-arrow">›</text>
-        </view>
-        
-        <view 
-          class="menu-item" 
-          bindtap="onMenuTap"
-          data-url="/pages/profile/about"
-        >
-          <view class="menu-icon-wrap icon-about">
-            <text class="menu-emoji">ℹ️</text>
-          </view>
-          <text class="menu-title">关于我们</text>
-          <text class="menu-arrow">›</text>
-        </view>
+      <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/preferences" wx:if="{{isLoggedIn}}">
+        <view class="menu-icon">💝</view>
+        <text class="menu-title">我的喜好</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/points" wx:if="{{isLoggedIn && familyInfo}}">
+        <view class="menu-icon">💰</view>
+        <text class="menu-title">积分明细</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onMenuTap" data-url="/pages/workbench/workbench" wx:if="{{isLoggedIn && isAdmin}}">
+        <view class="menu-icon">⚙️</view>
+        <text class="menu-title">管理工作台</text>
+        <text class="menu-arrow">›</text>
       </view>
     </view>
 
-    <!-- 退出登录 -->
-    <view class="logout-section">
-      <button class="logout-btn" bindtap="logout">
-        <text class="logout-icon">👋</text>
-        <text class="logout-text">退出登录</text>
-      </button>
+    <view class="glass-card menu-group">
+      <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/feedback">
+        <view class="menu-icon">💬</view>
+        <text class="menu-title">意见反馈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="onMenuTap" data-url="/pages/profile/about">
+        <view class="menu-icon">ℹ️</view>
+        <text class="menu-title">关于我们</text>
+        <text class="menu-arrow">›</text>
+      </view>
     </view>
 
-    <!-- 版本信息 -->
-    <view class="version-section">
-      <text class="version-text">家庭小助手 v1.0.0</text>
-      <text class="copyright">✨ Made with ❤️ for Family ✨</text>
+    <!-- 退出登录按钮 -->
+    <view class="logout-section" wx:if="{{isLoggedIn}}">
+      <view class="logout-btn" bindtap="logout">退出登录</view>
     </view>
   </view>
-  </block>
+
+  <view class="version-info">家庭小助手 v1.0.0</view>
+  
+  <!-- 底部安全区域占位 -->
+  <view class="safe-bottom"></view>
 </view>

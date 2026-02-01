@@ -1,5 +1,5 @@
 // src/services/authService.js
-// 认证服务层 - 处理认证相关业务逻辑 (MySQL 版本)
+// 认证服务层 - 处理认证相关业务逻辑 (PostgreSQL 版本)
 
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
@@ -56,7 +56,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         await this.query(
-          'UPDATE users SET session_key = ? WHERE id = ?',
+          'UPDATE users SET session_key = $1 WHERE id = $2',
           [sessionKey, userId]
         );
       } catch (error) {
@@ -72,7 +72,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         const result = await this.queryOne(
-          'SELECT session_key FROM users WHERE id = ?',
+          'SELECT session_key FROM users WHERE id = $1',
           [userId]
         );
         return result?.session_key;
@@ -93,7 +93,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         const user = await this.queryOne(
-          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE openid = ?',
+          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE openid = $1',
           [openid]
         );
         if (user) return user;
@@ -119,7 +119,7 @@ class AuthService extends BaseService {
     if (this.isDatabaseAvailable()) {
       try {
         return await this.queryOne(
-          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = ?',
+          'SELECT id, openid, nickname, avatar_url, preferences, created_at FROM users WHERE id = $1',
           [userId]
         );
       } catch (error) {
@@ -149,7 +149,7 @@ class AuthService extends BaseService {
       try {
         // 检查是否已存在
         const existing = await this.queryOne(
-          'SELECT id FROM users WHERE openid = ?',
+          'SELECT id FROM users WHERE openid = $1',
           [openId]
         );
 
@@ -165,7 +165,7 @@ class AuthService extends BaseService {
           avatar_url: avatarUrl || '',
           gender: gender || 0,
           birthday: birthday || null,
-          preferences: JSON.stringify(preferences || {}),
+          preferences: preferences || {},
           created_at: new Date()
         });
 
@@ -229,9 +229,7 @@ class AuthService extends BaseService {
       id: user.id,
       nickname: user.nickname,
       avatarUrl: user.avatar_url,
-      preferences: typeof user.preferences === 'string' 
-        ? JSON.parse(user.preferences) 
-        : user.preferences
+      preferences: user.preferences || {}
     };
   }
 }

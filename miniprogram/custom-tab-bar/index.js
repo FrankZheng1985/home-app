@@ -2,82 +2,71 @@
 const app = getApp();
 
 // TabBar配置
-const ADMIN_LIST = [
-  {
-    pagePath: "/pages/index/index",
-    text: "首页",
-    iconPath: "/assets/icons/home.png",
-    selectedIconPath: "/assets/icons/home-active.png",
-    emoji: "🏠"
-  },
-  {
-    pagePath: "/pages/chores/chores",
-    text: "家务",
-    iconPath: "/assets/icons/chores.png",
-    selectedIconPath: "/assets/icons/chores-active.png",
-    emoji: "🧹"
-  },
-  {
-    pagePath: "/pages/workbench/workbench",
-    text: "工作台",
-    iconPath: "/assets/icons/workbench.png",
-    selectedIconPath: "/assets/icons/workbench-active.png",
-    emoji: "📋",
-    useEmoji: true
-  },
-  {
-    pagePath: "/pages/moments/moments",
-    text: "动态",
-    iconPath: "/assets/icons/moments.png",
-    selectedIconPath: "/assets/icons/moments-active.png",
-    emoji: "💬"
-  },
-  {
-    pagePath: "/pages/profile/profile",
-    text: "我的",
-    iconPath: "/assets/icons/profile.png",
-    selectedIconPath: "/assets/icons/profile-active.png",
-    emoji: "👤"
-  }
-];
+    const ADMIN_LIST = [
+      {
+        pagePath: "/pages/index/index",
+        text: "首页",
+        emoji: "🏠",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/calendar/calendar",
+        text: "日历",
+        emoji: "📅",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/inventory/inventory",
+        text: "物资",
+        emoji: "📦",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/chores/chores",
+        text: "家务",
+        emoji: "🧼",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/profile/profile",
+        text: "我的",
+        emoji: "👤",
+        useEmoji: true
+      }
+    ];
 
-const MEMBER_LIST = [
-  {
-    pagePath: "/pages/index/index",
-    text: "首页",
-    iconPath: "/assets/icons/home.png",
-    selectedIconPath: "/assets/icons/home-active.png",
-    emoji: "🏠"
-  },
-  {
-    pagePath: "/pages/chores/chores",
-    text: "家务",
-    iconPath: "/assets/icons/chores.png",
-    selectedIconPath: "/assets/icons/chores-active.png",
-    emoji: "🧹"
-  },
-  {
-    pagePath: "/pages/sports/sports",
-    text: "运动",
-    iconPath: "/assets/icons/sports.png",
-    selectedIconPath: "/assets/icons/sports-active.png",
-    emoji: "🏃"
-  },
-  {
-    pagePath: "/pages/moments/moments",
-    text: "动态",
-    iconPath: "/assets/icons/moments.png",
-    selectedIconPath: "/assets/icons/moments-active.png",
-    emoji: "💬"
-  },
-  {
-    pagePath: "/pages/profile/profile",
-    text: "我的",
-    iconPath: "/assets/icons/profile.png",
-    selectedIconPath: "/assets/icons/profile-active.png",
-    emoji: "👤"
-  }
-];
+    const MEMBER_LIST = [
+      {
+        pagePath: "/pages/index/index",
+        text: "首页",
+        emoji: "🏠",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/calendar/calendar",
+        text: "日历",
+        emoji: "📅",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/inventory/inventory",
+        text: "物资",
+        emoji: "📦",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/chores/chores",
+        text: "家务",
+        emoji: "🧼",
+        useEmoji: true
+      },
+      {
+        pagePath: "/pages/profile/profile",
+        text: "我的",
+        emoji: "👤",
+        useEmoji: true
+      }
+    ];
 
 Component({
   data: {
@@ -109,19 +98,22 @@ Component({
       const isAdmin = app.globalData.isAdmin || false;
       const list = isAdmin ? ADMIN_LIST : MEMBER_LIST;
       
-      // 只有当状态变化时才更新
-      if (this.data.isAdmin !== isAdmin) {
-        console.log('[TabBar] 角色变化，更新TabBar:', isAdmin ? '管理员' : '普通成员');
-        this.setData({ isAdmin, list });
-      }
+      this.setData({ isAdmin, list });
     },
 
     // 切换Tab
     switchTab(e) {
       const data = e.currentTarget.dataset;
       const url = data.path;
-      
-      wx.switchTab({ url });
+      const index = data.index;
+
+      // 如果点击的是日历或物资（普通页面），使用 navigateTo
+      if (url === '/pages/calendar/calendar' || url === '/pages/inventory/inventory') {
+        wx.navigateTo({ url });
+      } else {
+        // 如果点击的是 Tab 页面，使用 switchTab
+        wx.switchTab({ url });
+      }
     }
   }
 });

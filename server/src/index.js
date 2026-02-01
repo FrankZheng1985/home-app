@@ -19,6 +19,8 @@ const postRoutes = require('./routes/posts');
 const uploadRoutes = require('./routes/upload');
 const savingsRoutes = require('./routes/savings');
 const sportsRoutes = require('./routes/sports');
+const calendarRoutes = require('./routes/calendar');
+const inventoryRoutes = require('./routes/inventory');
 
 // 导入中间件
 const { errorHandler, requestLogger, notFoundHandler } = require('./middleware/errorHandler');
@@ -49,6 +51,8 @@ app.use('/api/posts', postRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/savings', savingsRoutes);
 app.use('/api/sports', sportsRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // ============ 健康检查 ============
 // Render 健康检查

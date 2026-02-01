@@ -1,24 +1,19 @@
-<!--pages/family/create.wxml - 精美设计版-->
-<view class="create-page">
-  <!-- 渐变头部 -->
-  <view class="page-header">
-    <view class="header-bg"></view>
-    <view class="header-content">
-      <view class="header-icon animate-float">
-        <text class="icon-emoji">🏠</text>
-        <view class="icon-glow"></view>
-      </view>
-      <text class="header-title">创建新家庭</text>
-      <text class="header-desc">为您的家庭取一个温馨的名字</text>
+<!--pages/family/create.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">创建家庭</view>
+      <view class="hero-subtitle">Create Your Smart Home</view>
     </view>
   </view>
 
   <!-- 表单卡片 -->
-  <view class="form-card">
+  <view class="glass-card form-card success-pop">
     <view class="form-group">
       <text class="form-label">家庭名称</text>
       <view class="input-wrapper">
-        <text class="input-icon">✨</text>
         <input 
           class="form-input" 
           placeholder="如：温馨小窝、幸福之家"
@@ -27,48 +22,40 @@
           maxlength="20"
         />
       </view>
-      <text class="input-hint">2-20个字符，给家庭起个有爱的名字吧</text>
+    </view>
+    
+    <view class="action-row">
+      <view class="primary-btn btn-active-feedback {{familyName.length >= 2 ? '' : 'disabled'}}" bindtap="{{familyName.length >= 2 ? 'createFamily' : ''}}">
+        <text>{{isSubmitting ? '正在创建...' : '立即创建'}}</text>
+      </view>
     </view>
   </view>
 
   <!-- 特权说明 -->
-  <view class="benefits-section">
-    <text class="section-title">创建后您将获得</text>
-    <view class="benefit-list">
-      <view class="benefit-item">
-        <view class="benefit-icon icon-admin">👑</view>
-        <view class="benefit-content">
-          <text class="benefit-title">成为家庭管理员</text>
-          <text class="benefit-desc">管理家庭成员和设置</text>
-        </view>
+  <view class="section-title">创建后您将获得</view>
+  <view class="benefits-grid">
+    <view class="benefit-card glass-card">
+      <view class="benefit-icon">👑</view>
+      <view class="benefit-info">
+        <text class="benefit-name">管理员权限</text>
+        <text class="benefit-desc">管理成员与设置</text>
       </view>
-      <view class="benefit-item">
-        <view class="benefit-icon icon-invite">💌</view>
-        <view class="benefit-content">
-          <text class="benefit-title">邀请家人加入</text>
-          <text class="benefit-desc">生成邀请码邀请家人</text>
-        </view>
+    </view>
+    <view class="benefit-card glass-card">
+      <view class="benefit-icon">💌</view>
+      <view class="benefit-info">
+        <text class="benefit-name">邀请家人</text>
+        <text class="benefit-desc">生成专属邀请码</text>
       </view>
-      <view class="benefit-item">
-        <view class="benefit-icon icon-reward">🎁</view>
-        <view class="benefit-content">
-          <text class="benefit-title">设置家务奖励</text>
-          <text class="benefit-desc">自定义家务类型和积分</text>
-        </view>
+    </view>
+    <view class="benefit-card glass-card">
+      <view class="benefit-icon">🎁</view>
+      <view class="benefit-info">
+        <text class="benefit-name">奖励体系</text>
+        <text class="benefit-desc">自定义积分规则</text>
       </view>
     </view>
   </view>
 
-  <!-- 提交按钮 -->
-  <view class="action-section">
-    <button 
-      class="submit-btn {{familyName.length >= 2 ? 'active' : ''}}" 
-      bindtap="createFamily"
-      loading="{{isSubmitting}}"
-      disabled="{{isSubmitting || familyName.length < 2}}"
-    >
-      <text class="btn-icon">🚀</text>
-      <text class="btn-text">创建家庭</text>
-    </button>
-  </view>
+  <view class="safe-bottom"></view>
 </view>

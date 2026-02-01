@@ -1,5 +1,5 @@
 // src/services/familyService.js
-// 家庭服务层 - 处理家庭相关业务逻辑 (MySQL 版本)
+// 家庭服务层 - 处理家庭相关业务逻辑 (PostgreSQL 版本)
 
 const { v4: uuidv4 } = require('uuid');
 const BaseService = require('./baseService');
@@ -55,14 +55,14 @@ class FamilyService extends BaseService {
       // 创建家庭
       await client.query(
         `INSERT INTO families (id, name, invite_code, creator_id, created_at)
-         VALUES (?, ?, ?, ?, NOW())`,
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
         [familyId, name, inviteCode, userId]
       );
 
       // 添加创建人为成员
       await client.query(
         `INSERT INTO family_members (id, family_id, user_id, role, joined_at)
-         VALUES (?, ?, ?, ?, NOW())`,
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
         [uuidv4(), familyId, userId, FAMILY_ROLES.CREATOR]
       );
 
@@ -100,7 +100,7 @@ class FamilyService extends BaseService {
     for (const preset of presets) {
       await client.query(
         `INSERT INTO chore_types (id, family_id, name, points, icon, is_preset, is_active, created_at)
-         VALUES (?, ?, ?, ?, ?, true, true, NOW())`,
+         VALUES ($1, $2, $3, $4, $5, true, true, CURRENT_TIMESTAMP)`,
         [uuidv4(), familyId, preset.name, preset.points, preset.icon]
       );
     }
@@ -132,7 +132,7 @@ class FamilyService extends BaseService {
 
     const family = await this.queryOne(
       `SELECT id, name, invite_code, creator_id, points_value, created_at 
-       FROM families WHERE id = ?`,
+       FROM families WHERE id = $1`,
       [familyId]
     );
 
@@ -189,7 +189,7 @@ class FamilyService extends BaseService {
               fm.role, f.created_at
        FROM families f
        JOIN family_members fm ON f.id = fm.family_id
-       WHERE fm.user_id = ?
+       WHERE fm.user_id = $1
        ORDER BY f.created_at DESC`,
       [userId]
     );
@@ -250,7 +250,7 @@ class FamilyService extends BaseService {
       `SELECT u.id, u.nickname, u.avatar_url, fm.role, fm.joined_at
        FROM family_members fm
        JOIN users u ON fm.user_id = u.id
-       WHERE fm.family_id = ?
+       WHERE fm.family_id = $1
        ORDER BY 
          CASE fm.role 
            WHEN 'creator' THEN 1 
@@ -284,7 +284,7 @@ class FamilyService extends BaseService {
 
     // 查找家庭
     const family = await this.queryOne(
-      'SELECT id, name FROM families WHERE invite_code = ?',
+      'SELECT id, name FROM families WHERE invite_code = $1',
       [inviteCode.toUpperCase()]
     );
 
@@ -294,7 +294,7 @@ class FamilyService extends BaseService {
 
     // 检查是否已是成员
     const existingMember = await this.queryOne(
-      'SELECT id FROM family_members WHERE family_id = ? AND user_id = ?',
+      'SELECT id FROM family_members WHERE family_id = $1 AND user_id = $2',
       [family.id, userId]
     );
 
@@ -339,7 +339,7 @@ class FamilyService extends BaseService {
     }
 
     const member = await this.queryOne(
-      'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
+      'SELECT role FROM family_members WHERE family_id = $1 AND user_id = $2',
       [familyId, userId]
     );
 
@@ -410,8 +410,7 @@ class FamilyService extends BaseService {
 
     // 更新角色
     await this.update('family_members', {
-      role: newRole,
-      updated_at: new Date()
+      role: newRole
     }, {
       family_id: familyId,
       user_id: memberId
@@ -450,7 +449,7 @@ class FamilyService extends BaseService {
         `SELECT fm.family_id as familyId, fm.role, f.name as familyName
          FROM family_members fm
          JOIN families f ON fm.family_id = f.id
-         WHERE fm.user_id = ?
+         WHERE fm.user_id = $1
          LIMIT 1`,
         [userId]
       );

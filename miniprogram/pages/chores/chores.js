@@ -57,7 +57,7 @@ Page({
   onShow() {
     // 更新自定义TabBar选中状态
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({ selected: 1 });
+      this.getTabBar().setData({ selected: 3 }); // 修正：家务在 TabBar 中的索引是 3
       this.getTabBar().updateTabBar();
     }
     
@@ -621,6 +621,9 @@ Page({
 
   // 阻止冒泡
   preventClose() {},
+
+  // 兼容catchtap="true"的写法
+  true() {},
 
   // 快速记录
   showQuickRecord() {

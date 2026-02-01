@@ -1,40 +1,51 @@
-<!--pages/profile/feedback.wxml-->
-<view class="container feedback-container">
-  <view class="form-section card">
+<!--pages/profile/feedback.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-icon">💬</view>
+      <view class="hero-title">意见反馈</view>
+      <view class="hero-subtitle">Help Us Improve</view>
+    </view>
+  </view>
+
+  <!-- 表单卡片 -->
+  <view class="glass-card form-card success-pop">
     <view class="form-group">
-      <view class="form-label">反馈类型 <text class="required">*</text></view>
+      <text class="form-label">反馈类型</text>
       <picker mode="selector" range="{{typeOptions}}" bindchange="onTypeChange">
-        <view class="picker-value {{feedbackType ? '' : 'placeholder'}}">
-          {{feedbackType || '请选择反馈类型'}}
+        <view class="input-wrapper picker-wrapper">
+          <text class="picker-value {{feedbackType ? '' : 'placeholder'}}">
+            {{feedbackType || '请选择反馈类型'}}
+          </text>
+          <text class="arrow">▼</text>
         </view>
       </picker>
     </view>
 
     <view class="form-group">
-      <view class="form-label">反馈内容 <text class="required">*</text></view>
-      <textarea 
-        class="form-textarea" 
-        placeholder="请详细描述您的问题或建议，至少10个字符..."
-        value="{{feedbackContent}}"
-        bindinput="onContentInput"
-        maxlength="500"
-      ></textarea>
-      <view class="char-count text-muted">{{feedbackContent.length}}/500</view>
+      <text class="form-label">反馈内容</text>
+      <view class="textarea-wrapper">
+        <textarea 
+          class="form-textarea" 
+          placeholder="请详细描述您的问题或建议..."
+          value="{{feedbackContent}}"
+          bindinput="onContentInput"
+          maxlength="500"
+        ></textarea>
+        <text class="char-count">{{feedbackContent.length}}/500</text>
+      </view>
     </view>
-
-    <!-- 已移除联系方式收集字段，符合隐私合规要求 -->
   </view>
 
+  <!-- 提交按钮 -->
   <view class="action-section">
-    <button 
-      class="btn-primary btn-block" 
-      bindtap="submitFeedback"
-      loading="{{isSubmitting}}"
-      disabled="{{isSubmitting || !feedbackType || !feedbackContent.trim()}}"
-    >提交反馈</button>
+    <view class="primary-btn btn-active-feedback {{feedbackType && feedbackContent.length >= 5 ? '' : 'disabled'}}" bindtap="{{feedbackType && feedbackContent.length >= 5 ? 'submitFeedback' : ''}}">
+      <text>{{isSubmitting ? '正在提交...' : '提交反馈'}}</text>
+    </view>
+    <text class="tips-text">感谢您的反馈，我们会认真阅读每一条建议！</text>
   </view>
 
-  <view class="tips-section text-muted">
-    感谢您的反馈，我们会认真阅读每一条建议！
-  </view>
+  <view class="safe-bottom"></view>
 </view>

@@ -1,0 +1,168 @@
+<!--pages/inventory/inventory.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部展示区 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">物资清单</view>
+      <view class="hero-subtitle">Family Inventory & Shopping</view>
+    </view>
+  </view>
+
+  <!-- 顶部统计/切换卡片 -->
+  <view class="glass-card stats-card success-pop">
+    <view class="tab-nav">
+      <view class="tab-item {{currentTab === 'inventory' ? 'active' : ''}}" bindtap="switchTab" data-tab="inventory">
+        <text>库存管理</text>
+        <view class="active-line" wx:if="{{currentTab === 'inventory'}}"></view>
+      </view>
+      <view class="tab-item {{currentTab === 'shopping' ? 'active' : ''}}" bindtap="switchTab" data-tab="shopping">
+        <text>采购清单</text>
+        <view class="active-line" wx:if="{{currentTab === 'shopping'}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存列表 -->
+  <block wx:if="{{currentTab === 'inventory'}}">
+    <view class="inventory-list">
+      <view class="item-card glass-card" wx:for="{{inventoryItems}}" wx:key="id">
+        <view class="item-icon">{{item.icon || '📦'}}</view>
+        <view class="item-info">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-category">{{item.categoryName}}</text>
+        </view>
+        <view class="stock-control">
+          <view class="stock-btn minus btn-active-feedback" bindtap="updateStock" data-id="{{item.id}}" data-amount="-1">-</view>
+          <view class="stock-value {{item.currentStock <= item.minStock ? 'low-stock' : ''}}">
+            <text class="num">{{item.currentStock}}</text>
+            <text class="unit">{{item.unit}}</text>
+          </view>
+          <view class="stock-btn plus btn-active-feedback" bindtap="updateStock" data-id="{{item.id}}" data-amount="1">+</view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 悬浮添加按钮 -->
+    <view class="fab-btn btn-active-feedback" bindtap="showAddItem">
+      <text>+</text>
+    </view>
+  </block>
+
+  <!-- 采购清单 -->
+  <block wx:if="{{currentTab === 'shopping'}}">
+    <view class="shopping-list">
+      <view class="shopping-item glass-card" wx:for="{{shoppingList}}" wx:key="id">
+        <checkbox class="item-check" checked="{{item.status === 'bought'}}" bindtap="toggleBought" data-id="{{item.id}}" />
+        <view class="shopping-info">
+          <text class="shopping-name">{{item.itemName}}</text>
+          <text class="shopping-meta">需购: {{item.quantity}}{{item.unit}} · {{item.addedByName}}添加</text>
+        </view>
+      </view>
+      
+      <view class="empty-tip" wx:if="{{shoppingList.length === 0}}">
+        <view class="empty-icon">🛒</view>
+        <text>清单已清空，物资充足</text>
+      </view>
+    </view>
+  </block>
+
+  <view class="safe-bottom"></view>
+
+  <!-- 添加物资弹窗 -->
+  <view class="modal-mask {{showAddModal ? 'show' : ''}}" bindtap="hideAddModal">
+    <view class="modal-content glass-card {{showAddModal ? 'show' : ''}}" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">新增物资</text>
+        <view class="close-btn" bindtap="hideAddModal">×</view>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="form-item">
+          <text class="form-label">物资名称</text>
+          <input class="form-input" placeholder="输入名称，如：牛奶" value="{{formData.name}}" data-field="name" bindinput="onInput" />
+        </view>
+
+        <view class="form-item">
+          <view class="form-label-row">
+            <text class="form-label">所属分类</text>
+            <text class="manage-link" bindtap="showCategoryManage">管理分类</text>
+          </view>
+          <view class="category-grid">
+            <view 
+              wx:for="{{categories}}" 
+              wx:key="id" 
+              class="category-item {{formData.categoryId === item.id ? 'active' : ''}}"
+              style="--cat-color: #4facfe"
+              data-id="{{item.id}}"
+              bindtap="onCategorySelect"
+            >
+              <text class="cat-icon">{{item.icon}}</text>
+              <text>{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="form-row">
+          <view class="form-item half">
+            <text class="form-label">当前库存</text>
+            <input class="form-input" type="digit" placeholder="0" value="{{formData.currentStock}}" data-field="currentStock" bindinput="onInput" />
+          </view>
+          <view class="form-item half">
+            <text class="form-label">预警阈值</text>
+            <input class="form-input" type="digit" placeholder="1" value="{{formData.minStock}}" data-field="minStock" bindinput="onInput" />
+          </view>
+        </view>
+
+        <view class="form-row">
+          <view class="form-item half">
+            <text class="form-label">单位</text>
+            <input class="form-input" placeholder="个/盒/卷" value="{{formData.unit}}" data-field="unit" bindinput="onInput" />
+          </view>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">备注</text>
+          <textarea class="form-textarea" placeholder="品牌、规格等信息" value="{{formData.remark}}" data-field="remark" bindinput="onInput" />
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <view class="primary-btn submit-btn btn-active-feedback" bindtap="submitItem">
+          <text>确认添加</text>
+          <view class="btn-glow"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类管理弹窗 -->
+  <view class="modal-mask {{showCategoryModal ? 'show' : ''}}" bindtap="hideCategoryModal">
+    <view class="modal-content glass-card {{showCategoryModal ? 'show' : ''}}" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">分类管理</text>
+        <view class="close-btn" bindtap="hideCategoryModal">×</view>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="category-manage-list">
+          <view class="category-manage-item" wx:for="{{categories}}" wx:key="id">
+            <text class="cat-icon">{{item.icon}}</text>
+            <text class="cat-name">{{item.name}}</text>
+            <view class="delete-icon" bindtap="deleteCategory" data-id="{{item.id}}" data-name="{{item.name}}">×</view>
+          </view>
+        </view>
+
+        <view class="add-category-form">
+          <text class="form-label">添加新分类</text>
+          <view class="form-row">
+            <input class="form-input" placeholder="分类名称" value="{{newCategory.name}}" bindinput="onNewCategoryInput" />
+            <view class="primary-btn add-cat-btn btn-active-feedback" bindtap="addCategory">
+              <text>添加</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

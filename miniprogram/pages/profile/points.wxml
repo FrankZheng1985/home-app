@@ -1,306 +1,73 @@
-<!--pages/profile/points.wxml - 积分统计页面-->
-<view class="points-page">
-  <!-- 积分概览卡片 -->
-  <view class="summary-card">
-    <view class="summary-bg"></view>
-    <view class="summary-content">
-      <view class="summary-main">
-        <text class="total-label">可用积分</text>
-        <text class="total-points">{{summary.availablePoints || 0}}</text>
-        <!-- 申请兑现按钮 -->
-        <button class="redeem-apply-btn" bindtap="showRedeemApplyModal" wx:if="{{summary.availablePoints > 0}}">
-          申请兑现
-        </button>
-      </view>
-      <view class="summary-stats">
-        <view class="stat-item">
-          <text class="stat-value">+{{summary.thisMonth || 0}}</text>
-          <text class="stat-label">本月获得</text>
-        </view>
-        <view class="stat-divider"></view>
-        <view class="stat-item">
-          <text class="stat-value">-{{summary.redeemedTotal || 0}}</text>
-          <text class="stat-label">累计兑现</text>
-        </view>
-        <view class="stat-divider"></view>
-        <view class="stat-item">
-          <text class="stat-value">第{{summary.rank || '-'}}名</text>
-          <text class="stat-label">家庭排名</text>
-        </view>
-      </view>
-    </view>
-    <view class="coin-icon">💰</view>
-  </view>
-
-  <!-- 待审核提示（管理员可见） -->
-  <view class="pending-notice" wx:if="{{isAdmin && pendingRedeemCount > 0}}" bindtap="goToRedeemReview">
-    <text class="notice-icon">🔔</text>
-    <text class="notice-text">有 {{pendingRedeemCount}} 个兑现申请待审核</text>
-    <text class="notice-arrow">›</text>
-  </view>
-
-  <!-- 管理员快捷入口 -->
-  <view class="admin-actions" wx:if="{{isAdmin}}">
-    <view class="admin-action-btn" bindtap="goToRedeemReview">
-      <text class="action-icon">📋</text>
-      <text class="action-text">审核兑现申请</text>
-      <view class="action-badge" wx:if="{{pendingRedeemCount > 0}}">{{pendingRedeemCount}}</view>
+<!--pages/profile/points.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">积分明细</view>
+      <view class="hero-subtitle">Your Points & Rewards</view>
     </view>
   </view>
 
-  <!-- 我的兑现申请 -->
-  <view class="section-card" wx:if="{{myRedeemRequests.length > 0}}">
-    <view class="section-header-row">
-      <text class="section-title">📝 我的兑现申请</text>
-      <view class="view-all" bindtap="viewAllRedeemRequests">
-        <text>查看全部</text>
-        <text class="arrow">›</text>
-      </view>
+  <!-- 积分概览卡片 (Glassmorphism Card) -->
+  <view class="glass-card summary-card success-pop">
+    <view class="summary-main">
+      <text class="total-label">可用积分</text>
+      <text class="total-value">{{summary.availablePoints || 0}}</text>
+      <view class="redeem-btn btn-active-feedback" bindtap="showRedeemApplyModal" wx:if="{{summary.availablePoints > 0}}">申请兑现</view>
     </view>
-    <view class="redeem-requests-list">
-      <view class="redeem-request-item" wx:for="{{myRedeemRequests}}" wx:key="id">
-        <view class="request-left">
-          <view class="request-points">{{item.points}} 积分</view>
-          <view class="request-amount">≈ ¥{{item.amount}}</view>
-        </view>
-        <view class="request-right">
-          <view class="request-status {{item.status}}">
-            {{item.status === 'pending' ? '待审核' : (item.status === 'approved' ? '已通过' : '已拒绝')}}
-          </view>
-          <view class="request-time">{{item.createdAtText}}</view>
-        </view>
+    <view class="stat-row">
+      <view class="stat-item">
+        <text class="stat-label">本月获得</text>
+        <text class="stat-value">+{{summary.thisMonth || 0}}</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">累计兑现</text>
+        <text class="stat-value">-{{summary.redeemedTotal || 0}}</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">家庭排名</text>
+        <text class="stat-value">{{summary.rank || '-'}}</text>
       </view>
     </view>
   </view>
 
-  <!-- 月度统计 -->
-  <view class="section-card">
-    <view class="section-header-row">
-      <text class="section-title">📊 月度统计</text>
-      <!-- 月份选择器 -->
-      <picker mode="date" fields="month" value="{{selectedMonth}}" bindchange="onMonthChange">
-        <view class="month-picker">
-          <text class="month-text">{{selectedMonthDisplay}}</text>
-          <text class="month-arrow">▼</text>
-        </view>
-      </picker>
+  <!-- 管理员待审核提示 -->
+  <view class="glass-card notice-card" wx:if="{{isAdmin && pendingRedeemCount > 0}}" bindtap="goToRedeemReview">
+    <view class="notice-content">
+      <text class="notice-icon">🔔</text>
+      <text class="notice-text">{{pendingRedeemCount}} 个兑现申请待审核</text>
+    </view>
+    <text class="arrow">›</text>
+  </view>
+
+  <!-- 筛选标签 -->
+  <view class="section-header">
+    <text class="section-title">收支明细</text>
+    <view class="filter-tabs">
+      <view class="filter-item {{filterType === 'all' ? 'active' : ''}}" data-type="all" bindtap="switchFilter">全部</view>
+      <view class="filter-item {{filterType === 'earn' ? 'active' : ''}}" data-type="earn" bindtap="switchFilter">获得</view>
+      <view class="filter-item {{filterType === 'redeem' ? 'active' : ''}}" data-type="redeem" bindtap="switchFilter">兑现</view>
+    </view>
+  </view>
+
+  <!-- 积分列表 -->
+  <view class="transactions-list">
+    <view class="transaction-item glass-card" wx:for="{{transactions}}" wx:key="id">
+      <view class="trans-icon">{{item.type === 'earn' ? '📈' : (item.type === 'redeem' ? '🎁' : '📉')}}</view>
+      <view class="trans-info">
+        <text class="trans-title">{{item.description}}</text>
+        <text class="trans-time">{{item.createdAtText}}</text>
+      </view>
+      <view class="trans-points {{item.type === 'earn' ? 'positive' : 'negative'}}">
+        {{item.type === 'earn' ? '+' : '-'}}{{item.points}}
+      </view>
     </view>
     
-    <!-- 月度数据 -->
-    <view class="month-stats">
-      <view class="month-stat-item earned">
-        <view class="stat-icon">📈</view>
-        <view class="stat-detail">
-          <text class="stat-number">+{{monthStats.earned || 0}}</text>
-          <text class="stat-desc">本月获得</text>
-        </view>
-      </view>
-      <view class="month-stat-item redeemed">
-        <view class="stat-icon">🎁</view>
-        <view class="stat-detail">
-          <text class="stat-number">-{{monthStats.redeemed || 0}}</text>
-          <text class="stat-desc">本月兑现</text>
-        </view>
-      </view>
-      <view class="month-stat-item balance">
-        <view class="stat-icon">💎</view>
-        <view class="stat-detail">
-          <text class="stat-number">{{monthStats.balance || 0}}</text>
-          <text class="stat-desc">月末余额</text>
-        </view>
-      </view>
-    </view>
+    <view class="empty-tip" wx:if="{{transactions.length === 0}}">暂无积分记录</view>
   </view>
 
-  <!-- 结算功能（管理员可见） -->
-  <view class="section-card" wx:if="{{isAdmin}}">
-    <view class="section-header-row">
-      <text class="section-title">💵 积分结算</text>
-    </view>
-    <view class="settlement-info">
-      <text class="settlement-desc">将积分兑现给家庭成员后，扣除相应积分。建议每月底结算一次。</text>
-    </view>
-    
-    <!-- 成员列表 -->
-    <view class="member-settlement-list">
-      <view class="member-settlement-item" wx:for="{{familyMembers}}" wx:key="id">
-        <view class="member-info-row">
-          <image class="member-avatar" src="{{item.user.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
-          <view class="member-detail">
-            <text class="member-name">{{item.user.nickname}}</text>
-            <text class="member-points">可用积分：{{item.availablePoints || 0}}</text>
-          </view>
-        </view>
-        <button 
-          class="settle-btn" 
-          data-member="{{item}}"
-          bindtap="showSettleModal"
-          disabled="{{!item.availablePoints || item.availablePoints <= 0}}"
-        >结算</button>
-      </view>
-    </view>
-  </view>
-
-  <!-- 积分明细 -->
-  <view class="section-card">
-    <view class="section-header-row">
-      <text class="section-title">📋 积分明细</text>
-      <view class="filter-tabs">
-        <view class="filter-tab {{filterType === 'all' ? 'active' : ''}}" 
-              data-type="all" bindtap="switchFilter">全部</view>
-        <view class="filter-tab {{filterType === 'earn' ? 'active' : ''}}" 
-              data-type="earn" bindtap="switchFilter">获得</view>
-        <view class="filter-tab {{filterType === 'redeem' ? 'active' : ''}}" 
-              data-type="redeem" bindtap="switchFilter">兑现</view>
-      </view>
-    </view>
-
-    <view class="transactions-list" wx:if="{{transactions.length > 0}}">
-      <view class="transaction-card" wx:for="{{transactions}}" wx:key="id">
-        <view class="transaction-icon {{item.type === 'earn' ? 'earn' : (item.type === 'redeem' ? 'redeem' : 'spend')}}">
-          <text>{{item.type === 'earn' ? '📈' : (item.type === 'redeem' ? '🎁' : '📉')}}</text>
-        </view>
-        <view class="transaction-info">
-          <text class="transaction-title">{{item.description}}</text>
-          <text class="transaction-time">{{item.createdAtText}}</text>
-        </view>
-        <text class="transaction-points {{item.type === 'earn' ? 'positive' : 'negative'}}">
-          {{item.type === 'earn' ? '+' : '-'}}{{item.points}}
-        </text>
-      </view>
-    </view>
-
-    <view class="empty-state" wx:else>
-      <view class="empty-icon animate-float">📊</view>
-      <view class="empty-title">暂无积分记录</view>
-      <view class="empty-desc">完成家务即可获得积分哦</view>
-    </view>
-
-    <view class="load-more" wx:if="{{hasMore && transactions.length > 0}}">
-      <text>上拉加载更多</text>
-    </view>
-    <view class="no-more" wx:if="{{!hasMore && transactions.length > 0}}">
-      <text>没有更多了</text>
-    </view>
-  </view>
-
-  <!-- 结算弹窗（管理员用） -->
-  <view class="modal-overlay {{showSettleModal ? 'show' : ''}}" bindtap="closeSettleModal">
-    <view class="modal-container" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">💵 积分结算</text>
-        <view class="modal-close" bindtap="closeSettleModal">×</view>
-      </view>
-      <view class="modal-body">
-        <view class="settle-member-info" wx:if="{{settleMember}}">
-          <image class="settle-avatar" src="{{settleMember.user.avatarUrl || '/assets/images/default-avatar.png'}}"></image>
-          <text class="settle-name">{{settleMember.user.nickname}}</text>
-          <text class="settle-available">可用积分：{{settleMember.availablePoints || 0}}</text>
-        </view>
-        
-        <view class="settle-form">
-          <view class="form-label">结算积分</view>
-          <input 
-            class="settle-input" 
-            type="number" 
-            placeholder="请输入要结算的积分数量"
-            value="{{settleAmount}}"
-            bindinput="onSettleAmountInput"
-          />
-          
-          <view class="quick-amounts">
-            <view class="quick-btn" data-amount="100" bindtap="setQuickAmount">100</view>
-            <view class="quick-btn" data-amount="500" bindtap="setQuickAmount">500</view>
-            <view class="quick-btn" data-amount="1000" bindtap="setQuickAmount">1000</view>
-            <view class="quick-btn full" bindtap="setFullAmount">全部</view>
-          </view>
-          
-          <view class="form-label">备注（选填）</view>
-          <input 
-            class="settle-input" 
-            placeholder="如：2024年1月份积分结算"
-            value="{{settleRemark}}"
-            bindinput="onSettleRemarkInput"
-          />
-        </view>
-      </view>
-      <view class="modal-footer">
-        <button class="cancel-btn" bindtap="closeSettleModal">取消</button>
-        <button 
-          class="confirm-btn" 
-          bindtap="confirmSettle"
-          disabled="{{!settleAmount || settleAmount <= 0 || isSettling}}"
-        >
-          {{isSettling ? '处理中...' : '确认结算'}}
-        </button>
-      </view>
-    </view>
-  </view>
-
-  <!-- 申请兑现弹窗（用户用） -->
-  <view class="modal-overlay {{showRedeemApplyModal ? 'show' : ''}}" bindtap="closeRedeemApplyModal">
-    <view class="modal-container" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">🎁 申请兑现</text>
-        <view class="modal-close" bindtap="closeRedeemApplyModal">×</view>
-      </view>
-      <view class="modal-body">
-        <view class="apply-info">
-          <view class="apply-available">
-            <text class="label">可兑现积分</text>
-            <text class="value">{{summary.availablePoints - pendingApplyPoints}}</text>
-          </view>
-          <view class="apply-rate">
-            <text class="label">积分价值</text>
-            <text class="value">{{summary.pointsValue || 0.5}} 元/积分</text>
-          </view>
-        </view>
-        
-        <view class="settle-form">
-          <view class="form-label">兑现积分</view>
-          <input 
-            class="settle-input" 
-            type="number" 
-            placeholder="请输入要兑现的积分数量"
-            value="{{applyPoints}}"
-            bindinput="onApplyPointsInput"
-          />
-          
-          <view class="apply-amount-preview" wx:if="{{applyPoints > 0}}">
-            预计可兑现金额：<text class="amount">¥{{applyAmount}}</text>
-          </view>
-          
-          <view class="quick-amounts">
-            <view class="quick-btn" data-amount="100" bindtap="setQuickApplyAmount">100</view>
-            <view class="quick-btn" data-amount="500" bindtap="setQuickApplyAmount">500</view>
-            <view class="quick-btn" data-amount="1000" bindtap="setQuickApplyAmount">1000</view>
-            <view class="quick-btn full" bindtap="setFullApplyAmount">全部</view>
-          </view>
-          
-          <view class="form-label">备注（选填）</view>
-          <input 
-            class="settle-input" 
-            placeholder="如：申请兑现本月积分"
-            value="{{applyRemark}}"
-            bindinput="onApplyRemarkInput"
-          />
-        </view>
-        
-        <view class="apply-tips">
-          <text class="tip-icon">💡</text>
-          <text class="tip-text">提交申请后，家长审核通过后会线下支付现金给你</text>
-        </view>
-      </view>
-      <view class="modal-footer">
-        <button class="cancel-btn" bindtap="closeRedeemApplyModal">取消</button>
-        <button 
-          class="confirm-btn" 
-          bindtap="submitRedeemApply"
-          disabled="{{!applyPoints || applyPoints <= 0 || isApplying}}"
-        >
-          {{isApplying ? '提交中...' : '提交申请'}}
-        </button>
-      </view>
-    </view>
-  </view>
+  <view class="safe-bottom"></view>
 </view>

@@ -1,38 +1,42 @@
-<!--pages/profile/about.wxml-->
-<view class="container about-container">
-  <!-- Logo和名称 -->
-  <view class="header-section">
-    <view class="app-icon">🏠</view>
-    <view class="app-name">家庭小助手</view>
-    <view class="app-version text-muted">版本 {{version}}</view>
+<!--pages/profile/about.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-icon">🏠</view>
+      <view class="hero-title">家庭小助手</view>
+      <view class="hero-subtitle">Version {{version}}</view>
+    </view>
   </view>
 
   <!-- 功能介绍 -->
-  <view class="features-section card">
-    <view class="section-title">功能介绍</view>
-    <view class="feature-list">
-      <view class="feature-item" wx:for="{{features}}" wx:key="title">
-        <view class="feature-icon">{{item.icon}}</view>
-        <view class="feature-info">
-          <text class="feature-title">{{item.title}}</text>
-          <text class="feature-desc text-muted">{{item.desc}}</text>
-        </view>
+  <view class="section-title">功能介绍</view>
+  <view class="feature-list">
+    <view class="feature-item glass-card success-pop" wx:for="{{features}}" wx:key="title">
+      <view class="feature-icon">{{item.icon}}</view>
+      <view class="feature-info">
+        <text class="feature-title">{{item.title}}</text>
+        <text class="feature-desc">{{item.desc}}</text>
       </view>
     </view>
   </view>
 
   <!-- 联系我们 -->
-  <view class="contact-section card">
-    <view class="section-title">联系我们</view>
-    <view class="contact-item" bindtap="copyWechat">
+  <view class="section-title">联系我们</view>
+  <view class="glass-card contact-card btn-active-feedback" bindtap="copyWechat">
+    <view class="contact-info">
       <text class="contact-label">客服微信</text>
-      <text class="contact-value text-primary">family_helper_support</text>
+      <text class="contact-value">family_helper_support</text>
     </view>
+    <text class="copy-icon">📋</text>
   </view>
 
   <!-- 版权信息 -->
-  <view class="copyright text-muted">
-    <view>© 2024 家庭小助手</view>
-    <view>让家务变得更有趣</view>
+  <view class="copyright-section">
+    <text>© 2024 家庭小助手</text>
+    <text>让家务变得更有趣</text>
   </view>
+
+  <view class="safe-bottom"></view>
 </view>

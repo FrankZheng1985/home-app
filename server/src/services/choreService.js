@@ -1,9 +1,10 @@
 // src/services/choreService.js
-// 家务服务层 - 处理家务相关业务逻辑 (MySQL 版本)
+// 家务服务层 - 处理家务相关业务逻辑 (PostgreSQL 版本)
 
 const { v4: uuidv4 } = require('uuid');
 const BaseService = require('./baseService');
 const familyService = require('./familyService');
+const pointsService = require('./pointsService');
 const logger = require('../utils/logger');
 const { ERROR_CODES } = require('../constants/errorCodes');
 const { REVIEW_STATUS, TRANSACTION_TYPE } = require('../constants/statusCodes');
@@ -60,7 +61,7 @@ class ChoreService extends BaseService {
     const types = await this.queryMany(
       `SELECT id, name, points, icon, description, is_preset, is_active, created_at
        FROM chore_types
-       WHERE family_id = ? AND is_active = true
+       WHERE family_id = $1 AND is_active = true
        ORDER BY is_preset DESC, created_at ASC`,
       [familyId]
     );
@@ -90,7 +91,7 @@ class ChoreService extends BaseService {
 
     // 检查名称是否重复
     const existing = await this.queryOne(
-      'SELECT id FROM chore_types WHERE family_id = ? AND name = ? AND is_active = true',
+      'SELECT id FROM chore_types WHERE family_id = $1 AND name = $2 AND is_active = true',
       [familyId, name]
     );
 
@@ -165,7 +166,7 @@ class ChoreService extends BaseService {
 
     // 获取类型信息
     const type = await this.queryOne(
-      'SELECT family_id FROM chore_types WHERE id = ?',
+      'SELECT family_id FROM chore_types WHERE id = $1',
       [typeId]
     );
 
@@ -190,8 +191,6 @@ class ChoreService extends BaseService {
       return { message: '没有要更新的内容' };
     }
 
-    updates.updated_at = new Date();
-
     await this.update('chore_types', updates, { id: typeId });
     logger.audit('更新家务类型', userId, { typeId, updates: Object.keys(updates) });
 
@@ -206,7 +205,7 @@ class ChoreService extends BaseService {
    */
   async deleteChoreType(typeId, userId) {
     const type = await this.queryOne(
-      'SELECT family_id FROM chore_types WHERE id = ?',
+      'SELECT family_id FROM chore_types WHERE id = $1',
       [typeId]
     );
 
@@ -266,6 +265,7 @@ class ChoreService extends BaseService {
         id: recordId,
         choreType: { name: choreType.name, icon: choreType.icon },
         user: { nickname: user?.nickname || '模拟用户', avatarUrl: user?.avatar_url || '' },
+        userId: userId,
         points: choreType.points,
         finalPoints,
         deduction: 0,
@@ -281,6 +281,17 @@ class ChoreService extends BaseService {
       records.unshift(newRecord);
       mockChoreRecords.set(familyId, records);
 
+      // 如果是管理员，直接创建模拟积分交易
+      if (isAdmin) {
+        await pointsService.createTransaction({
+          userId,
+          familyId,
+          points: choreType.points,
+          type: TRANSACTION_TYPE.EARN,
+          description: `完成家务: ${choreType.name}`
+        });
+      }
+
       return {
         id: recordId,
         choreName: choreType.name,
@@ -292,7 +303,7 @@ class ChoreService extends BaseService {
 
     // 获取家务类型信息
     const choreType = await this.queryOne(
-      'SELECT name, points FROM chore_types WHERE id = ? AND family_id = ? AND is_active = true',
+      'SELECT name, points FROM chore_types WHERE id = $1 AND family_id = $2 AND is_active = true',
       [choreTypeId, familyId]
     );
 
@@ -312,15 +323,14 @@ class ChoreService extends BaseService {
       family_id: familyId,
       points_earned: choreType.points,
       note: note || '',
-      images: JSON.stringify(images || []),
+      images: images || [],
       status,
-      final_points: finalPoints,
       completed_at: new Date()
     });
 
     // 如果是管理员，直接创建积分交易记录
     if (isAdmin) {
-      await this.createPointTransaction({
+      await pointsService.createTransaction({
         userId,
         familyId,
         points: choreType.points,
@@ -365,24 +375,27 @@ class ChoreService extends BaseService {
       return records.slice(offset, offset + limit);
     }
 
-    let whereClause = 'cr.family_id = ?';
+    let whereClause = 'cr.family_id = $1';
     const values = [familyId];
+    let paramIndex = 2;
 
     if (userId) {
-      whereClause += ' AND cr.user_id = ?';
+      whereClause += ` AND cr.user_id = $${paramIndex++}`;
       values.push(userId);
     }
 
     if (date) {
-      whereClause += ' AND DATE(cr.completed_at) = ?';
+      whereClause += ` AND cr.completed_at::date = $${paramIndex++}`;
       values.push(date);
     }
 
+    const limitIndex = paramIndex++;
+    const offsetIndex = paramIndex++;
     values.push(parseInt(limit), parseInt(offset));
 
     const records = await this.queryMany(
       `SELECT cr.id, cr.points_earned, cr.note, cr.images, cr.status, 
-              cr.final_points, cr.deduction, cr.deduction_reason, cr.completed_at,
+              cr.deduction, cr.deduction_reason, cr.completed_at,
               ct.name as chore_name, ct.icon as chore_icon,
               u.nickname as user_name, u.avatar_url
        FROM chore_records cr
@@ -390,7 +403,7 @@ class ChoreService extends BaseService {
        JOIN users u ON cr.user_id = u.id
        WHERE ${whereClause}
        ORDER BY cr.completed_at DESC
-       LIMIT ? OFFSET ?`,
+       LIMIT $${limitIndex} OFFSET $${offsetIndex}`,
       values
     );
 
@@ -399,11 +412,10 @@ class ChoreService extends BaseService {
       choreType: { name: r.chore_name, icon: r.chore_icon || '🧹' },
       user: { nickname: r.user_name, avatarUrl: r.avatar_url },
       points: r.points_earned,
-      finalPoints: r.final_points,
       deduction: r.deduction || 0,
       deductionReason: r.deduction_reason || '',
       remark: r.note,
-      images: typeof r.images === 'string' ? JSON.parse(r.images) : (r.images || []),
+      images: r.images || [],
       status: r.status || REVIEW_STATUS.APPROVED,
       completedAt: r.completed_at
     }));
@@ -418,6 +430,26 @@ class ChoreService extends BaseService {
   async getPendingRecords(familyId, userId) {
     await familyService.validateAdminRole(userId, familyId);
 
+    // 开发模式：返回模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：返回模拟待审核记录');
+      const records = mockChoreRecords.get(familyId) || [];
+      return records
+        .filter(r => r.status === REVIEW_STATUS.PENDING)
+        .map(r => ({
+          id: r.id,
+          choreName: r.choreType.name,
+          choreIcon: r.choreType.icon || '🧹',
+          points: r.points,
+          note: r.remark,
+          images: r.images || [],
+          status: r.status,
+          completedAt: r.completedAt,
+          userNickname: r.user.nickname,
+          userAvatar: r.user.avatarUrl
+        }));
+    }
+
     const records = await this.queryMany(
       `SELECT cr.id, cr.points_earned, cr.note, cr.images, cr.status, cr.completed_at,
               ct.name as chore_name, ct.icon,
@@ -425,7 +457,7 @@ class ChoreService extends BaseService {
        FROM chore_records cr
        JOIN chore_types ct ON cr.chore_type_id = ct.id
        JOIN users u ON cr.user_id = u.id
-       WHERE cr.family_id = ? AND cr.status = ?
+       WHERE cr.family_id = $1 AND cr.status = $2
        ORDER BY cr.completed_at DESC`,
       [familyId, REVIEW_STATUS.PENDING]
     );
@@ -436,7 +468,7 @@ class ChoreService extends BaseService {
       choreIcon: r.icon || '🧹',
       points: r.points_earned,
       note: r.note,
-      images: typeof r.images === 'string' ? JSON.parse(r.images) : (r.images || []),
+      images: r.images || [],
       status: r.status,
       completedAt: r.completed_at,
       userNickname: r.nickname,
@@ -456,8 +488,15 @@ class ChoreService extends BaseService {
       return 0;
     }
 
+    // 开发模式：返回模拟数据
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：返回模拟待审核数量');
+      const records = mockChoreRecords.get(familyId) || [];
+      return records.filter(r => r.status === REVIEW_STATUS.PENDING).length;
+    }
+
     const result = await this.queryOne(
-      `SELECT COUNT(*) as count FROM chore_records WHERE family_id = ? AND status = ?`,
+      `SELECT COUNT(*) as count FROM chore_records WHERE family_id = $1 AND status = $2`,
       [familyId, REVIEW_STATUS.PENDING]
     );
 
@@ -472,12 +511,77 @@ class ChoreService extends BaseService {
   async reviewRecord(data) {
     const { recordId, reviewerId, action, deduction = 0, deductionReason, reviewNote } = data;
 
+    // 开发模式：模拟审核
+    if (!this.isDatabaseAvailable()) {
+      logger.info('🔧 开发模式：模拟审核家务记录');
+      
+      let foundRecord = null;
+      let familyId = null;
+      
+      for (const [fid, records] of mockChoreRecords) {
+        const index = records.findIndex(r => r.id === recordId);
+        if (index !== -1) {
+          foundRecord = records[index];
+          familyId = fid;
+          break;
+        }
+      }
+
+      if (!foundRecord) {
+        throw new Error(ERROR_CODES.CHORE_RECORD_NOT_FOUND.message);
+      }
+
+      if (foundRecord.status !== REVIEW_STATUS.PENDING) {
+        throw new Error(ERROR_CODES.CHORE_RECORD_ALREADY_REVIEWED.message);
+      }
+
+      if (action === 'approve') {
+        const originalPoints = foundRecord.points;
+        const actualDeduction = Math.min(deduction, originalPoints);
+        const finalPoints = originalPoints - actualDeduction;
+
+        foundRecord.status = REVIEW_STATUS.APPROVED;
+        foundRecord.deduction = actualDeduction;
+        foundRecord.deductionReason = deductionReason || '';
+        foundRecord.finalPoints = finalPoints;
+
+        // 创建模拟积分交易
+        if (finalPoints > 0) {
+          await pointsService.createTransaction({
+            userId: foundRecord.userId,
+            familyId: familyId,
+            points: finalPoints,
+            type: TRANSACTION_TYPE.EARN,
+            description: `完成家务: ${foundRecord.choreType.name}`
+          });
+        }
+
+        return {
+          recordId,
+          status: REVIEW_STATUS.APPROVED,
+          originalPoints,
+          deduction: actualDeduction,
+          finalPoints,
+          message: actualDeduction > 0 
+            ? `已通过，扣${actualDeduction}分，实得${finalPoints}分`
+            : `已通过，获得${finalPoints}分`
+        };
+      } else {
+        foundRecord.status = REVIEW_STATUS.REJECTED;
+        return {
+          recordId,
+          status: REVIEW_STATUS.REJECTED,
+          message: '已拒绝，不计分'
+        };
+      }
+    }
+
     // 获取记录详情
     const record = await this.queryOne(
       `SELECT cr.*, ct.name as chore_name
        FROM chore_records cr
        JOIN chore_types ct ON cr.chore_type_id = ct.id
-       WHERE cr.id = ?`,
+       WHERE cr.id = $1`,
       [recordId]
     );
 
@@ -492,95 +596,75 @@ class ChoreService extends BaseService {
     // 验证审核权限
     await familyService.validateAdminRole(reviewerId, record.family_id);
 
-    if (action === 'approve') {
-      const originalPoints = record.points_earned;
-      const actualDeduction = Math.min(deduction, originalPoints);
-      const finalPoints = originalPoints - actualDeduction;
+    return await this.transaction(async (client) => {
+      if (action === 'approve') {
+        const originalPoints = record.points_earned;
+        const actualDeduction = Math.min(deduction, originalPoints);
+        const finalPoints = originalPoints - actualDeduction;
 
-      // 更新记录状态
-      await this.update('chore_records', {
-        status: REVIEW_STATUS.APPROVED,
-        final_points: finalPoints,
-        deduction: actualDeduction,
-        deduction_reason: deductionReason || '',
-        review_note: reviewNote || '',
-        reviewed_by: reviewerId,
-        reviewed_at: new Date()
-      }, { id: recordId });
+        // 更新记录状态
+        await client.query(
+          `UPDATE chore_records 
+           SET status = $1, deduction = $2, deduction_reason = $3, reviewed_by = $4, reviewed_at = CURRENT_TIMESTAMP 
+           WHERE id = $5`,
+          [REVIEW_STATUS.APPROVED, actualDeduction, deductionReason || '', reviewerId, recordId]
+        );
 
-      // 创建积分交易记录
-      if (finalPoints > 0) {
-        let description = `完成家务: ${record.chore_name}`;
-        if (actualDeduction > 0) {
-          description += ` (扣${actualDeduction}分: ${deductionReason || '质量问题'})`;
+        // 创建积分交易记录
+        if (finalPoints > 0) {
+          let description = `完成家务: ${record.chore_name}`;
+          if (actualDeduction > 0) {
+            description += ` (扣${actualDeduction}分: ${deductionReason || '质量问题'})`;
+          }
+
+          await pointsService.createTransaction({
+            userId: record.user_id,
+            familyId: record.family_id,
+            points: finalPoints,
+            type: TRANSACTION_TYPE.EARN,
+            description
+          }, client);
         }
 
-        await this.createPointTransaction({
-          userId: record.user_id,
-          familyId: record.family_id,
-          points: finalPoints,
-          type: TRANSACTION_TYPE.EARN,
-          description
+        logger.audit('审核通过家务记录', reviewerId, { 
+          recordId, 
+          originalPoints, 
+          finalPoints, 
+          deduction: actualDeduction 
         });
+
+        return {
+          recordId,
+          status: REVIEW_STATUS.APPROVED,
+          originalPoints,
+          deduction: actualDeduction,
+          finalPoints,
+          message: actualDeduction > 0 
+            ? `已通过，扣${actualDeduction}分，实得${finalPoints}分`
+            : `已通过，获得${finalPoints}分`
+        };
+      } else {
+        // 拒绝
+        await client.query(
+          `UPDATE chore_records 
+           SET status = $1, reviewed_by = $2, reviewed_at = CURRENT_TIMESTAMP 
+           WHERE id = $3`,
+          [REVIEW_STATUS.REJECTED, reviewerId, recordId]
+        );
+
+        logger.audit('拒绝家务记录', reviewerId, { recordId });
+
+        return {
+          recordId,
+          status: REVIEW_STATUS.REJECTED,
+          message: '已拒绝，不计分'
+        };
       }
-
-      logger.audit('审核通过家务记录', reviewerId, { 
-        recordId, 
-        originalPoints, 
-        finalPoints, 
-        deduction: actualDeduction 
-      });
-
-      return {
-        recordId,
-        status: REVIEW_STATUS.APPROVED,
-        originalPoints,
-        deduction: actualDeduction,
-        finalPoints,
-        message: actualDeduction > 0 
-          ? `已通过，扣${actualDeduction}分，实得${finalPoints}分`
-          : `已通过，获得${finalPoints}分`
-      };
-    } else {
-      // 拒绝
-      await this.update('chore_records', {
-        status: REVIEW_STATUS.REJECTED,
-        final_points: 0,
-        review_note: reviewNote || '审核未通过',
-        reviewed_by: reviewerId,
-        reviewed_at: new Date()
-      }, { id: recordId });
-
-      logger.audit('拒绝家务记录', reviewerId, { recordId });
-
-      return {
-        recordId,
-        status: REVIEW_STATUS.REJECTED,
-        message: '已拒绝，不计分'
-      };
-    }
-  }
-
-  /**
-   * 创建积分交易记录
-   * @param {Object} data - 交易数据
-   */
-  async createPointTransaction(data) {
-    const { userId, familyId, points, type, description } = data;
-
-    await this.insert('point_transactions', {
-      id: uuidv4(),
-      user_id: userId,
-      family_id: familyId,
-      points,
-      type,
-      description,
-      created_at: new Date()
     });
   }
 
   /**
-   * 获取家务统计 (MySQL 版本)
+   * 获取家务统计 (PostgreSQL 版本)
    * @param {string} familyId - 家庭ID
    * @param {string} userId - 用户ID
    * @returns {Promise<Object>}
@@ -591,32 +675,49 @@ class ChoreService extends BaseService {
     // 开发模式：返回模拟统计数据
     if (!this.isDatabaseAvailable()) {
       logger.info('🔧 开发模式：返回模拟家务统计');
+      
+      const records = mockChoreRecords.get(familyId) || [];
+      const today = new Date().toISOString().split('T')[0];
+      
+      const todayApprovedRecords = records.filter(r => 
+        r.status === REVIEW_STATUS.APPROVED && 
+        new Date(r.completedAt).toISOString().split('T')[0] === today
+      );
+
+      const totalChores = todayApprovedRecords.length;
+      const totalPoints = todayApprovedRecords.reduce((sum, r) => sum + (r.finalPoints || 0), 0);
+      
+      const myTodayRecords = todayApprovedRecords.filter(r => r.userId === userId);
+      const myChores = myTodayRecords.length;
+      
+      // 获取总积分概览
+      const summary = await pointsService.getSummary(familyId, userId);
+
       return {
-        totalChores: 0,
-        totalPoints: 0,
-        myChores: 0,
-        myPoints: 0
+        totalChores,
+        totalPoints,
+        myChores,
+        myPoints: summary.availablePoints
       };
     }
 
     const today = new Date().toISOString().split('T')[0];
 
-    // MySQL 版本 - 使用 SUM(CASE WHEN...) 代替 FILTER
     const todayStats = await this.queryOne(
       `SELECT 
         COUNT(*) as total_chores,
         COALESCE(SUM(points_earned), 0) as total_points,
-        SUM(CASE WHEN user_id = ? THEN 1 ELSE 0 END) as my_chores,
-        COALESCE(SUM(CASE WHEN user_id = ? THEN points_earned ELSE 0 END), 0) as my_points
+        COUNT(*) FILTER (WHERE user_id = $1) as my_chores,
+        COALESCE(SUM(points_earned) FILTER (WHERE user_id = $2), 0) as my_points
        FROM chore_records
-       WHERE family_id = ? AND DATE(completed_at) = ? AND status = 'approved'`,
+       WHERE family_id = $3 AND completed_at::date = $4 AND status = 'approved'`,
       [userId, userId, familyId, today]
     );
 
     const totalPoints = await this.queryOne(
-      `SELECT COALESCE(SUM(final_points), 0) as total
-       FROM chore_records 
-       WHERE family_id = ? AND user_id = ? AND status = 'approved'`,
+      `SELECT COALESCE(SUM(points), 0) as total
+       FROM point_transactions 
+       WHERE family_id = $1 AND user_id = $2`,
       [familyId, userId]
     );
 

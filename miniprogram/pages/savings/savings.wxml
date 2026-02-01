@@ -1,247 +1,163 @@
-<!--pages/savings/savings.wxml-->
+<!--pages/savings/savings.wxml - 3D极简科技版-->
 <wxs src="./savings.wxs" module="tools" />
-<view class="container">
-  <!-- 头部背景 -->
-  <view class="header-bg">
-    <view class="header-content">
-      <view class="header-top">
-        <view class="back-btn" bindtap="goBack">
-          <text class="back-icon">←</text>
-        </view>
-        <text class="page-title">💰 我的存款</text>
-        <view class="header-right">
-          <view wx:if="{{isCreator}}" bindtap="showMemberManage" class="header-btn">
-            <text>👥</text>
-          </view>
-          <view wx:if="{{isCreator}}" bindtap="showRateSetting" class="header-btn">
-            <text>⚙️</text>
-          </view>
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section" style="padding-top: {{statusBarHeight + 10}}px;">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="back-row">
+        <view class="back-btn btn-active-feedback" bindtap="goBack">←</view>
+        <view class="header-actions" wx:if="{{isCreator}}">
+          <view bindtap="showMemberManage" class="action-icon btn-active-feedback">👥</view>
+          <view bindtap="showRateSetting" class="action-icon btn-active-feedback">⚙️</view>
         </view>
       </view>
+      <view class="hero-title">我的存款</view>
+      <view class="hero-subtitle">Compound Interest Magic</view>
     </view>
   </view>
 
-  <!-- 加载中 -->
-  <view class="loading-container" wx:if="{{isLoading}}">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">加载中...</text>
+  <!-- 管理员 Tab 切换 -->
+  <view class="tabs-wrapper" wx:if="{{isAdmin}}">
+    <view class="glass-card tabs tabs-2">
+      <view class="tab-item {{activeTab === 'overview' ? 'active' : ''}}" data-tab="overview" bindtap="switchTab">概览</view>
+      <view class="tab-item {{activeTab === 'requests' ? 'active' : ''}}" data-tab="requests" bindtap="switchTab">
+        审核
+        <view class="pending-badge-mini" wx:if="{{pendingCount > 0}}">{{pendingCount}}</view>
+      </view>
+      <view class="tab-indicator {{activeTab === 'requests' ? 'pos-2' : ''}}"></view>
+    </view>
   </view>
 
-  <!-- 主要内容 -->
-  <view class="main-content" wx:if="{{!isLoading && account}}">
-    <!-- Tab 切换（管理员可见） -->
-    <view class="tabs" wx:if="{{isAdmin}}">
-      <view class="tab-item {{activeTab === 'overview' ? 'active' : ''}}" 
-            data-tab="overview" bindtap="switchTab">
-        <text>账户概览</text>
+  <!-- 账户概览内容 -->
+  <view class="tab-content" wx:if="{{activeTab === 'overview'}}">
+    <!-- 核心余额卡片 -->
+    <view class="glass-card balance-card success-pop">
+      <text class="balance-label">账户余额</text>
+      <view class="balance-value">
+        <text class="currency">¥</text>
+        <text class="amount">{{tools.formatMoney(account.balance)}}</text>
       </view>
-      <view class="tab-item {{activeTab === 'requests' ? 'active' : ''}}" 
-            data-tab="requests" bindtap="switchTab">
-        <text>审核申请</text>
-        <view class="badge" wx:if="{{pendingCount > 0}}">{{pendingCount}}</view>
-      </view>
-    </view>
-
-    <!-- 账户概览 -->
-    <view wx:if="{{activeTab === 'overview'}}">
-      <!-- 存款卡片 -->
-      <view class="savings-card">
-        <view class="balance-section">
-          <text class="balance-label">账户余额</text>
-          <view class="balance-amount">
-            <text class="currency">¥</text>
-            <text class="amount">{{tools.formatMoney(account.balance)}}</text>
-          </view>
+      <view class="stat-row">
+        <view class="stat-item">
+          <text class="stat-label">年利率</text>
+          <text class="stat-value highlight">{{tools.formatPercent(account.annualRate)}}%</text>
         </view>
-
-        <view class="card-divider">
-          <view class="divider-line"></view>
-          <view class="divider-icon">💎</view>
-          <view class="divider-line"></view>
-        </view>
-
-        <view class="interest-section">
-          <view class="interest-item">
-            <text class="interest-label">年利率</text>
-            <text class="interest-value rate">{{tools.formatPercent(account.annualRate)}}%</text>
-          </view>
-          <view class="interest-item">
-            <text class="interest-label">累计利息</text>
-            <text class="interest-value">¥{{tools.formatMoney(account.totalInterest)}}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 待发利息卡片 -->
-      <view class="pending-interest-card" wx:if="{{account.pendingInterest > 0}}">
-        <view class="pending-header">
-          <text class="pending-title">🌱 待结算利息</text>
-          <text class="pending-days">{{account.pendingDays}}天</text>
-        </view>
-        
-        <view class="pending-amount-row">
-          <view class="pending-amount {{interestAnimating ? 'animating' : ''}}">
-            <text class="currency-small">+¥</text>
-            <text class="amount-value">{{displayedInterest}}</text>
-          </view>
-          <button class="settle-btn" bindtap="settleInterest">结算</button>
-        </view>
-        
-        <view class="pending-tip">
-          <text>💡 复利魔法：你的钱正在为你工作！</text>
-        </view>
-      </view>
-
-      <!-- 复利科普卡片 -->
-      <view class="edu-card">
-        <view class="edu-header">
-          <text class="edu-icon">📚</text>
-          <text class="edu-title">什么是复利？</text>
-        </view>
-        <view class="edu-content">
-          <text class="edu-text">复利是"利滚利"——今天的利息会在明天继续产生利息。爱因斯坦称它为"世界第八大奇迹"！</text>
-          <view class="edu-example">
-            <text>假设存100元，年利率3%：</text>
-            <text>• 1年后：103.05元</text>
-            <text>• 10年后：134.83元</text>
-            <text>• 20年后：181.67元</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 操作按钮 -->
-      <view class="action-buttons">
-        <!-- 普通用户：申请存款 -->
-        <button class="action-btn request" bindtap="showDepositRequest" wx:if="{{!isAdmin}}">
-          <text class="btn-icon">📝</text>
-          <text class="btn-text">申请存款</text>
-        </button>
-        
-        <!-- 管理员：直接存款/取款 -->
-        <block wx:if="{{isAdmin}}">
-          <button class="action-btn deposit" bindtap="showDeposit">
-            <text class="btn-icon">📥</text>
-            <text class="btn-text">存款</text>
-          </button>
-          <button class="action-btn withdraw" bindtap="showWithdraw">
-            <text class="btn-icon">📤</text>
-            <text class="btn-text">取款</text>
-          </button>
-        </block>
-      </view>
-
-      <!-- 交易记录 -->
-      <view class="transactions-section">
-        <view class="section-header">
-          <text class="section-title">📋 交易记录</text>
-        </view>
-        
-        <view class="transactions-list" wx:if="{{transactions.length > 0}}">
-          <view class="transaction-item" wx:for="{{transactions}}" wx:key="id">
-            <view class="transaction-left">
-              <view class="transaction-icon {{item.type}}">
-                <text wx:if="{{item.type === 'deposit'}}">📥</text>
-                <text wx:elif="{{item.type === 'withdraw'}}">📤</text>
-                <text wx:else>✨</text>
-              </view>
-              <view class="transaction-info">
-                <text class="transaction-desc">{{item.description || (item.type === 'deposit' ? '存款' : item.type === 'withdraw' ? '取款' : '利息')}}</text>
-                <text class="transaction-time">{{item.createdAt}}</text>
-              </view>
-            </view>
-            <view class="transaction-right">
-              <text class="transaction-amount {{item.type === 'withdraw' ? 'negative' : 'positive'}}">
-                {{item.type === 'withdraw' ? '-' : '+'}}¥{{tools.formatMoney(item.amount)}}
-              </text>
-              <text class="transaction-balance">余额: ¥{{tools.formatMoney(item.balanceAfter)}}</text>
-            </view>
-          </view>
-        </view>
-        
-        <view class="empty-transactions" wx:else>
-          <text class="empty-icon">📭</text>
-          <text class="empty-text">暂无交易记录</text>
-          <text class="empty-tip">开始存款，让钱为你工作吧！</text>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-label">累计利息</text>
+          <text class="stat-value">¥{{tools.formatMoney(account.totalInterest)}}</text>
         </view>
       </view>
     </view>
 
-    <!-- 审核申请列表（管理员） -->
-    <view wx:if="{{activeTab === 'requests' && isAdmin}}" class="requests-section">
-      <view class="requests-list" wx:if="{{requests.length > 0}}">
-        <view class="request-item {{item.status}}" wx:for="{{requests}}" wx:key="id">
-          <view class="request-header">
-            <view class="request-user">
-              <image class="user-avatar" src="{{item.userAvatar || '/assets/images/default-avatar.png'}}" mode="aspectFill"></image>
-              <text class="user-name">{{item.userNickname}}</text>
-            </view>
-            <view class="request-status {{item.status}}">
-              <text wx:if="{{item.status === 'pending'}}">⏳ 待审核</text>
-              <text wx:elif="{{item.status === 'approved'}}">✅ 已通过</text>
-              <text wx:else>❌ 已拒绝</text>
-            </view>
+    <!-- 待结算利息 -->
+    <view class="glass-card interest-card" wx:if="{{account.pendingInterest > 0}}">
+      <view class="interest-info">
+        <view>
+          <text class="interest-title">待结算利息</text>
+          <view class="interest-value">+¥{{displayedInterest}}</view>
+        </view>
+        <view class="settle-btn btn-active-feedback" bindtap="settleInterest">结算</view>
+      </view>
+      <text class="interest-tip">💡 结算后利息将加入本金产生复利</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-row">
+      <view class="primary-btn btn-active-feedback" bindtap="showDepositRequest" wx:if="{{!isAdmin}}">
+        <text>申请存款</text>
+      </view>
+      <block wx:if="{{isAdmin}}">
+        <view class="primary-btn btn-active-feedback" bindtap="showDeposit">
+          <text>存款</text>
+        </view>
+        <view class="secondary-btn btn-active-feedback" bindtap="showWithdraw">
+          <text>取款</text>
+        </view>
+      </block>
+    </view>
+
+    <!-- 交易记录 -->
+    <view class="section-title">交易记录</view>
+    <view class="transaction-list">
+      <view class="transaction-item glass-card" wx:for="{{transactions}}" wx:key="id">
+        <view class="trans-icon">{{item.type === 'deposit' ? '📥' : item.type === 'withdraw' ? '📤' : '✨'}}</view>
+        <view class="trans-info">
+          <text class="trans-desc">{{item.description || (item.type === 'deposit' ? '存款' : item.type === 'withdraw' ? '取款' : '利息')}}</text>
+          <text class="trans-time">{{item.createdAt}}</text>
+        </view>
+        <view class="trans-amount {{item.type === 'withdraw' ? 'negative' : 'positive'}}">
+          {{item.type === 'withdraw' ? '-' : '+'}}¥{{tools.formatMoney(item.amount)}}
+        </view>
+      </view>
+      <view class="empty-tip" wx:if="{{transactions.length === 0}}">暂无交易记录</view>
+    </view>
+  </view>
+
+  <!-- 审核列表内容 -->
+  <view class="tab-content" wx:if="{{activeTab === 'requests' && isAdmin}}">
+    <view class="request-list">
+      <view class="request-item glass-card success-pop" wx:for="{{requests}}" wx:key="id">
+        <view class="request-header">
+          <image class="user-avatar" src="{{item.userAvatar || '/assets/images/default-avatar.png'}}" mode="aspectFill" />
+          <view class="user-info">
+            <text class="user-name">{{item.userNickname}}</text>
+            <text class="request-time">{{item.createdAt}}</text>
           </view>
-          
-          <view class="request-body">
-            <view class="request-amount">
-              <text class="amount-label">申请金额</text>
-              <text class="amount-value">¥{{tools.formatMoney(item.amount)}}</text>
-            </view>
-            <view class="request-desc" wx:if="{{item.description}}">
-              <text>备注：{{item.description}}</text>
-            </view>
-            <view class="request-time">
-              <text>{{item.createdAt}}</text>
-            </view>
+          <view class="request-status {{item.status}}">{{item.status === 'pending' ? '待审核' : item.status === 'approved' ? '已通过' : '已拒绝'}}</view>
+        </view>
+        <view class="request-body">
+          <view class="request-row">
+            <text class="request-label">金额</text>
+            <text class="request-amount">¥{{tools.formatMoney(item.amount)}}</text>
           </view>
-          
-          <view class="request-footer" wx:if="{{item.status === 'pending'}}">
-            <button class="review-btn" data-request="{{item}}" bindtap="showReview">
-              审核
-            </button>
+          <view class="request-row" wx:if="{{item.description}}">
+            <text class="request-label">备注</text>
+            <text class="request-desc">{{item.description}}</text>
           </view>
-          
-          <view class="request-result" wx:if="{{item.status !== 'pending'}}">
-            <text wx:if="{{item.reviewerName}}">审核人：{{item.reviewerName}}</text>
-            <text wx:if="{{item.rejectReason}}">原因：{{item.rejectReason}}</text>
-          </view>
+        </view>
+        <view class="review-actions" wx:if="{{item.status === 'pending'}}">
+          <view class="action-btn approve" bindtap="showReview" data-request="{{item}}">审核</view>
+        </view>
+      </view>
+      <view class="empty-tip" wx:if="{{requests.length === 0}}">暂无申请记录</view>
+    </view>
+  </view>
+
+  <!-- 底部安全区域 -->
+  <view class="safe-bottom"></view>
+</view>
+
+<!-- 存取款弹窗 -->
+<view class="modal-overlay {{showActionModal ? 'show' : ''}}" bindtap="closeActionModal">
+  <view class="modal-container action-modal glass-card" catchtap="preventClose">
+    <view class="modal-header">
+      <text class="modal-title">
+        {{actionType === 'request' ? '📝 申请存款' : actionType === 'deposit' ? '💰 存款' : '💸 取款'}}
+      </text>
+      <view class="modal-close" bindtap="closeActionModal">×</view>
+    </view>
+    
+    <view class="modal-body">
+      <view class="input-group">
+        <text class="input-label">金额</text>
+        <view class="amount-input-wrap">
+          <text class="currency-prefix">¥</text>
+          <input 
+            class="amount-input" 
+            type="digit" 
+            placeholder="请输入金额"
+            value="{{actionAmount}}"
+            focus="{{showActionModal}}"
+            bindinput="onAmountInput"
+          />
         </view>
       </view>
       
-      <view class="empty-requests" wx:else>
-        <text class="empty-icon">📋</text>
-        <text class="empty-text">暂无申请记录</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 存取款弹窗 -->
-  <view class="modal-overlay {{showActionModal ? 'show' : ''}}" bindtap="closeActionModal">
-    <view class="modal-container action-modal" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">
-          {{actionType === 'request' ? '📝 申请存款' : actionType === 'deposit' ? '💰 存款' : '💸 取款'}}
-        </text>
-        <view class="modal-close" bindtap="closeActionModal">×</view>
-      </view>
-      
-      <view class="modal-body">
-        <view class="input-group">
-          <text class="input-label">金额</text>
-          <view class="amount-input-wrap">
-            <text class="currency-prefix">¥</text>
-            <input 
-              class="amount-input" 
-              type="digit" 
-              placeholder="请输入金额"
-              value="{{actionAmount}}"
-              bindinput="onAmountInput"
-            />
-          </view>
-        </view>
-        
-        <view class="input-group">
-          <text class="input-label">备注（选填）</text>
+      <view class="input-group">
+        <text class="input-label">备注（选填）</text>
+        <view class="text-input-wrapper">
           <input 
             class="text-input" 
             placeholder="如：压岁钱、零花钱等"
@@ -249,157 +165,119 @@
             bindinput="onDescriptionInput"
           />
         </view>
-
-        <view class="current-balance" wx:if="{{actionType === 'withdraw'}}">
-          <text>当前可取：¥{{tools.formatMoney(account.balance)}}</text>
-        </view>
-
-        <view class="request-tip" wx:if="{{actionType === 'request'}}">
-          <text class="tip-icon">💡</text>
-          <text class="tip-text">提交申请后，请将钱转给管理员。管理员确认收到后会批准您的存款。</text>
-        </view>
       </view>
-      
-      <view class="modal-footer">
-        <button class="cancel-btn" bindtap="closeActionModal">取消</button>
-        <button 
-          class="confirm-btn {{actionType}}" 
-          bindtap="confirmAction"
-          disabled="{{isSubmitting}}"
-        >
-          {{isSubmitting ? '处理中...' : actionType === 'request' ? '提交申请' : '确认'}}
-        </button>
+
+      <view class="current-balance-tip" wx:if="{{actionType === 'withdraw'}}">
+        <text>当前可取：¥{{tools.formatMoney(account.balance)}}</text>
+      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <view class="cancel-btn" bindtap="closeActionModal">取消</view>
+      <view class="confirm-btn btn-active-feedback {{isSubmitting ? 'disabled' : ''}}" bindtap="confirmAction">
+        {{isSubmitting ? '处理中...' : '确认'}}
       </view>
     </view>
   </view>
+</view>
 
-  <!-- 审核弹窗 -->
-  <view class="modal-overlay {{showReviewModal ? 'show' : ''}}" bindtap="closeReviewModal">
-    <view class="modal-container review-modal" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">🔍 审核存款申请</text>
-        <view class="modal-close" bindtap="closeReviewModal">×</view>
+<!-- 审核弹窗 -->
+<view class="modal-overlay {{showReviewModal ? 'show' : ''}}" bindtap="closeReviewModal">
+  <view class="modal-container review-modal glass-card" catchtap="preventClose">
+    <view class="modal-header">
+      <text class="modal-title">🔍 审核申请</text>
+      <view class="modal-close" bindtap="closeReviewModal">×</view>
+    </view>
+    
+    <view class="modal-body" wx:if="{{currentRequest}}">
+      <view class="review-info-box">
+        <view class="review-row">
+          <text class="review-label">申请人</text>
+          <text class="review-value">{{currentRequest.userNickname}}</text>
+        </view>
+        <view class="review-row">
+          <text class="review-label">金额</text>
+          <text class="review-value highlight">¥{{tools.formatMoney(currentRequest.amount)}}</text>
+        </view>
       </view>
-      
-      <view class="modal-body" wx:if="{{currentRequest}}">
-        <view class="review-info">
-          <view class="review-row">
-            <text class="review-label">申请人</text>
-            <text class="review-value">{{currentRequest.userNickname}}</text>
-          </view>
-          <view class="review-row">
-            <text class="review-label">申请金额</text>
-            <text class="review-value highlight">¥{{tools.formatMoney(currentRequest.amount)}}</text>
-          </view>
-          <view class="review-row" wx:if="{{currentRequest.description}}">
-            <text class="review-label">备注</text>
-            <text class="review-value">{{currentRequest.description}}</text>
-          </view>
-        </view>
 
-        <view class="review-warning">
-          <text class="warning-icon">⚠️</text>
-          <text class="warning-text">请确认已收到对应金额的转账后再批准</text>
-        </view>
-
-        <view class="input-group">
-          <text class="input-label">拒绝原因（拒绝时必填）</text>
+      <view class="input-group">
+        <text class="input-label">拒绝原因（仅在拒绝时填写）</text>
+        <view class="text-input-wrapper">
           <input 
             class="text-input" 
-            placeholder="如：未收到转账"
+            placeholder="填写拒绝原因"
             value="{{rejectReason}}"
             bindinput="onRejectReasonInput"
           />
         </view>
       </view>
-      
-      <view class="modal-footer review-footer">
-        <button class="reject-btn" bindtap="rejectRequest">拒绝</button>
-        <button class="approve-btn" bindtap="approveRequest">批准</button>
-      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <view class="reject-btn" bindtap="rejectRequest">拒绝</view>
+      <view class="approve-btn btn-active-feedback" bindtap="approveRequest">批准</view>
     </view>
   </view>
+</view>
 
-  <!-- 利率设置弹窗 -->
-  <view class="modal-overlay {{showRateModal ? 'show' : ''}}" bindtap="closeRateModal">
-    <view class="modal-container rate-modal" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">⚙️ 设置年利率</text>
-        <view class="modal-close" bindtap="closeRateModal">×</view>
-      </view>
-      
-      <view class="modal-body">
-        <view class="input-group">
-          <text class="input-label">年利率（%）</text>
-          <view class="rate-input-wrap">
-            <input 
-              class="rate-input" 
-              type="digit" 
-              placeholder="如：3.00"
-              value="{{newRate}}"
-              bindinput="onRateInput"
-            />
-            <text class="rate-suffix">%</text>
-          </view>
-        </view>
-        
-        <view class="rate-presets">
-          <text class="preset-label">快捷选择：</text>
-          <view class="preset-btns">
-            <button class="preset-btn" data-rate="1" bindtap="onRateInput">1%</button>
-            <button class="preset-btn" data-rate="3" bindtap="onRateInput">3%</button>
-            <button class="preset-btn" data-rate="5" bindtap="onRateInput">5%</button>
-            <button class="preset-btn" data-rate="10" bindtap="onRateInput">10%</button>
-          </view>
-        </view>
-        
-        <view class="rate-tip">
-          <text>💡 银行活期利率约0.3%，定期约2-3%</text>
+<!-- 利率设置弹窗 -->
+<view class="modal-overlay {{showRateModal ? 'show' : ''}}" bindtap="closeRateModal">
+  <view class="modal-container rate-modal glass-card" catchtap="preventClose">
+    <view class="modal-header">
+      <text class="modal-title">⚙️ 设置年利率</text>
+      <view class="modal-close" bindtap="closeRateModal">×</view>
+    </view>
+    
+    <view class="modal-body">
+      <view class="input-group">
+        <text class="input-label">年利率（%）</text>
+        <view class="amount-input-wrap">
+          <input 
+            class="amount-input" 
+            type="digit" 
+            placeholder="如：3.00"
+            value="{{newRate}}"
+            bindinput="onRateInput"
+          />
+          <text class="unit-suffix">%</text>
         </view>
       </view>
       
-      <view class="modal-footer">
-        <button class="cancel-btn" bindtap="closeRateModal">取消</button>
-        <button class="confirm-btn" bindtap="confirmRate">保存</button>
+      <view class="rate-presets">
+        <view class="preset-tag" data-rate="1" bindtap="onRateInput">1%</view>
+        <view class="preset-tag" data-rate="3" bindtap="onRateInput">3%</view>
+        <view class="preset-tag" data-rate="5" bindtap="onRateInput">5%</view>
+        <view class="preset-tag" data-rate="10" bindtap="onRateInput">10%</view>
       </view>
     </view>
+    
+    <view class="modal-footer">
+      <view class="cancel-btn" bindtap="closeRateModal">取消</view>
+      <view class="confirm-btn btn-active-feedback" bindtap="confirmRate">保存</view>
+    </view>
   </view>
+</view>
 
-  <!-- 成员管理弹窗 -->
-  <view class="modal-overlay {{showMemberModal ? 'show' : ''}}" bindtap="closeMemberModal">
-    <view class="modal-container member-modal" catchtap="preventClose">
-      <view class="modal-header">
-        <text class="modal-title">👥 管理员设置</text>
-        <view class="modal-close" bindtap="closeMemberModal">×</view>
-      </view>
-      
-      <view class="modal-body">
-        <view class="member-tip">
-          <text>💡 子管理员可以审核存款申请、直接存取款</text>
-        </view>
-        
-        <view class="members-list">
-          <view class="member-item" wx:for="{{familyMembers}}" wx:key="id">
-            <view class="member-info">
-              <image class="member-avatar" src="{{item.avatar_url || item.avatarUrl || '/assets/images/default-avatar.png'}}" mode="aspectFill"></image>
-              <view class="member-detail">
-                <text class="member-name">{{item.nickname}}</text>
-                <text class="member-role {{item.role}}">
-                  {{item.role === 'creator' ? '👑 创建人' : item.role === 'admin' ? '⭐ 子管理员' : '👤 成员'}}
-                </text>
-              </view>
-            </view>
-            <view class="member-action" wx:if="{{item.role !== 'creator'}}">
-              <switch 
-                checked="{{item.role === 'admin'}}" 
-                data-member="{{item}}"
-                bindchange="toggleSubAdmin"
-                color="#667eea"
-              />
-            </view>
+<!-- 成员管理弹窗 -->
+<view class="modal-overlay {{showMemberModal ? 'show' : ''}}" bindtap="closeMemberModal">
+  <view class="modal-container member-modal glass-card" catchtap="preventClose">
+    <view class="modal-header">
+      <text class="modal-title">👥 管理员设置</text>
+      <view class="modal-close" bindtap="closeMemberModal">×</view>
+    </view>
+    
+    <view class="modal-body">
+      <scroll-view scroll-y class="member-list-scroll">
+        <view class="member-item-row" wx:for="{{familyMembers}}" wx:key="id">
+          <image class="mini-avatar" src="{{item.avatarUrl || '/assets/images/default-avatar.png'}}" mode="aspectFill" />
+          <view class="member-name-col">
+            <text class="name">{{item.nickname}}</text>
+            <text class="role {{item.role}}">{{item.role === 'creator' ? '创建人' : item.role === 'admin' ? '管理员' : '成员'}}</text>
           </view>
+          <switch wx:if="{{item.role !== 'creator'}}" checked="{{item.role === 'admin'}}" color="#000" data-member="{{item}}" bindchange="toggleSubAdmin" />
         </view>
-      </view>
+      </scroll-view>
     </view>
   </view>
 </view>

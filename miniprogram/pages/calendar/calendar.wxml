@@ -1,0 +1,178 @@
+<!--pages/calendar/calendar.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">{{currentMonthText}}</view>
+      <view class="hero-subtitle">Family Shared Calendar</view>
+    </view>
+  </view>
+
+  <!-- 日历面板 (Glassmorphism Card) -->
+  <view class="glass-card calendar-panel success-pop">
+    <view class="calendar-header">
+      <view class="month-nav btn-active-feedback" bindtap="prevMonth">‹</view>
+      <view class="current-date">{{currentYear}}年{{currentMonth}}月</view>
+      <view class="month-nav btn-active-feedback" bindtap="nextMonth">›</view>
+    </view>
+    
+    <view class="week-days">
+      <text wx:for="{{weekDays}}" wx:key="*this">{{item}}</text>
+    </view>
+    
+    <view class="days-grid">
+      <view 
+        class="day-item {{item.isCurrentMonth ? '' : 'not-current'}} {{item.isToday ? 'today' : ''}} {{selectedDate === item.fullDate ? 'selected' : ''}}" 
+        wx:for="{{days}}" 
+        wx:key="fullDate"
+        data-date="{{item.fullDate}}"
+        bindtap="selectDate"
+      >
+        <text class="day-num">{{item.day}}</text>
+        <view class="event-dots" wx:if="{{item.hasEvents}}">
+          <view class="dot" style="background: {{item.eventColor || '#000'}}"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日程列表 -->
+  <view class="section-header">
+    <text class="section-title">{{selectedDateText}} 日程</text>
+    <view class="add-btn-mini btn-active-feedback" bindtap="showAddModal">添加日程</view>
+  </view>
+
+  <view class="event-list">
+    <view class="event-item glass-card" wx:for="{{selectedEvents}}" wx:key="id" bindtap="showEventDetail" data-id="{{item.id}}">
+      <view class="event-time-box">
+        <text class="time-start">{{item.startTimeText}}</text>
+        <view class="time-line" style="background: {{item.categoryColor || '#000'}}"></view>
+      </view>
+      <view class="event-content">
+        <text class="event-title">{{item.title}}</text>
+        <view class="event-meta">
+          <text class="event-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
+          <text class="event-category" style="color: {{item.categoryColor}}">{{item.categoryName}}</text>
+        </view>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+    
+    <view class="empty-tip" wx:if="{{selectedEvents.length === 0}}">
+      <view class="empty-icon">📅</view>
+      <text>今日暂无安排，享受悠闲时光吧</text>
+    </view>
+  </view>
+
+  <view class="safe-bottom"></view>
+
+  <!-- 添加/编辑日程弹窗 -->
+  <view class="modal-mask {{showAddModal ? 'show' : ''}}" bindtap="hideAddModal">
+    <view class="modal-content glass-card {{showAddModal ? 'show' : ''}}" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">{{editMode === 'add' ? '新增日程' : '编辑日程'}}</text>
+        <view class="close-btn" bindtap="hideAddModal">×</view>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="form-item">
+          <text class="form-label">日程标题</text>
+          <input class="form-input" placeholder="想做些什么？" value="{{formData.title}}" data-field="title" bindinput="onInput" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">选择分类</text>
+          <view class="category-grid">
+            <view 
+              wx:for="{{categories}}" 
+              wx:key="id" 
+              class="category-item {{formData.categoryId === item.id ? 'active' : ''}}"
+              style="--cat-color: {{item.color}}"
+              data-id="{{item.id}}"
+              bindtap="onCategorySelect"
+            >
+              <view class="cat-dot" style="background: {{item.color}}"></view>
+              <text>{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="form-row">
+          <view class="form-item half">
+            <text class="form-label">开始时间</text>
+            <picker mode="selector" range="{{timeRange}}" value="{{startTimeIndex}}" bindchange="onStartTimeChange">
+              <view class="picker-val">{{timeRange[startTimeIndex]}}</view>
+            </picker>
+          </view>
+          <view class="form-item half">
+            <text class="form-label">结束时间</text>
+            <picker mode="selector" range="{{timeRange}}" value="{{endTimeIndex}}" bindchange="onEndTimeChange">
+              <view class="picker-val">{{timeRange[endTimeIndex]}}</view>
+            </picker>
+          </view>
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">地点</text>
+          <input class="form-input" placeholder="在哪里？" value="{{formData.location}}" data-field="location" bindinput="onInput" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">备注</text>
+          <textarea class="form-textarea" placeholder="还有什么需要注意的？" value="{{formData.description}}" data-field="description" bindinput="onInput" />
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <view class="primary-btn submit-btn btn-active-feedback" bindtap="submitEvent">
+          <text>确认添加</text>
+          <view class="btn-glow"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日程详情弹窗 -->
+  <view class="modal-mask {{showDetailModal ? 'show' : ''}}" bindtap="hideDetailModal">
+    <view class="modal-content glass-card {{showDetailModal ? 'show' : ''}}" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">日程详情</text>
+        <view class="close-btn" bindtap="hideDetailModal">×</view>
+      </view>
+      
+      <view class="modal-body">
+        <view class="detail-main">
+          <view class="detail-category-tag" style="background: {{selectedEventDetail.categoryColor}}">
+            {{selectedEventDetail.categoryName}}
+          </view>
+          <text class="detail-title">{{selectedEventDetail.title}}</text>
+        </view>
+
+        <view class="detail-info-list">
+          <view class="detail-info-item">
+            <text class="info-icon">⏰</text>
+            <text class="info-text">{{selectedEventDetail.startTimeText}}</text>
+          </view>
+          <view class="detail-info-item" wx:if="{{selectedEventDetail.location}}">
+            <text class="info-icon">📍</text>
+            <text class="info-text">{{selectedEventDetail.location}}</text>
+          </view>
+          <view class="detail-info-item" wx:if="{{selectedEventDetail.description}}">
+            <text class="info-icon">📝</text>
+            <text class="info-text">{{selectedEventDetail.description}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="modal-footer detail-footer">
+        <view class="delete-btn btn-active-feedback" bindtap="deleteEvent">删除</view>
+        <view class="secondary-btn btn-active-feedback" style="flex: 1; height: 110rpx; border-radius: 55rpx;" bindtap="showEditModal">编辑</view>
+        <view class="primary-btn edit-btn btn-active-feedback" style="flex: 1.5" bindtap="hideDetailModal">
+          <text>确定</text>
+          <view class="btn-glow"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

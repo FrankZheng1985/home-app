@@ -1,312 +1,99 @@
-<!--pages/index/index.wxml - 精美设计版-->
+<!--pages/index/index.wxml - 3D极简科技版-->
 <view class="page-container">
-  <!-- 加载状态 -->
-  <view wx:if="{{isLoading}}" class="loading-wrapper">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">加载中...</text>
+  <!-- 顶部 3D 产品展示区 (Hero Section) -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <!-- 3D 产品展示区已移除 -->
+    <view class="hero-content">
+      <view class="hero-title">智能家庭终端</view>
+      <view class="hero-subtitle">Smart Home Hub v2</view>
+    </view>
   </view>
 
-  <!-- 未登录 - 游客浏览模式 -->
-  <block wx:elif="{{!isLoggedIn}}">
-    <!-- 渐变头部 -->
-    <view class="home-header guest-mode">
-      <view class="header-bg"></view>
-      <view class="header-content">
-        <view class="welcome-row">
-          <view class="welcome-text">
-            <text class="greeting">欢迎来到 👋</text>
-            <view class="family-badge">
-              <text class="family-icon">🏠</text>
-              <text class="family-name">家庭小助手</text>
-            </view>
-          </view>
-          <view class="guest-login-mini" bindtap="goToLogin">
-            <text class="login-text">登录</text>
-          </view>
+  <!-- 核心数据展示 (Glassmorphism Card) -->
+  <view class="glass-card main-stats success-pop">
+    <view class="stats-background">
+      <view class="stats-circle pulse-slow"></view>
+    </view>
+    <view class="stat-group">
+      <view class="stat-item">
+        <text class="stat-label">当前积分</text>
+        <view class="value-with-unit">
+          <text class="stat-value">{{pointsSummary.totalPoints || 0}}</text>
+          <text class="unit">PTS</text>
         </view>
-        
-        <!-- 功能亮点 -->
-        <view class="stats-card">
-          <view class="stat-item">
-            <text class="stat-value">🧹</text>
-            <text class="stat-label">家务积分</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-value">🎁</text>
-            <text class="stat-label">奖励兑换</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-value">🏦</text>
-            <text class="stat-label">复利存款</text>
-          </view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">本周排行</text>
+        <view class="value-with-unit">
+          <text class="stat-value">{{pointsSummary.rank || '-'}}</text>
+          <text class="unit">RANK</text>
         </view>
       </view>
     </view>
-
-    <!-- 主内容区域 -->
-    <view class="home-content">
-      <!-- 功能介绍 -->
-      <view class="section-title">
-        <text class="title-icon">✨</text>
-        <text class="title-text">主要功能</text>
-      </view>
-      <view class="quick-actions">
-        <view class="action-card" bindtap="previewChores">
-          <view class="action-icon-wrap action-chore">
-            <text class="action-emoji">🧹</text>
-          </view>
-          <text class="action-name">家务记录</text>
-          <text class="action-desc">记录家务获得积分</text>
-        </view>
-        <view class="action-card" bindtap="previewSports">
-          <view class="action-icon-wrap action-savings">
-            <text class="action-emoji">🏃</text>
-          </view>
-          <text class="action-name">运动打卡</text>
-          <text class="action-desc">健康生活好习惯</text>
-        </view>
-        <view class="action-card" bindtap="previewRewards">
-          <view class="action-icon-wrap action-reward">
-            <text class="action-emoji">🎁</text>
-          </view>
-          <text class="action-name">积分奖励</text>
-          <text class="action-desc">兑换心仪的奖品</text>
-        </view>
-        <view class="action-card" bindtap="previewMoments">
-          <view class="action-icon-wrap action-family">
-            <text class="action-emoji">💬</text>
-          </view>
-          <text class="action-name">家庭动态</text>
-          <text class="action-desc">分享美好时光</text>
-        </view>
-      </view>
-
-      <!-- 使用说明 -->
-      <view class="section-title">
-        <text class="title-icon">📖</text>
-        <text class="title-text">如何使用</text>
-      </view>
-      <view class="guide-card">
-        <view class="guide-item">
-          <view class="guide-num">1</view>
-          <view class="guide-content">
-            <text class="guide-title">微信登录</text>
-            <text class="guide-desc">一键登录，无需注册账号</text>
-          </view>
-        </view>
-        <view class="guide-item">
-          <view class="guide-num">2</view>
-          <view class="guide-content">
-            <text class="guide-title">创建或加入家庭</text>
-            <text class="guide-desc">邀请家人一起使用</text>
-          </view>
-        </view>
-        <view class="guide-item">
-          <view class="guide-num">3</view>
-          <view class="guide-content">
-            <text class="guide-title">记录家务</text>
-            <text class="guide-desc">完成家务获得积分奖励</text>
-          </view>
-        </view>
-        <view class="guide-item">
-          <view class="guide-num">4</view>
-          <view class="guide-content">
-            <text class="guide-title">积分兑换</text>
-            <text class="guide-desc">用积分兑换各种奖励</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 登录提示 -->
-      <view class="guest-login-section">
-        <button class="login-btn-large" bindtap="goToLogin">
-          <text class="btn-icon">💚</text>
-          <text class="btn-text">微信登录开始使用</text>
-        </button>
-        <text class="login-tip">登录后可以创建或加入家庭</text>
+    
+    <view class="action-row">
+      <view class="primary-btn btn-active-feedback" bindtap="goToRecordChore">
+        <text>立即记录</text>
+        <view class="btn-glow"></view>
       </view>
     </view>
-  </block>
+  </view>
 
-  <!-- 已登录 - 已有家庭 -->
-  <block wx:elif="{{hasFamily}}">
-    <!-- 渐变头部 -->
-    <view class="home-header">
-      <view class="header-bg"></view>
-      <view class="header-content">
-        <view class="welcome-row">
-          <view class="welcome-text">
-            <text class="greeting">你好，{{userInfo.nickname || '家人'}} 👋</text>
-            <view class="family-badge">
-              <text class="family-icon">🏠</text>
-              <text class="family-name">{{familyInfo.name}}</text>
-            </view>
-          </view>
-          <view class="avatar-wrapper" bindtap="goToFamily">
-            <image 
-              class="user-avatar" 
-              src="{{userInfo.avatarUrl || '/assets/images/default-avatar.png'}}"
-              mode="aspectFill"
-            ></image>
-            <view class="avatar-ring"></view>
-          </view>
-        </view>
-        
-        <!-- 统计数据卡片 -->
-        <view class="stats-card">
-          <view class="stat-item">
-            <text class="stat-value">{{pointsSummary.totalPoints || 0}}</text>
-            <text class="stat-label">总积分</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-value stat-success">{{pointsSummary.weekPoints || 0}}</text>
-            <text class="stat-label">本周获得</text>
-          </view>
-          <view class="stat-divider"></view>
-          <view class="stat-item">
-            <text class="stat-value stat-warning">{{pointsSummary.rank || '-'}}</text>
-            <text class="stat-label">排名</text>
-          </view>
-        </view>
+  <!-- 功能网格 -->
+  <view class="features-grid">
+    <view class="feature-card glass-card" bindtap="goToCalendar">
+      <view class="feature-icon">📅</view>
+      <view class="feature-info">
+        <text class="feature-name">家庭日历</text>
+        <text class="feature-desc">共享精彩时刻</text>
       </view>
     </view>
-
-    <!-- 主内容区域 -->
-    <view class="home-content">
-      <!-- 快捷操作 -->
-      <view class="section-title">
-        <text class="title-icon">⚡</text>
-        <text class="title-text">快捷操作</text>
-      </view>
-      <view class="quick-actions">
-        <view class="action-card" bindtap="goToRecordChore">
-          <view class="action-icon-wrap action-chore">
-            <text class="action-emoji">🧹</text>
-          </view>
-          <text class="action-name">记录家务</text>
-          <text class="action-desc">记录完成的家务</text>
-        </view>
-        <view class="action-card" bindtap="goToSavings">
-          <view class="action-icon-wrap action-savings">
-            <text class="action-emoji">🏦</text>
-          </view>
-          <text class="action-name">我的存款</text>
-          <text class="action-desc">复利让钱生钱</text>
-        </view>
-        <!-- 管理员显示运动打卡（因为TabBar没有运动入口） -->
-        <view class="action-card" bindtap="goToSports" wx:if="{{isAdmin}}">
-          <view class="action-icon-wrap action-sport">
-            <text class="action-emoji">🏃</text>
-          </view>
-          <text class="action-name">运动打卡</text>
-          <text class="action-desc">健康生活好习惯</text>
-        </view>
-        <!-- 普通成员显示奖励设置 -->
-        <view class="action-card" bindtap="goToRewards" wx:if="{{!isAdmin}}">
-          <view class="action-icon-wrap action-reward">
-            <text class="action-emoji">🎁</text>
-          </view>
-          <text class="action-name">奖励设置</text>
-          <text class="action-desc">管理家务奖励</text>
-        </view>
-        <!-- 管理员显示积分明细 -->
-        <view class="action-card" bindtap="goToPointsDetail" wx:if="{{isAdmin}}">
-          <view class="action-icon-wrap action-points">
-            <text class="action-emoji">📊</text>
-          </view>
-          <text class="action-name">积分明细</text>
-          <text class="action-desc">查看积分记录</text>
-        </view>
-        <!-- 普通成员显示家庭管理 -->
-        <view class="action-card" bindtap="goToFamily" wx:if="{{!isAdmin}}">
-          <view class="action-icon-wrap action-family">
-            <text class="action-emoji">👥</text>
-          </view>
-          <text class="action-name">家庭管理</text>
-          <text class="action-desc">管理家庭成员</text>
-        </view>
-      </view>
-
-      <!-- 家庭排行榜 -->
-      <view class="section-title" wx:if="{{familyRanking.length > 0}}">
-        <text class="title-icon">🏆</text>
-        <text class="title-text">本周排行</text>
-      </view>
-      <view class="ranking-card" wx:if="{{familyRanking.length > 0}}">
-        <view class="ranking-item" wx:for="{{familyRanking}}" wx:key="userId">
-          <view class="rank-badge rank-{{index + 1}}">
-            <text wx:if="{{index === 0}}">🥇</text>
-            <text wx:elif="{{index === 1}}">🥈</text>
-            <text wx:elif="{{index === 2}}">🥉</text>
-            <text wx:else class="rank-number">{{index + 1}}</text>
-          </view>
-          <image 
-            class="rank-avatar" 
-            src="{{item.avatarUrl || '/assets/images/default-avatar.png'}}"
-            mode="aspectFill"
-          ></image>
-          <text class="rank-name">{{item.nickname}}</text>
-          <view class="rank-points">
-            <text class="points-num">{{item.points}}</text>
-            <text class="points-unit">分</text>
-          </view>
-        </view>
-        <view class="ranking-empty" wx:if="{{familyRanking.length === 0}}">
-          <text>本周还没有人记录家务哦</text>
-        </view>
-      </view>
-
-      <!-- 最新动态 -->
-      <view class="section-title" wx:if="{{latestMoments.length > 0}}">
-        <text class="title-icon">📢</text>
-        <text class="title-text">家庭动态</text>
-        <text class="title-more" bindtap="goToMoments">查看更多 ></text>
-      </view>
-      <view class="moments-card" wx:if="{{latestMoments.length > 0}}">
-        <view class="moment-item" wx:for="{{latestMoments}}" wx:key="id" bindtap="goToMomentDetail" data-id="{{item.id}}">
-          <image 
-            class="moment-avatar" 
-            src="{{item.isAnonymous ? '/assets/images/default-avatar.png' : item.user.avatarUrl}}"
-            mode="aspectFill"
-          ></image>
-          <view class="moment-content">
-            <view class="moment-header">
-              <text class="moment-author">{{item.isAnonymous ? '匿名用户' : item.user.nickname}}</text>
-              <text class="moment-time">{{item.createdAtText}}</text>
-            </view>
-            <text class="moment-text">{{item.content}}</text>
-          </view>
-        </view>
+    <view class="feature-card glass-card" bindtap="goToInventory">
+      <view class="feature-icon">📦</view>
+      <view class="feature-info">
+        <text class="feature-name">物资清单</text>
+        <text class="feature-desc">库存智能预警</text>
       </view>
     </view>
-  </block>
-
-  <!-- 未加入家庭 -->
-  <block wx:else>
-    <view class="no-family-page">
-      <view class="no-family-bg"></view>
-      <view class="no-family-content">
-        <view class="no-family-icon animate-float">
-          <text class="icon-emoji">🏠</text>
-          <view class="icon-glow"></view>
-        </view>
-        <text class="no-family-title">还没有加入家庭</text>
-        <text class="no-family-desc">创建或加入一个家庭，和家人一起记录家务吧！</text>
-        
-        <view class="family-actions">
-          <button class="action-btn btn-create" bindtap="goToCreateFamily">
-            <text class="btn-icon">✨</text>
-            <text class="btn-label">创建新家庭</text>
-          </button>
-          <button class="action-btn btn-join" bindtap="goToJoinFamily">
-            <text class="btn-icon">🔗</text>
-            <text class="btn-label">加入已有家庭</text>
-          </button>
-        </view>
+    <view class="feature-card glass-card" bindtap="goToSavings">
+      <view class="feature-icon">🏦</view>
+      <view class="feature-info">
+        <text class="feature-name">复利存款</text>
+        <text class="feature-desc">财富稳步增值</text>
       </view>
     </view>
-  </block>
+    <view class="feature-card glass-card" bindtap="goToRewards">
+      <view class="feature-icon">🎁</view>
+      <view class="feature-info">
+        <text class="feature-name">奖励兑换</text>
+        <text class="feature-desc">积分换取惊喜</text>
+      </view>
+    </view>
+    <view class="feature-card glass-card" bindtap="goToSports">
+      <view class="feature-icon">🏃</view>
+      <view class="feature-info">
+        <text class="feature-name">运动打卡</text>
+        <text class="feature-desc">开启健康生活</text>
+      </view>
+    </view>
+    <view class="feature-card glass-card" bindtap="goToMoments">
+      <view class="feature-icon">✨</view>
+      <view class="feature-info">
+        <text class="feature-name">家庭动态</text>
+        <text class="feature-desc">记录点滴美好</text>
+      </view>
+    </view>
+    <view class="feature-card glass-card" bindtap="goToFamily">
+      <view class="feature-icon">👥</view>
+      <view class="feature-info">
+        <text class="feature-name">家庭管理</text>
+        <text class="feature-desc">连接每一位家人</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区域占位 -->
+  <view class="safe-bottom"></view>
 </view>

@@ -1,191 +1,123 @@
-<!--pages/rewards/rewards.wxml - 精美设计版-->
-<view class="rewards-page">
-  <!-- 无家庭提示 -->
-  <view class="empty-state" wx:if="{{!familyInfo}}">
-    <view class="empty-icon animate-float">🏠</view>
-    <view class="empty-title">请先加入或创建家庭</view>
-    <view class="empty-desc">加入家庭后才能设置家务奖励哦</view>
+<!--pages/rewards/rewards.wxml - 3D极简科技版-->
+<view class="page-container">
+  <!-- 头部区域 -->
+  <view class="hero-section">
+    <view class="hero-bg-glow"></view>
+    <view class="hero-content page-fade-in">
+      <view class="hero-title">奖励设置</view>
+      <view class="hero-subtitle">Rewards Configuration</view>
+    </view>
   </view>
 
-  <block wx:else>
-    <!-- 积分价值卡片 -->
-    <view class="value-card">
-      <view class="value-bg"></view>
-      <view class="value-content">
-        <view class="value-icon">💰</view>
-        <view class="value-info">
-          <text class="value-title">当前积分价值</text>
-          <view class="value-amount">
-            <text class="amount-num">{{familyInfo.pointsValue || 0.5}}</text>
-            <text class="amount-unit">元/积分</text>
-          </view>
-        </view>
-        <view class="value-edit" bindtap="editPointsValue" wx:if="{{isAdmin}}">
-          <text>修改</text>
+  <!-- 积分价值卡片 (Glassmorphism Card) -->
+  <view class="glass-card value-card success-pop" wx:if="{{familyInfo}}">
+    <view class="value-main">
+      <view class="value-info">
+        <text class="value-label">当前积分价值</text>
+        <view class="value-amount">
+          <text class="amount-num">{{familyInfo.pointsValue || 0.5}}</text>
+          <text class="amount-unit">元/积分</text>
         </view>
       </view>
+      <view class="edit-btn btn-active-feedback" bindtap="editPointsValue" wx:if="{{isAdmin}}">修改</view>
     </view>
+  </view>
 
-    <!-- 家务类型列表 -->
-    <view class="section-header">
-      <text class="section-title">🧹 家务类型列表</text>
-      <view class="add-btn" bindtap="openAddModal" wx:if="{{isAdmin}}">
-        <text class="add-icon">+</text>
-        <text class="add-text">添加</text>
-      </view>
-    </view>
+  <!-- 家务类型列表 -->
+  <view class="section-header">
+    <text class="section-title">家务类型</text>
+    <view class="add-btn-mini btn-active-feedback" bindtap="openAddModal" wx:if="{{isAdmin}}">添加</view>
+  </view>
 
-    <!-- 类型列表 -->
-    <view class="types-list" wx:if="{{choreTypes.length > 0}}">
-      <view class="type-card" wx:for="{{choreTypes}}" wx:key="id">
-        <view class="type-main" data-item="{{item}}" bindtap="openEditModal">
-          <view class="type-icon-wrapper" style="background: {{item.color || 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)'}};">
-            <text class="type-icon">{{item.icon || '🧹'}}</text>
-          </view>
-          <view class="type-info">
-            <text class="type-name">{{item.name}}</text>
-            <text class="type-desc" wx:if="{{item.description}}">{{item.description}}</text>
-          </view>
-          <view class="type-points">
-            <text class="points-num">+{{item.points}}</text>
-            <text class="points-text">积分</text>
-          </view>
+  <view class="types-list">
+    <view class="type-item glass-card" wx:for="{{choreTypes}}" wx:key="id">
+      <view class="type-header">
+        <view class="type-icon">{{item.icon || '🧹'}}</view>
+        <view class="type-info">
+          <text class="type-name">{{item.name}}</text>
+          <text class="type-points">+{{item.points}} 积分</text>
         </view>
-        
-        <!-- 管理员操作 -->
         <view class="type-actions" wx:if="{{isAdmin}}">
-          <view class="action-btn edit" data-item="{{item}}" catchtap="openEditModal">
-            <text>✏️ 编辑</text>
-          </view>
-          <view class="action-btn delete" data-id="{{item.id}}" data-name="{{item.name}}" catchtap="deleteChoreType">
-            <text>🗑️ 删除</text>
-          </view>
+          <view class="action-icon" catchtap="openEditModal" data-item="{{item}}">✏️</view>
+          <view class="action-icon delete" catchtap="deleteChoreType" data-id="{{item.id}}" data-name="{{item.name}}">🗑️</view>
         </view>
       </view>
+      <text class="type-desc" wx:if="{{item.description}}">{{item.description}}</text>
     </view>
+  </view>
 
-    <!-- 空状态 -->
-    <view class="empty-types" wx:else>
-      <view class="empty-types-icon">📝</view>
-      <text class="empty-types-text">还没有设置家务类型</text>
-      <button class="add-first-btn" bindtap="openAddModal" wx:if="{{isAdmin}}">
-        <text>+ 添加第一个家务类型</text>
-      </button>
-    </view>
+  <!-- 底部安全区域 -->
+  <view class="safe-bottom"></view>
 
-    <!-- 非管理员提示 -->
-    <view class="admin-tip" wx:if="{{!isAdmin}}">
-      <text class="tip-icon">💡</text>
-      <text class="tip-text">只有管理员可以设置家务类型和积分</text>
-    </view>
-  </block>
+  <!-- 编辑家务类型弹窗 -->
+  <view class="modal-mask {{showEditModal ? 'show' : ''}}" bindtap="closeEditModal">
+    <view class="modal-content glass-card {{showEditModal ? 'show' : ''}}" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">{{editMode === 'add' ? '添加家务' : '编辑家务'}}</text>
+        <view class="close-btn" bindtap="closeEditModal">×</view>
+      </view>
+      
+      <scroll-view scroll-y class="modal-body">
+        <view class="form-item">
+          <text class="form-label">家务名称</text>
+          <input class="form-input" placeholder="如：洗碗、扫地" value="{{editingType.name}}" bindinput="onNameInput" />
+        </view>
 
-  <!-- 编辑弹窗 -->
-  <view class="modal-mask" wx:if="{{showEditModal}}" bindtap="closeEditModal"></view>
-  <view class="modal-content" wx:if="{{showEditModal}}">
-    <view class="modal-header">
-      <text class="modal-title">{{editMode === 'add' ? '添加家务类型' : '编辑家务类型'}}</text>
-      <view class="modal-close" bindtap="closeEditModal">×</view>
-    </view>
-    <view class="modal-body">
-      <!-- 图标选择 -->
-      <view class="form-group">
-        <text class="form-label">选择图标</text>
-        <scroll-view class="icon-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-          <view class="icon-list">
+        <view class="form-item">
+          <text class="form-label">选择图标</text>
+          <view class="icon-grid">
             <view 
-              class="icon-option {{editingType.icon === item ? 'selected' : ''}}" 
               wx:for="{{iconOptions}}" 
-              wx:key="*this"
-              data-icon="{{item}}"
+              wx:key="*this" 
+              class="icon-item {{editingType.icon === item ? 'active' : ''}}"
               bindtap="selectIcon"
+              data-icon="{{item}}"
             >{{item}}</view>
           </view>
-        </scroll-view>
-      </view>
+        </view>
 
-      <!-- 名称输入 -->
-      <view class="form-group">
-        <text class="form-label">家务名称 <text class="required">*</text></text>
-        <view class="input-wrapper">
-          <input 
-            class="form-input" 
-            placeholder="如：洗碗、拖地..."
-            value="{{editingType.name}}"
-            bindinput="onNameInput"
-            maxlength="20"
-          />
+        <view class="form-item">
+          <text class="form-label">奖励积分</text>
+          <input class="form-input" type="number" placeholder="完成一次奖励多少积分？" value="{{editingType.points}}" bindinput="onPointsInput" />
+        </view>
+
+        <view class="form-item">
+          <text class="form-label">描述 (可选)</text>
+          <textarea class="form-textarea" placeholder="具体要求或注意事项" value="{{editingType.description}}" bindinput="onDescInput" />
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <view class="primary-btn submit-btn btn-active-feedback" bindtap="saveChoreType">
+          <text>保存设置</text>
+          <view class="btn-glow"></view>
         </view>
       </view>
-
-      <!-- 积分输入 -->
-      <view class="form-group">
-        <text class="form-label">奖励积分 <text class="required">*</text></text>
-        <view class="input-wrapper points-input">
-          <input 
-            class="form-input" 
-            type="number"
-            placeholder="请输入积分值"
-            value="{{editingType.points}}"
-            bindinput="onPointsInput"
-          />
-          <text class="input-suffix">积分</text>
-        </view>
-      </view>
-
-      <!-- 描述输入 -->
-      <view class="form-group">
-        <text class="form-label">描述（选填）</text>
-        <textarea 
-          class="form-textarea" 
-          placeholder="简单描述这项家务..."
-          value="{{editingType.description}}"
-          bindinput="onDescInput"
-          maxlength="100"
-        ></textarea>
-      </view>
-    </view>
-    <view class="modal-footer">
-      <button class="cancel-btn" bindtap="closeEditModal">取消</button>
-      <button 
-        class="confirm-btn" 
-        bindtap="saveChoreType"
-        loading="{{isSubmitting}}"
-        disabled="{{isSubmitting || !editingType.name || !editingType.points}}"
-      >保存</button>
     </view>
   </view>
 
-  <!-- 积分价值编辑弹窗 -->
-  <view class="modal-mask" wx:if="{{showValueModal}}" bindtap="closeValueModal"></view>
-  <view class="modal-content value-modal" wx:if="{{showValueModal}}">
-    <view class="modal-header">
-      <text class="modal-title">设置积分价值</text>
-      <view class="modal-close" bindtap="closeValueModal">×</view>
-    </view>
-    <view class="modal-body">
-      <view class="form-group">
-        <text class="form-label">每积分兑换金额</text>
-        <view class="input-wrapper value-input">
-          <input 
-            class="form-input" 
-            type="digit"
-            placeholder="0.5"
-            value="{{newPointsValue}}"
-            bindinput="onValueInput"
-          />
-          <text class="input-suffix">元/积分</text>
-        </view>
-        <text class="input-hint">建议设置 0.1 - 2.0 元/积分</text>
+  <!-- 积分价值设置弹窗 -->
+  <view class="modal-mask {{showValueModal ? 'show' : ''}}" bindtap="closeValueModal">
+    <view class="modal-content glass-card {{showValueModal ? 'show' : ''}}" catchtap="true">
+      <view class="modal-header">
+        <text class="modal-title">积分价值设置</text>
+        <view class="close-btn" bindtap="closeValueModal">×</view>
       </view>
-    </view>
-    <view class="modal-footer">
-      <button class="cancel-btn" bindtap="closeValueModal">取消</button>
-      <button 
-        class="confirm-btn" 
-        bindtap="savePointsValue"
-        loading="{{isSubmitting}}"
-      >保存</button>
+      
+      <view class="modal-body">
+        <view class="form-item">
+          <text class="form-label">每积分价值 (元)</text>
+          <input class="form-input" type="digit" placeholder="如：0.5" value="{{newPointsValue}}" bindinput="onValueInput" />
+          <text class="form-tip">💡 用于计算积分对应的现金价值，建议设为 0.1 ~ 1.0 之间</text>
+        </view>
+      </view>
+
+      <view class="modal-footer">
+        <view class="primary-btn submit-btn btn-active-feedback" bindtap="savePointsValue">
+          <text>确认修改</text>
+          <view class="btn-glow"></view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

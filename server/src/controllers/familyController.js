@@ -148,6 +148,17 @@ const create = async (req, res) => {
       role: 'creator',
       joined_at: new Date()
     });
+
+    // 同时更新 FamilyService 中的模拟数据，保持一致
+    const FamilyService = require('../services/familyService');
+    if (global.mockFamilies) global.mockFamilies.set(familyId, family);
+    if (global.mockFamilyMembers) global.mockFamilyMembers.set(memberId, {
+      id: memberId,
+      family_id: familyId,
+      user_id: userId,
+      role: 'creator',
+      joined_at: new Date()
+    });
     
     console.log('🔧 开发模式：家庭已创建', name, inviteCode);
     

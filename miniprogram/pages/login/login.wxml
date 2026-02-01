@@ -1,56 +1,37 @@
-<!--pages/login/login.wxml - Aurora 极光主题版-->
-<view class="login-page">
-  <!-- 极光渐变背景 -->
-  <view class="login-bg"></view>
-  
-  <!-- 装饰光球 -->
-  <view class="decoration-ball ball-1"></view>
-  <view class="decoration-ball ball-2"></view>
-  <view class="decoration-ball ball-3"></view>
-  <view class="decoration-ball ball-4"></view>
-  
-  <!-- 星星闪烁装饰 -->
-  <view class="star star-1"></view>
-  <view class="star star-2"></view>
-  <view class="star star-3"></view>
-  <view class="star star-4"></view>
-  <view class="star star-5"></view>
-  <view class="star star-6"></view>
+<!--pages/login/login.wxml - 3D极简科技版-->
+<view class="page-container login-page">
+  <view class="login-bg-glow"></view>
   
   <!-- Logo区域 -->
-  <view class="logo-section">
-    <view class="logo-wrapper">
-      <view class="logo-glow"></view>
-      <view class="logo-glow-2"></view>
-      <text class="logo-emoji">🏠</text>
-    </view>
+  <view class="logo-section page-fade-in">
+    <view class="logo-icon">🏠</view>
     <view class="app-name">家庭小助手</view>
-    <view class="app-slogan">记录家务 · 积累幸福</view>
+    <view class="app-slogan">Smart Home Assistant</view>
   </view>
 
-  <!-- 功能卡片 - 毛玻璃效果 -->
-  <view class="feature-card">
+  <!-- 功能卡片 -->
+  <view class="feature-card success-pop">
     <view class="features-grid">
-      <view class="feature-item animate-delay-1">
-        <view class="feature-icon-wrap icon-family">
+      <view class="feature-item">
+        <view class="feature-icon-wrap">
           <text class="feature-emoji">👨‍👩‍👧‍👦</text>
         </view>
         <text class="feature-text">家庭成员</text>
       </view>
-      <view class="feature-item animate-delay-2">
-        <view class="feature-icon-wrap icon-chore">
+      <view class="feature-item">
+        <view class="feature-icon-wrap">
           <text class="feature-emoji">🧹</text>
         </view>
         <text class="feature-text">家务积分</text>
       </view>
-      <view class="feature-item animate-delay-3">
-        <view class="feature-icon-wrap icon-moments">
+      <view class="feature-item">
+        <view class="feature-icon-wrap">
           <text class="feature-emoji">💬</text>
         </view>
         <text class="feature-text">动态分享</text>
       </view>
-      <view class="feature-item animate-delay-4">
-        <view class="feature-icon-wrap icon-reward">
+      <view class="feature-item">
+        <view class="feature-icon-wrap">
           <text class="feature-emoji">🎁</text>
         </view>
         <text class="feature-text">奖励兑换</text>
@@ -60,17 +41,13 @@
 
   <!-- 登录按钮区域 -->
   <view class="login-section">
-    <!-- 隐私协议勾选框 -->
     <view class="agreement-section">
       <view class="agreement-checkbox" bindtap="toggleAgreement">
         <view class="checkbox-icon {{agreedToTerms ? 'checked' : ''}}">
           <text wx:if="{{agreedToTerms}}">✓</text>
         </view>
         <view class="agreement-text">
-          <text class="tip-text">我已阅读并同意</text>
-          <text class="link" catchtap="viewUserAgreement">《用户协议》</text>
-          <text class="tip-text">和</text>
-          <text class="link" catchtap="viewPrivacyPolicy">《隐私政策》</text>
+          同意 <text class="link" catchtap="viewUserAgreement">用户协议</text> 与 <text class="link" catchtap="viewPrivacyPolicy">隐私政策</text>
         </view>
       </view>
     </view>
@@ -87,14 +64,5 @@
       </view>
       <text wx:else class="btn-text">登录中...</text>
     </button>
-    
-    <view class="login-note" wx:if="{{!agreedToTerms}}">
-      <text class="note-text">请先阅读并同意相关协议</text>
-    </view>
-  </view>
-  
-  <!-- 底部装饰 -->
-  <view class="footer-decoration">
-    <text class="footer-text">✨ 让家务变得有趣 ✨</text>
   </view>
 </view>

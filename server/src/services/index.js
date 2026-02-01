@@ -6,12 +6,18 @@ const userService = require('./userService');
 const familyService = require('./familyService');
 const choreService = require('./choreService');
 const savingsService = require('./savingsService');
+const pointsService = require('./pointsService');
+const inventoryService = require('./inventoryService');
+const calendarService = require('./calendarService');
 
 module.exports = {
   authService,
   userService,
   familyService,
   choreService,
-  savingsService
+  savingsService,
+  pointsService,
+  inventoryService,
+  calendarService
 };
 
