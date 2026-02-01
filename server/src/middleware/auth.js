@@ -99,8 +99,11 @@ const authenticate = async (req, res, next) => {
  */
 const isAdmin = async (req, res, next) => {
   try {
+    // 优先从参数中获取 familyId，确保检查的是当前操作的家庭
     const familyId = req.params.familyId || req.body.familyId || req.query.familyId || req.user.familyId;
     const userId = req.user.id;
+    
+    console.log(`[isAdmin Check] userId: ${userId}, familyId: ${familyId}`);
     
     if (!familyId) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json(
@@ -108,7 +111,9 @@ const isAdmin = async (req, res, next) => {
       );
     }
     
-    const { isMember, isAdmin: admin } = await familyService.checkMemberRole(userId, familyId);
+    const { isMember, isAdmin: admin, role } = await familyService.checkMemberRole(userId, familyId);
+    
+    console.log(`[isAdmin Result] isMember: ${isMember}, isAdmin: ${admin}, role: ${role}`);
     
     if (!isMember) {
       return res.status(HTTP_STATUS.FORBIDDEN).json(
@@ -122,7 +127,7 @@ const isAdmin = async (req, res, next) => {
       );
     }
     
-    req.memberRole = admin ? 'admin' : 'member';
+    req.memberRole = role;
     next();
   } catch (error) {
     logger.error('权限检查错误', error);

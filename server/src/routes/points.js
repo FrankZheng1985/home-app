@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const pointsController = require('../controllers/pointsController');
-const { authenticate, isFamilyMember } = require('../middleware/auth');
+const { authenticate, isAdmin, isFamilyMember } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 
 // 获取积分概览

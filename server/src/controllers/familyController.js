@@ -412,8 +412,19 @@ const updateMemberRole = async (req, res) => {
 
   const { familyId, memberId } = req.params;
   const { role } = req.body;
+  const operatorId = req.user.id;
 
   try {
+    // 只有创建者可以修改成员角色
+    const operatorCheck = await query(
+      'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
+      [familyId, operatorId]
+    );
+
+    if (operatorCheck.rows.length === 0 || operatorCheck.rows[0].role !== 'creator') {
+      return res.status(403).json({ error: '只有创建者可以修改成员角色' });
+    }
+
     // 不能修改创建者角色
     const memberCheck = await query(
       'SELECT role FROM family_members WHERE family_id = ? AND user_id = ?',
