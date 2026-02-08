@@ -17,6 +17,7 @@ const TRANSACTION_TYPE = {
   // 积分交易类型
   EARN: 'earn',             // 获得积分
   SPEND: 'spend',           // 消费积分
+  REDEEM: 'redeem',         // 兑现积分
   ADJUST: 'adjust',         // 调整积分
   
   // 存款交易类型

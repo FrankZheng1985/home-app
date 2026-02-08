@@ -39,39 +39,27 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页",
-        "iconPath": "assets/icons/home.png",
-        "selectedIconPath": "assets/icons/home-active.png"
+        "text": "首页"
       },
       {
         "pagePath": "pages/chores/chores",
-        "text": "家务",
-        "iconPath": "assets/icons/chores.png",
-        "selectedIconPath": "assets/icons/chores-active.png"
+        "text": "家务"
       },
       {
         "pagePath": "pages/sports/sports",
-        "text": "运动",
-        "iconPath": "assets/icons/sports.png",
-        "selectedIconPath": "assets/icons/sports-active.png"
+        "text": "运动"
       },
       {
         "pagePath": "pages/workbench/workbench",
-        "text": "工作台",
-        "iconPath": "assets/icons/home.png",
-        "selectedIconPath": "assets/icons/home-active.png"
+        "text": "工作台"
       },
       {
         "pagePath": "pages/moments/moments",
-        "text": "动态",
-        "iconPath": "assets/icons/moments.png",
-        "selectedIconPath": "assets/icons/moments-active.png"
+        "text": "动态"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的",
-        "iconPath": "assets/icons/profile.png",
-        "selectedIconPath": "assets/icons/profile-active.png"
+        "text": "我的"
       }
     ]
   },

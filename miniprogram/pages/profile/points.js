@@ -165,7 +165,8 @@ Page({
           redeemedTotal: data.redeemedTotal || 0,
           rank: data.rank || '-',
           pointsValue: data.pointsValue || 0.5
-        }
+        },
+        pendingApplyPoints: data.pendingPoints || 0
       });
     } catch (error) {
       console.error('获取积分概览失败:', error);

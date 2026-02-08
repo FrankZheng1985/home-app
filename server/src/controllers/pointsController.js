@@ -264,27 +264,9 @@ const submitRedeemRequest = async (req, res) => {
     await familyService.validateMembership(userId, familyId);
 
     // 检查用户可用积分
-    const statsSql = `
-      SELECT 
-        COALESCE(SUM(CASE WHEN type = $1 THEN points ELSE 0 END), 0) as total_earned,
-        COALESCE(SUM(CASE WHEN type = $2 THEN ABS(points) ELSE 0 END), 0) as total_redeemed
-      FROM point_transactions 
-      WHERE family_id = $3 AND user_id = $4
-    `;
-    const stats = await pointsService.queryOne(statsSql, [TRANSACTION_TYPE.EARN, TRANSACTION_TYPE.REDEEM, familyId, userId]);
-
-    const totalEarned = parseInt(stats.total_earned);
-    const totalRedeemed = parseInt(stats.total_redeemed);
-    const availablePoints = totalEarned - totalRedeemed;
-
-    // 检查是否有待审核的申请
-    const pendingSql = `
-      SELECT COALESCE(SUM(points), 0) as pending_points
-      FROM point_redeem_requests 
-      WHERE family_id = $1 AND user_id = $2 AND status = 'pending'
-    `;
-    const pendingRes = await pointsService.queryOne(pendingSql, [familyId, userId]);
-    const pendingPoints = parseInt(pendingRes.pending_points) || 0;
+    const summary = await pointsService.getSummary(familyId, userId);
+    const availablePoints = summary.availablePoints;
+    const pendingPoints = summary.pendingPoints || 0;
 
     if (points > availablePoints - pendingPoints) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({ 
@@ -292,63 +274,27 @@ const submitRedeemRequest = async (req, res) => {
       });
     }
 
-    // 获取积分价值
-    const family = await pointsService.queryOne('SELECT points_value FROM families WHERE id = $1', [familyId]);
-    const pointsValue = parseFloat(family?.points_value || 0.5);
-    const amount = (points * pointsValue).toFixed(2);
-
     // 检查用户是否是管理员
     const { isAdmin } = await familyService.checkMemberRole(userId, familyId);
 
-    const requestId = uuidv4();
-    if (isAdmin) {
-      // 管理员自动通过
-      await pointsService.transaction(async (client) => {
-        await client.query(
-          `INSERT INTO point_redeem_requests 
-           (id, user_id, family_id, points, amount, status, remark, reviewed_by, reviewed_at, created_at)
-           VALUES ($1, $2, $3, $4, $5, 'approved', $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-          [requestId, userId, familyId, points, amount, remark || '', userId]
-        );
+    const result = await pointsService.submitRedeemRequest({
+      userId,
+      familyId,
+      points,
+      remark: remark || '',
+      isAdmin
+    });
 
-        await pointsService.createTransaction({
-          userId,
-          familyId,
-          points: -Math.abs(points),
-          type: TRANSACTION_TYPE.REDEEM,
-          description: `积分兑现 - ¥${amount}`
-        }, client);
-      });
-
-      return res.json({
-        success: true,
-        data: {
-          id: requestId,
-          points,
-          amount,
-          message: '兑现成功，积分已扣减',
-          autoApproved: true
-        }
-      });
-    } else {
-      // 普通成员待审核
-      await pointsService.query(
-        `INSERT INTO point_redeem_requests 
-         (id, user_id, family_id, points, amount, status, remark, created_at)
-         VALUES ($1, $2, $3, $4, $5, 'pending', $6, CURRENT_TIMESTAMP)`,
-        [requestId, userId, familyId, points, amount, remark || '']
-      );
-
-      return res.json({
-        success: true,
-        data: {
-          id: requestId,
-          points,
-          amount,
-          message: '申请已提交，等待审核'
-        }
-      });
-    }
+    return res.json({
+      success: true,
+      data: {
+        id: result.id,
+        points: result.points,
+        amount: result.amount,
+        message: result.autoApproved ? '兑现成功，积分已扣减' : '申请已提交，等待审核',
+        autoApproved: result.autoApproved
+      }
+    });
   } catch (error) {
     console.error('提交兑现申请错误:', error);
     return res.status(HTTP_STATUS.INTERNAL_ERROR).json({ error: error.message || '提交申请失败' });
@@ -370,56 +316,19 @@ const getRedeemRequests = async (req, res) => {
     // 验证用户角色
     const { isAdmin } = await familyService.checkMemberRole(userId, familyId);
 
-    let whereClause = 'r.family_id = $1';
-    const values = [familyId];
-
-    if (!isAdmin) {
-      whereClause += ' AND r.user_id = $2';
-      values.push(userId);
-    }
-
-    if (status && status !== 'undefined') {
-      whereClause += ` AND r.status = $${values.length + 1}`;
-      values.push(status);
-    }
-
-    const countSql = `SELECT COUNT(*) as total FROM point_redeem_requests r WHERE ${whereClause}`;
-    const countRes = await pointsService.queryOne(countSql, values);
-
-    const offset = (parseInt(page) - 1) * parseInt(pageSize);
-    const listSql = `
-      SELECT r.*, 
-             u.nickname as user_nickname, u.avatar_url as user_avatar,
-             ru.nickname as reviewer_nickname
-      FROM point_redeem_requests r
-      JOIN users u ON r.user_id = u.id
-      LEFT JOIN users ru ON r.reviewed_by = ru.id
-      WHERE ${whereClause}
-      ORDER BY r.created_at DESC
-      LIMIT $${values.length + 1} OFFSET $${values.length + 2}
-    `;
-    const result = await pointsService.queryMany(listSql, [...values, parseInt(pageSize), offset]);
+    const result = await pointsService.getRedeemRequests({
+      familyId,
+      userId,
+      isAdmin,
+      status: (status && status !== 'undefined') ? status : undefined,
+      page,
+      pageSize
+    });
 
     return res.json({
       success: true,
-      data: result.map(row => ({
-        id: row.id,
-        userId: row.user_id,
-        user: {
-          nickname: row.user_nickname,
-          avatarUrl: row.user_avatar
-        },
-        points: row.points,
-        amount: parseFloat(row.amount),
-        status: row.status,
-        remark: row.remark,
-        rejectReason: row.reject_reason,
-        reviewedBy: row.reviewed_by,
-        reviewerNickname: row.reviewer_nickname,
-        reviewedAt: row.reviewed_at,
-        createdAt: row.created_at
-      })),
-      total: parseInt(countRes.total),
+      data: result.data,
+      total: result.total,
       page: parseInt(page),
       pageSize: parseInt(pageSize)
     });
@@ -441,78 +350,24 @@ const reviewRedeemRequest = async (req, res) => {
   }
 
   try {
-    const request = await pointsService.queryOne('SELECT * FROM point_redeem_requests WHERE id = $1', [requestId]);
-    if (!request) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ error: '申请不存在' });
-    }
+    // 这里需要先获取申请信息以验证权限
+    // 由于 service 层已经处理了大部分逻辑，我们直接调用
+    // 但是我们需要知道 familyId 来验证管理员权限
+    // 在 service 层中处理更合适
+    
+    await pointsService.reviewRedeemRequest({
+      requestId,
+      adminId: userId,
+      action,
+      rejectReason
+    });
 
-    if (request.status !== 'pending') {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: '该申请已被处理' });
-    }
-
-    // 验证操作者是否为管理员
-    await familyService.validateAdminRole(userId, request.family_id);
-
-    if (action === 'approve') {
-      // 再次检查可用积分
-      const statsSql = `
-        SELECT 
-          COALESCE(SUM(CASE WHEN type = $1 THEN points ELSE 0 END), 0) as total_earned,
-          COALESCE(SUM(CASE WHEN type = $2 THEN ABS(points) ELSE 0 END), 0) as total_redeemed
-        FROM point_transactions 
-        WHERE family_id = $3 AND user_id = $4
-      `;
-      const stats = await pointsService.queryOne(statsSql, [TRANSACTION_TYPE.EARN, TRANSACTION_TYPE.REDEEM, request.family_id, request.user_id]);
-      const availablePoints = parseInt(stats.total_earned) - parseInt(stats.total_redeemed);
-
-      if (request.points > availablePoints) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: `用户可用积分不足，当前可用：${availablePoints}` });
+    return res.json({
+      success: true,
+      data: {
+        message: action === 'approve' ? '已通过申请，积分已扣减' : '已拒绝申请'
       }
-
-      await pointsService.transaction(async (client) => {
-        await pointsService.createTransaction({
-          userId: request.user_id,
-          familyId: request.family_id,
-          points: -Math.abs(request.points),
-          type: TRANSACTION_TYPE.REDEEM,
-          description: `积分兑现 - ¥${request.amount}`
-        }, client);
-
-        await client.query(
-          `UPDATE point_redeem_requests 
-           SET status = 'approved', reviewed_by = $1, reviewed_at = CURRENT_TIMESTAMP
-           WHERE id = $2`,
-          [userId, requestId]
-        );
-      });
-
-      return res.json({
-        success: true,
-        data: {
-          message: '已通过申请，积分已扣减',
-          points: request.points,
-          amount: parseFloat(request.amount)
-        }
-      });
-    } else {
-      if (!rejectReason) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: '请填写拒绝原因' });
-      }
-
-      await pointsService.query(
-        `UPDATE point_redeem_requests 
-         SET status = 'rejected', reject_reason = $1, reviewed_by = $2, reviewed_at = CURRENT_TIMESTAMP
-         WHERE id = $3`,
-        [rejectReason, userId, requestId]
-      );
-
-      return res.json({
-        success: true,
-        data: {
-          message: '已拒绝申请'
-        }
-      });
-    }
+    });
   } catch (error) {
     console.error('审核兑现申请错误:', error);
     return res.status(HTTP_STATUS.INTERNAL_ERROR).json({ error: error.message || '审核失败' });
@@ -537,35 +392,16 @@ const getPendingRedeemCount = async (req, res) => {
       return res.json({ success: true, data: { count: 0 } });
     }
 
-    const result = await pointsService.queryOne(
-      `SELECT COUNT(*) as count FROM point_redeem_requests 
-       WHERE family_id = $1 AND status = 'pending'`,
-      [familyId]
-    );
+    const count = await pointsService.getPendingRedeemCount(familyId);
 
     return res.json({
       success: true,
-      data: {
-        count: parseInt(result?.count || 0)
-      }
+      data: { count }
     });
   } catch (error) {
     console.error('获取待审核数量错误:', error);
     return res.status(HTTP_STATUS.INTERNAL_ERROR).json({ error: error.message || '获取失败' });
   }
-};
-
-module.exports = {
-  getSummary,
-  getTransactions,
-  getRanking,
-  getMonthStats,
-  getMembersPoints,
-  redeemPoints,
-  submitRedeemRequest,
-  getRedeemRequests,
-  reviewRedeemRequest,
-  getPendingRedeemCount
 };
 
 module.exports = {
